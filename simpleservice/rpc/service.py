@@ -14,13 +14,13 @@ from simpleutil.utils import singleton
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 
-from simpleutil.service.base import ServiceBase
-from simpleutil.service.base import LauncheServiceBase
+from simpleservice.base import ServiceBase
+from simpleservice.base import LauncheServiceBase
 
-from simpleutil.service import loopingcall
-from simpleutil.service.rpc import config
-from simpleutil.service.rpc.dispatcher import RPCDispatcher
-from simpleservice.rpc.driver import RabbitDriver
+from simpleservice import loopingcall
+from simpleservice.rpc import config
+from simpleservice.rpc.dispatcher import RPCDispatcher
+from simpleservice.rpc.driver.impl import RabbitDriver
 
 from simpleservice.rpc.driver import exceptions
 

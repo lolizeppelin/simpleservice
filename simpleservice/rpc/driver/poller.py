@@ -16,7 +16,7 @@ class AMQPIncomingMessage(object):
                  obsolete_reply_queues):
         """
         message is Intance of
-        simpleutil.service.rpc.driver.connection.RabbitMessage
+        simpleservice.rpc.driver.connection.RabbitMessage
         """
         self.ctxt = ctxt
         self.message = message

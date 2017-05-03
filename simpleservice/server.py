@@ -6,8 +6,8 @@ from simpleutil.log import log as logging
 
 from simpleutil.config import cfg
 
-from simpleutil.service.base import ProcessLauncher
-from simpleutil.service.base import ServiceLauncher
+from simpleservice.base import ProcessLauncher
+from simpleservice.base import ServiceLauncher
 from simpleutil.posix import systemd
 
 CONF = cfg.CONF

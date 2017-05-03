@@ -1,7 +1,7 @@
 import sys
 
 from simpleservice.rpc.driver import exceptions
-from simpleutil.service.rpc.target import target_match
+from simpleservice.rpc.target import target_match
 
 from simpleutil.log import log as logging
 

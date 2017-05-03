@@ -11,11 +11,11 @@ from paste import deploy
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 
-from simpleutil.service.base import LauncheServiceBase
+from simpleservice.base import LauncheServiceBase
 
 from simpleutil.common.exceptions import InvalidInput
-from simpleutil.service.wsgi.exceptions import ConfigNotFound
-from simpleutil.service.wsgi.exceptions import PasteAppNotFound
+from simpleservice.wsgi.exceptions import ConfigNotFound
+from simpleservice.wsgi.exceptions import PasteAppNotFound
 
 
 CONF = cfg.CONF
