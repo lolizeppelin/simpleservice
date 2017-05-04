@@ -23,6 +23,7 @@ from simpleutil.posix import systemd
 LOG = logging.getLogger(__name__)
 
 if os.name != 'nt':
+    # For windows
     class GreenPipe(eventlet.greenio.GreenPipe):
         setblocking = lambda x: None
 else:
