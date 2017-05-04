@@ -7,6 +7,8 @@ from six import moves
 
 from simpleutil.utils import singleton
 
+from simpleutil.config import cfg
+
 from simpleutil.log import log as logging
 
 from simpleservice.rpc.driver import connection
@@ -14,7 +16,17 @@ from simpleservice.rpc.driver import poller
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver import common as rpc_common
 
+from simpleservice.rpc.driver.config import *
+
+CONF = cfg.CONF
+
 LOG = logging.getLogger(__name__)
+
+
+CONF.register_group(rabbit_group)
+CONF.register_opts(rabbit_opts, group=rabbit_group)
+CONF.register_opts(amqp_opts, group=rabbit_group)
+CONF.register_opts(base_opts, group=rabbit_group)
 
 
 class ReplyWaiters(object):

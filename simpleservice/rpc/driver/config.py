@@ -129,8 +129,6 @@ rabbit_opts = [
                default='',
                help='SSL certification authority file '
                     '(valid only if SSL enabled).'),
-
-
 ]
 
 amqp_opts = [
@@ -149,10 +147,4 @@ base_opts = [
 ]
 
 
-opt_group = cfg.OptGroup(name='rabbit',
-                         title='RabbitMQ driver options')
-CONF.register_group(opt_group)
-
-CONF.register_opts(rabbit_opts, group=opt_group)
-CONF.register_opts(amqp_opts, group=opt_group)
-CONF.register_opts(base_opts, group=opt_group)
+rabbit_group = cfg.OptGroup(name='rabbit', title='RabbitMQ driver options')
