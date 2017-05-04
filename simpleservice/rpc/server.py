@@ -204,11 +204,10 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         #     raise ServerListenError(self.target, ex)
         targets = [endpoint.target for endpoint in self.dispatcher.endpoints]
         self.listener = self.rpcdriver.listen(targets)
-
         self._work_pool = \
-            threadgroup.ThreadGroup(self.conf.rpc_pool_size)
+            threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
         self._poll_pool = \
-            threadgroup.ThreadGroup(self.conf.rpc_pool_size)
+            threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
         eventlet.spawn_n(self._poll_loop)
         LOG.info("%(class)s started" % {'class': self.__class__.__name__})
 
