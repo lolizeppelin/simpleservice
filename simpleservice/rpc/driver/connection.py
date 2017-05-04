@@ -768,15 +768,8 @@ class Connection(object):
                                             channel=self.channel,
                                             auto_declare=not exchange.passive,
                                             routing_key=routing_key)
-        if isinstance(msg, six.binary_type):
-            # For send file buffer
-            log_text = 'Send binary msg, skip recod'
-            content_type = 'application/data'
-        else:
-            log_text = msg
-            content_type='application/json',
 
-        log_info = {'msg': log_text,
+        log_info = {'msg': msg,
                     'who': exchange or 'default',
                     'key': routing_key}
         LOG.trace('Connection._publish: sending message %(msg)s to'
@@ -790,7 +783,8 @@ class Connection(object):
             # with requirement kombu >=3.0.25
             # producer.publish(msg, expiration=self._get_expiration(timeout),
             producer.publish(msg, expiration=int(timeout * 1000),
-                             content_type=content_type,
+                             content_type='application/json',
+                             content_encoding = 'utf-8',
                              compression=self.kombu_compression)
 
     # List of notification queue declared on the channel to avoid

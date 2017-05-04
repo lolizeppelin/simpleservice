@@ -213,6 +213,7 @@ class RabbitDriver(object):
               notify=False, retry=None):
         context = ctxt
         msg = message
+        msg.update({'namespace': target.namespace})
         if wait_for_reply:
             msg_id = uuid.uuid4().hex
             msg.update({'_msg_id': msg_id})
@@ -273,27 +274,18 @@ class RabbitDriver(object):
                           # envelope=(version == 2.0), notify=True, retry=retry)
                           notify=True, retry=retry)
 
-
-    def send_file(self, target, buffer, timeout=None, retry=None):
-        """Send file buffer"""
-        with self._get_connection(rpc_common.PURPOSE_SEND) as conn:
-            exchange = self._get_exchange(target)
-            topic = target.topic
-            conn.topic_send(exchange_name=exchange, topic=topic,
-                            msg=buffer, timeout=timeout, retry=retry)
-
     def listen(self, targets):
         conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
         listener = poller.AMQPListener(self, conn)
         for target in targets:
-            conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
-                                        topic=target.topic,
-                                        callback=listener)
+            # conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
+            #                             topic=target.topic,
+            #                             callback=listener)
             conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
                                         topic='%s.%s' % (target.topic,
                                                          target.server),
                                         callback=listener)
-            conn.declare_fanout_consumer(target.topic, listener)
+            # conn.declare_fanout_consumer(target.topic, listener)
         return listener
 
     def cleanup(self):

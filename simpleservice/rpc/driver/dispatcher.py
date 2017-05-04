@@ -1,7 +1,6 @@
 import sys
 
 from simpleservice.rpc.driver import exceptions
-from simpleservice.rpc.target import target_match
 
 from simpleutil.log import log as logging
 
@@ -43,24 +42,23 @@ class RPCDispatcher(object):
         message = incoming.message
         method = message.get('method', None)
         args = message.get('args', {})
-        # namespace = message.get('namespace')
-        target = message.get('target', None)
+        namespace = message.get('namespace')
         try:
-            if target_match(target, self.manager.target):
+            if namespace == self.manager.namespace:
                 if not method.startswith('rpc_'):
                     method = 'rpc_%(method)s' % {'method': method}
                 if hasattr(self.manager, method):
                     incoming.reply(self._do_dispatch(None, method, ctxt, args))
                     return
             for endpoint in self.endpoints:
-                if not target_match(target, endpoint.target):
+                if namespace != endpoint.namespace:
                     continue
                 if hasattr(endpoint, method):
                     incoming.reply(self._do_dispatch(endpoint, method, ctxt, args))
                     return
                 else:
                     raise exceptions.NoSuchMethod(method)
-            raise exceptions.UnsupportedNamespace(target.namespace, method=method)
+            raise exceptions.UnsupportedNamespace(namespace, method=method)
         except exceptions.ExpectedException as e:
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
             incoming.reply(failure=e.exc_info, log_failure=False)

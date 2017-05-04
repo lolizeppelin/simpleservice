@@ -164,6 +164,7 @@ class AMQPListener(object):
         self._obsolete_reply_queues = ObsoleteReplyQueuesCache()
 
     def __call__(self, message):
+        # simpleservice.rpc.driver.connection.RabbitMessage
         ctxt = rpc_common.unpack_context(message)
         unique_id = self.msg_id_cache.check_duplicate_message(message)
         LOG.debug("received message msg_id: %(msg_id)s reply to %(queue)s", {

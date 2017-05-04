@@ -20,9 +20,6 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-DEFAULT_LOG_AFTER = 30
-
-
 class LauncheRpcServiceBase(LauncheServiceBase):
     """Service object for binaries running on hosts.
 
@@ -52,7 +49,6 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.conn = RpcConnection(self.manager, self.endpoints)
         LOG.debug("Creating Consumer connection for Service %s",
                   self.topic)
-        # self.conn.create_consumer(self.topic, self.endpoints)
         self.manager.initialize_service_hook(self)
         self.conn.start()
 
@@ -108,13 +104,6 @@ class RPCClientBase(object):
         self.timeout = timeout or self.conf.rpc_response_timeout
         self.retry = retry
 
-    def send_file(self, target, buffer, timeout=None):
-        try:
-            self.rpcdriver.send_file(target, buffer,  timeout, retry=self.retry)
-        # except driver_base.TransportDriverError as ex:
-        except exceptions.RabbitDriverError as ex:
-            raise exceptions.ClientSendError(target, ex)
-
     def notify(self, target, ctxt, msg):
         try:
             self.rpcdriver.send_notification(target, ctxt, msg, retry=self.retry)
@@ -130,7 +119,6 @@ class RPCClientBase(object):
         # except driver_base.TransportDriverError as ex:
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
-
 
     def call(self, target, ctxt, msg, timeout=None):
         if target.fanout:
