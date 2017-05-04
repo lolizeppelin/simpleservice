@@ -570,7 +570,6 @@ class Connection(object):
         if self._heartbeat_thread is not None:
             # self._heartbeat_exit_event.set()
             self._heartbeat_exit_event = True
-            # TODO: loop to check greenlet dead
             eventlet.sleep(0.05)
             # self._heartbeat_thread.join()
             self._heartbeat_thread = None
@@ -908,9 +907,7 @@ class Connection(object):
 
 class ConnectionPool(object):
     """Class that implements a Pool of Connections."""
-    # def __init__(self, conf, rpc_conn_pool_size, url, connection_cls):
     def __init__(self, conf, rpc_conn_pool_size):
-        # self.connection_cls = connection_cls
         self.conf = conf
         # self.url = url
         self._max_size = rpc_conn_pool_size
