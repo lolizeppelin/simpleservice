@@ -173,7 +173,7 @@ class RabbitDriver(object):
             conf.rabbit.rabbit_qos_prefetch_count)
 
         connection_pool = connection.ConnectionPool(
-            conf, conf.rabbit.rpc_conn_pool_size)
+            conf, conf.rabbit.rabbit_conn_pool_size)
         self.conf = conf
         self._allowed_remote_exmods = []
         self._default_exchange = conf.rabbit.exchange

@@ -8,7 +8,7 @@ client_opts = [
 ]
 
 server_opts = [
-    cfg.IntOpt('rpc_pool_size',
+    cfg.IntOpt('rpc_eventlet_pool_size',
                default=64,
-               help='Size of executor thread pool.')
+               help='Size of eventlet thread pool.')
 ]

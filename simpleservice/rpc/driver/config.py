@@ -12,33 +12,27 @@ rabbit_opts = [
     cfg.PortOpt('rabbit_port',
                 default=5672,
                 help='The RabbitMQ broker port where a single node is used.'),
-
     cfg.StrOpt('rabbit_userid',
                default='guest',
                help='The RabbitMQ userid.'),
-
     cfg.StrOpt('rabbit_password',
                default='guest',
                help='The RabbitMQ password.',
                secret=True),
-
-    cfg.StrOpt('rabbit_login_method',
-               default='AMQPLAIN',
-               help='The RabbitMQ login method.'),
-
     cfg.StrOpt('rabbit_virtual_host',
                default='simpleutil',
                help='The RabbitMQ virtual host.'),
-
     cfg.StrOpt('exchange',
                default='simpleutil',
                help='The default exchange under which topics are scoped. May '
                     'be overridden by an exchange name specified in the '
                     'transport_url option.'),
 
+    cfg.StrOpt('rabbit_login_method',
+               default='AMQPLAIN',
+               help='The RabbitMQ login method.'),
     cfg.BoolOpt('rabbit_ha_queues',
                 default=False,
-                deprecated_group='DEFAULT',
                 help='Try to use HA queues in RabbitMQ (x-ha-policy: all). '
                 'If you change this option, you must wipe the RabbitMQ '
                 'database. In RabbitMQ 3.0, queue mirroring is no longer '
@@ -141,10 +135,8 @@ amqp_opts = [
 ]
 
 base_opts = [
-    cfg.IntOpt('rpc_conn_pool_size',
+    cfg.IntOpt('rabbit_conn_pool_size',
                default=30,
-               help='Size of RPC connection pool.'),
+               help='Size of rabbit RPC connection pool.'),
 ]
-
-
 rabbit_group = cfg.OptGroup(name='rabbit', title='RabbitMQ driver options')
