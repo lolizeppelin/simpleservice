@@ -99,6 +99,29 @@ class RemoteError(MessagingException):
         super(RemoteError, self).__init__(msg)
 
 
+class RPCVersionCapError(MessagingException):
+
+    def __init__(self, version, version_cap):
+        self.version = version
+        self.version_cap = version_cap
+        msg = ("Requested message version, %(version)s is incompatible.  It "
+               "needs to be equal in major version and less than or equal "
+               "in minor version as the specified version cap "
+               "%(version_cap)s." %
+               dict(version=self.version, version_cap=self.version_cap))
+        super(RPCVersionCapError, self).__init__(msg)
+
+
+class ClientSendError(MessagingException):
+    """Raised if we failed to send a message to a target."""
+
+    def __init__(self, target, ex):
+        msg = 'Failed to send to target "%s": %s' % (target, ex)
+        super(ClientSendError, self).__init__(msg)
+        self.target = target
+        self.ex = ex
+
+
 class InvalidTarget(MessagingException, ValueError):
     """Raised if a target does not meet certain pre-conditions."""
 
@@ -108,25 +131,25 @@ class InvalidTarget(MessagingException, ValueError):
         self.target = target
 
 
+# TransportDriverError
+class RabbitDriverError(MessagingException):
+    """Base class for transport driver specific exceptions."""
+
+
 class MessagingServerError(MessagingException):
     """Base class for all MessageHandlingServer exceptions."""
-
-
-class RPCDispatcherError(MessagingServerError):
-    "A base class for all RPC dispatcher exceptions."
 
 
 class TaskTimeout(MessagingServerError):
     """Raised if we timed out waiting for a task to complete."""
 
 
-# TransportDriverError
-class RabbitDriverError(MessagingException):
-    """Base class for transport driver specific exceptions."""
+class RPCDispatcherError(MessagingServerError):
+    """A base class for all RPC dispatcher exceptions."""
 
 
 class NoSuchMethod(RPCDispatcherError, AttributeError):
-    "Raised if there is no endpoint which exposes the requested method."
+    """Raised if there is no endpoint which exposes the requested method."""
 
     def __init__(self, method):
         msg = "Endpoint does not support RPC method %s" % method
@@ -135,8 +158,7 @@ class NoSuchMethod(RPCDispatcherError, AttributeError):
 
 
 class UnsupportedNamespace(RPCDispatcherError):
-    "Raised if there is no endpoint which supports the requested version."
-
+    """Raised if there is no endpoint which supports the requested version."""
     def __init__(self, namespace, method=None):
         msg = "Endpoint does not support RPC namespace %s" % namespace
         if method:

@@ -27,37 +27,6 @@ def _add_unique_id(msg):
     msg.update({UNIQUE_ID: unique_id})
 
 
-def unpack_context(msg):
-    """Unpack context from msg."""
-    context_dict = {}
-    for key in list(msg.keys()):
-        key = six.text_type(key)
-        if key.startswith('_context_'):
-            value = msg.pop(key)
-            context_dict[key[9:]] = value
-    context_dict['msg_id'] = msg.pop('_msg_id', None)
-    context_dict['reply_q'] = msg.pop('_reply_q', None)
-    return RpcContext.from_dict(context_dict)
-
-
-def pack_context(msg, context):
-    """Pack context into msg.
-
-    Values for message keys need to be less than 255 chars, so we pull
-    context out into a bunch of separate keys. If we want to support
-    more arguments in rabbit messages, we may want to do the same
-    for args at some point.
-
-    """
-    if isinstance(context, dict):
-        context_d = six.iteritems(context)
-    else:
-        context_d = six.iteritems(context.to_dict())
-
-    msg.update(('_context_%s' % key, value)
-               for (key, value) in context_d)
-
-
 def serialize_msg(raw_msg):
     # NOTE(russellb) See the docstring for _RPC_ENVELOPE_VERSION for more
     # information about this format.
@@ -151,6 +120,37 @@ def deserialize_remote_exception(data, allowed_remote_exmods):
         # first exception argument.
         failure.args = (message,) + failure.args[1:]
     return failure
+
+
+def pack_context(msg, context):
+    """Pack context into msg.
+
+    Values for message keys need to be less than 255 chars, so we pull
+    context out into a bunch of separate keys. If we want to support
+    more arguments in rabbit messages, we may want to do the same
+    for args at some point.
+
+    """
+    if isinstance(context, dict):
+        context_d = six.iteritems(context)
+    else:
+        context_d = six.iteritems(context.to_dict())
+
+    msg.update(('_context_%s' % key, value)
+               for (key, value) in context_d)
+
+
+def unpack_context(msg):
+    """Unpack context from msg."""
+    context_dict = {}
+    for key in list(msg.keys()):
+        key = six.text_type(key)
+        if key.startswith('_context_'):
+            value = msg.pop(key)
+            context_dict[key[9:]] = value
+    context_dict['msg_id'] = msg.pop('_msg_id', None)
+    context_dict['reply_q'] = msg.pop('_reply_q', None)
+    return RpcContext.from_dict(context_dict)
 
 
 class RpcContext(object):

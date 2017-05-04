@@ -34,6 +34,13 @@ class Target(object):
     def __hash__(self):
         return id(self)
 
+    def to_dict(self):
+        kwargs = dict()
+        for a in ('exchange', 'topic', 'namespace',
+                  'version', 'server', 'fanout'):
+            kwargs.setdefault(a, getattr(self, a))
+        return kwargs
+
 
 def target_match(send_target, listen_target):
     if send_target.exchange != listen_target.exchange:

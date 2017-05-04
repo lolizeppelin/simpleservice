@@ -130,6 +130,7 @@ class _OrderedTaskRunner(object):
                        for (name, member) in inspect.getmembers(self)
                        if inspect.ismethod(member) and
                        getattr(member, '_ordered', False)]
+        self._states = {}
         self.reset_states()
         # self._reset_lock = threading.Lock()
         self._reset_lock = Semaphore()
@@ -201,7 +202,7 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         #     self.listener = self.dispatcher._listen(self.transport)
         # except driver_base.TransportDriverError as ex:
         #     raise ServerListenError(self.target, ex)
-        targets = [ endpoint.target for endpoint in self.dispatcher.endpoints ]
+        targets = [endpoint.target for endpoint in self.dispatcher.endpoints]
         self.listener = self.rpcdriver.listen(targets)
 
         self._work_pool = \

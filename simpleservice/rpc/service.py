@@ -1,6 +1,7 @@
 import random
 
 from simpleutil.utils import importutils
+from simpleutil.utils import singleton
 
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
@@ -8,6 +9,10 @@ from simpleutil.log import log as logging
 from simpleservice import loopingcall
 from simpleservice.base import LauncheServiceBase
 from simpleservice.rpc.server import RpcConnection
+
+from simpleservice.rpc.config import client_opts
+from simpleservice.rpc.driver import exceptions
+from simpleservice.rpc.driver.impl import RabbitDriver
 
 
 CONF = cfg.CONF
@@ -119,3 +124,49 @@ class LauncheRpcServiceBase(LauncheServiceBase):
 
     # def reset(self):
     #     config.reset_service()
+
+
+@singleton
+class RPCClientBase(object):
+
+    def __init__(self, timeout=None, retry=None):
+        self.conf = CONF
+        self.conf.register_opts(client_opts)
+        self.rpcdriver = RabbitDriver(CONF)
+        self.timeout = timeout or self.conf.rpc_response_timeout
+        self.retry = retry
+
+    def send_file(self, target, buffer, timeout=None):
+        try:
+            self.rpcdriver.send_file(target, buffer,  timeout, retry=self.retry)
+        # except driver_base.TransportDriverError as ex:
+        except exceptions.RabbitDriverError as ex:
+            raise exceptions.ClientSendError(target, ex)
+
+    def notify(self, target, ctxt, msg):
+        try:
+            self.rpcdriver.send_notification(target, ctxt, msg, retry=self.retry)
+        # except driver_base.TransportDriverError as ex:
+        except exceptions.RabbitDriverError as ex:
+            raise exceptions.ClientSendError(target, ex)
+
+    def cast(self, target, ctxt, msg):
+        """Invoke a method and return immediately. See RPCClient.cast()."""
+        try:
+            self.rpcdriver.send(target, ctxt, msg,
+                                retry=self.retry)
+        # except driver_base.TransportDriverError as ex:
+        except exceptions.RabbitDriverError as ex:
+            raise exceptions.ClientSendError(target, ex)
+
+
+    def call(self, target, ctxt, msg, timeout=None):
+        if target.fanout:
+            raise exceptions.InvalidTarget('A call cannot be used with fanout', target)
+        timeout = timeout or self.timeout
+        try:
+            return self.rpcdriver.send(target, ctxt, msg,
+                                         wait_for_reply=True, timeout=timeout,
+                                         retry=self.retry)
+        except exceptions.RabbitDriverError as ex:
+            raise exceptions.ClientSendError(target, ex)

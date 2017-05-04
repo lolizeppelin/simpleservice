@@ -5,6 +5,8 @@ import eventlet.semaphore
 
 from six import moves
 
+from simpleutil.utils import singleton
+
 from simpleutil.log import log as logging
 
 from simpleservice.rpc.driver import connection
@@ -139,6 +141,7 @@ class ReplyWaiter(object):
         return final_reply
 
 
+@singleton
 class RabbitDriver(object):
 
     prefetch_size = 0
@@ -194,7 +197,8 @@ class RabbitDriver(object):
 
     def _send(self, target, ctxt, message,
               wait_for_reply=None, timeout=None,
-              envelope=True, notify=False, retry=None):
+              # envelope=True, notify=False, retry=None):
+              notify=False, retry=None):
         context = ctxt
         msg = message
         if wait_for_reply:
@@ -204,14 +208,14 @@ class RabbitDriver(object):
         rpc_common._add_unique_id(msg)
         unique_id = msg[rpc_common.UNIQUE_ID]
         rpc_common.pack_context(msg, context)
-        if envelope:
-            msg = rpc_common.serialize_msg(msg)
+        # if envelope:
+        #     msg = rpc_common.serialize_msg(msg)
+        msg = rpc_common.serialize_msg(msg)
         if wait_for_reply:
             self._waiter.listen(msg_id)
             log_msg = "CALL msg_id: %s " % msg_id
         else:
             log_msg = "CAST unique_id: %s " % unique_id
-
         try:
             with self._get_connection(rpc_common.PURPOSE_SEND) as conn:
                 if notify:
@@ -252,9 +256,19 @@ class RabbitDriver(object):
         return self._send(target, ctxt, message, wait_for_reply, timeout,
                           retry=retry)
 
-    def send_notification(self, target, ctxt, message, version, retry=None):
+    def send_notification(self, target, ctxt, message, retry=None):
         return self._send(target, ctxt, message,
-                          envelope=(version == 2.0), notify=True, retry=retry)
+                          # envelope=(version == 2.0), notify=True, retry=retry)
+                          notify=True, retry=retry)
+
+
+    def send_file(self, target, buffer, timeout=None, retry=None):
+        """Send file buffer"""
+        with self._get_connection(rpc_common.PURPOSE_SEND) as conn:
+            exchange = self._get_exchange(target)
+            topic = target.topic
+            conn.topic_send(exchange_name=exchange, topic=topic,
+                            msg=buffer, timeout=timeout, retry=retry)
 
     def listen(self, targets):
         conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
@@ -268,17 +282,6 @@ class RabbitDriver(object):
                                                          target.server),
                                         callback=listener)
             conn.declare_fanout_consumer(target.topic, listener)
-        return listener
-
-    def listen_for_notifications(self, targets_and_priorities, pool):
-        # TODO delete this function
-        conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
-        listener = poller.AMQPListener(self, conn)
-        for target, priority in targets_and_priorities:
-            conn.declare_topic_consumer(
-                exchange_name=self._get_exchange(target),
-                topic='%s.%s' % (target.topic, priority),
-                callback=listener, queue_name=pool)
         return listener
 
     def cleanup(self):
