@@ -19,7 +19,8 @@ class RPCDispatcher(object):
         self.endpoints = endpoints
 
     def _do_dispatch(self, endpoint, method, ctxt, args):
-        """return dict
+        """NOTE: Return dict just fine
+        The Max deep is jsonutils.MAX_DEEP - 1
         """
         if endpoint:
             return self.manager.call_endpoint(endpoint, method, ctxt, args)
@@ -41,12 +42,12 @@ class RPCDispatcher(object):
         ctxt = incoming.ctxt
         message = incoming.message
         method = message.get('method', None)
+        if not method.startswith('rpc_'):
+            method = 'rpc_%(method)s' % {'method': method}
         args = message.get('args', {})
         namespace = message.get('namespace')
         try:
             if namespace == self.manager.namespace:
-                if not method.startswith('rpc_'):
-                    method = 'rpc_%(method)s' % {'method': method}
                 if hasattr(self.manager, method):
                     incoming.reply(self._do_dispatch(None, method, ctxt, args))
                     return

@@ -217,6 +217,7 @@ class RabbitDriver(object):
               notify=False, retry=None):
         context = ctxt
         msg = message
+        # Set namespace for dispatcher
         msg.update({'namespace': target.namespace})
         if wait_for_reply:
             msg_id = uuid.uuid4().hex
@@ -282,9 +283,9 @@ class RabbitDriver(object):
         conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
         listener = poller.AMQPListener(self, conn)
         for target in targets:
-            # conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
-            #                             topic=target.topic,
-            #                             callback=listener)
+            conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
+                                        topic=target.topic,
+                                        callback=listener)
             conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
                                         topic='%s.%s' % (target.topic,
                                                          target.server),
