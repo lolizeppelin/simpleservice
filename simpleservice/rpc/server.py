@@ -174,7 +174,6 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
     """
     def __init__(self, rpcdriver, dispatcher):
         self.conf = rpcdriver.conf
-        self.conf.register_opts(config.server_opts)
         self.rpcdriver = rpcdriver
         self.dispatcher = dispatcher
         self.listener = None
@@ -252,11 +251,11 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         pass
 
 
-@singleton
 class RpcConnection(object):
 
     def __init__(self, manager, endpoints):
-        self.rpcserver = MessageHandlingService(rpcdriver=RabbitDriver(CONF),
+        rpcserver = RabbitDriver(CONF)
+        self.rpcserver = MessageHandlingService(rpcdriver=rpcserver,
                                                 dispatcher=RPCDispatcher(manager,
                                                                          endpoints)
                                                 )
