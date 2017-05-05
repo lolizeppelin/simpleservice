@@ -37,6 +37,7 @@ from simpleutil.utils.lockutils import PriorityLock
 
 from simpleutil.log import log as logging
 
+from simpleservice.rpc.driver.message import RabbitMessage
 from simpleservice.rpc.driver import common as rpc_common
 from simpleservice.rpc.driver import exceptions
 
@@ -53,22 +54,6 @@ def _get_queue_arguments(rabbit_ha_queues, rabbit_queue_ttl):
     if rabbit_queue_ttl > 0:
         args['x-expires'] = rabbit_queue_ttl * 1000
     return args
-
-
-class RabbitMessage(dict):
-    def __init__(self, raw_message):
-        super(RabbitMessage, self).__init__(
-            rpc_common.deserialize_msg(raw_message.payload))
-        LOG.trace('RabbitMessage.Init: message %s', self)
-        self._raw_message = raw_message
-
-    def acknowledge(self):
-        LOG.trace('RabbitMessage.acknowledge: message %s', self)
-        self._raw_message.ack()
-
-    def requeue(self):
-        LOG.trace('RabbitMessage.requeue: message %s', self)
-        self._raw_message.requeue()
 
 
 class Consumer(object):
@@ -144,10 +129,12 @@ class Consumer(object):
         """Call callback with deserialized message.
         Messages that are processed and ack'ed.
         """
+        # message is amqp.basic_message.Message
         m2p = getattr(self.queue.channel, 'message_to_python', None)
         if m2p:
             message = m2p(message)
         try:
+            # message is kombu.transport.pyamqp.Message after message_to_python
             self.callback(RabbitMessage(message))
         except Exception:
             LOG.exception("Failed to process message"
@@ -783,6 +770,7 @@ class Connection(object):
             # with requirement kombu >=3.0.25
             # producer.publish(msg, expiration=self._get_expiration(timeout),
             producer.publish(msg, expiration=int(timeout * 1000),
+                             # Json only
                              content_type='application/json',
                              content_encoding = 'utf-8',
                              compression=self.kombu_compression)
