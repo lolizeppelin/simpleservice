@@ -16,7 +16,10 @@ from simpleservice.rpc.driver import poller
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver import common as rpc_common
 
-from simpleservice.rpc.driver.config import *
+from simpleservice.rpc.driver.config import rabbit_group
+from simpleservice.rpc.driver.config import base_opts
+from simpleservice.rpc.driver.config import rabbit_opts
+from simpleservice.rpc.driver.config import amqp_opts
 
 CONF = cfg.CONF
 
@@ -99,6 +102,7 @@ class ReplyWaiter(object):
                 LOG.exception("Failed to process incoming message, retrying...")
 
     def __call__(self, message):
+        # This message is simpleservice.rpc.driver.message.RabbitMessage
         message.acknowledge()
         incoming_msg_id = message.pop('_msg_id', None)
         if message.get('ending'):

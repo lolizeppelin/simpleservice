@@ -18,10 +18,11 @@ class ManagerBase(object):
 
     @abc.abstractmethod
     def periodic_tasks(self):
-        pass
+        return []
 
     @abc.abstractmethod
     def initialize_service_hook(self, launcherpcservice):
+        # check endpoint here
         pass
 
     def call_endpoint(self, endpoint, method, ctxt, args):

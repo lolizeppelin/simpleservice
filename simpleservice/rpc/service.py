@@ -34,14 +34,16 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.endpoints = []
 
         manager_class = importutils.import_class(manager)
-        self.manager = manager_class(host=CONF.host, *args, **kwargs)
+        self.manager = manager_class(*args, **kwargs)
 
         for endpoint_name in endpoints:
-            self.endpoints.append(importutils.import_class(endpoint_name)(host=CONF.host, *args, **kwargs))
+            try:
+                self.endpoints.append(importutils.import_class(endpoint_name)(*args, **kwargs))
+            except Exception:
+                raise RuntimeError('Init endpoint catch error')
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
         LauncheServiceBase.__init__(self, self.binary)
-        # super(LauncheRpcServiceBase, self).__init__(host, topic, endpoints=self.endpoints)
 
     def start(self):
         self.manager.init_host()
