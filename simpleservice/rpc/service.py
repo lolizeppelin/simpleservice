@@ -1,5 +1,3 @@
-import random
-
 from simpleutil.utils import importutils
 from simpleutil.utils import singleton
 
@@ -121,6 +119,11 @@ class RPCClientBase(object):
         # except driver_base.TransportDriverError as ex:
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
+
+    def broadcast(self, target, ctxt, msg):
+        broadtarget = target(**target.to_dict())
+        broadtarget.topic = '%s.*' % broadtarget.topic
+        self.cast(broadtarget, ctxt, msg)
 
     def call(self, target, ctxt, msg, timeout=None):
         if target.fanout:
