@@ -32,7 +32,7 @@ class ServerWrapper(object):
             launcher.launch_service(self.server)
 
 
-def launch(servers, user, group):
+def launch(servers, user='root', group='root'):
     if max([server.workers for server in servers]) > 1:
         launcher = ProcessLauncher(CONF)
     else:
