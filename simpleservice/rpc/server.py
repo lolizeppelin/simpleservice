@@ -246,7 +246,7 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
 
     def _submit_work(self, callback):
         if callback:
-            th = self._work_executor.add_thread(callback.run)
+            th = self._work_pool.add_thread(callback.run)
             th.link(callback.done)
         # fut.add_done_callback(lambda f: callback.done())
 
