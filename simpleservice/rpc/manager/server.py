@@ -34,7 +34,6 @@ class ServerManager(ManagerBase):
     def full(self):
         return False
 
-    def rpc_show(self, ctxt, **kwargs):
-        print ctxt
-        print kwargs
+    def rpc_show(self, ctxt, args):
+        print 'get rpc show', ctxt, args
         return {'ret': 'rpc show success'}
