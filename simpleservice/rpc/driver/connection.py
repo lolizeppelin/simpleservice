@@ -542,7 +542,7 @@ class Connection(object):
     def _heartbeat_start(self):
         if self._heartbeat_supported_and_enabled():
             self._heartbeat_exit_event = False
-            self._heartbeat_thread = eventlet.spawn_n(self._heartbeat_thread_job)[1]
+            self._heartbeat_thread = eventlet.spawn_n(self._heartbeat_thread_job)
             # To sure _heartbeat_thread start first and
             # Be the first one get _connection_lock
             # See doc of PriorityLock
@@ -766,7 +766,7 @@ class Connection(object):
             # version 3.0.25, so do conversion according to kombu version.
             # with requirement kombu >=3.0.25
             # producer.publish(msg, expiration=self._get_expiration(timeout),
-            producer.publish(msg, expiration=int(timeout * 1000),
+            producer.publish(msg, expiration=int(timeout * 1000) if timeout is not None else None,
                              # Json only
                              content_type='application/json',
                              content_encoding = 'utf-8',
