@@ -198,6 +198,7 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         # except driver_base.TransportDriverError as ex:
         #     raise ServerListenError(self.target, ex)
         targets = [endpoint.target for endpoint in self.dispatcher.endpoints]
+        targets.insert(0, self.dispatcher.manager.target)
         self.listener = self.rpcdriver.listen(targets)
         self._work_pool = \
             threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
