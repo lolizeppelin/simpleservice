@@ -20,10 +20,10 @@ rabbit_opts = [
                help='The RabbitMQ password.',
                secret=True),
     cfg.StrOpt('rabbit_virtual_host',
-               default='simpleutil',
+               default='simpleservice',
                help='The RabbitMQ virtual host.'),
     cfg.StrOpt('exchange',
-               default='simpleutil',
+               default='simpleservice',
                help='The default exchange under which topics are scoped. May '
                     'be overridden by an exchange name specified in the '
                     'transport_url option.'),
@@ -137,6 +137,6 @@ amqp_opts = [
 base_opts = [
     cfg.IntOpt('rabbit_conn_pool_size',
                default=30,
-               help='Size of rabbit RPC connection pool.'),
+               help='Size of rabbit RPC connection pool for send rpc request.'),
 ]
 rabbit_group = cfg.OptGroup(name='rabbit', title='RabbitMQ driver options')
