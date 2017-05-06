@@ -23,6 +23,8 @@ if os.name == 'nt':
     amqp.transport.KNOWN_TCP_OPTS = list(amqp.transport.KNOWN_TCP_OPTS)
     amqp.transport.KNOWN_TCP_OPTS.remove(opt_name)
     amqp.transport.KNOWN_TCP_OPTS = tuple(amqp.transport.KNOWN_TCP_OPTS)
+    # import eventlet.debug
+    # eventlet.debug.hub_prevent_multiple_readers(False)
 else:
     eventlet.monkey_patch()
     sys.setdefaultencoding('utf-8')
