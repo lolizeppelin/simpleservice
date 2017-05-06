@@ -350,16 +350,13 @@ class Connection(object):
         def on_error(exc, interval):
             LOG.debug("Received recoverable error from kombu:",
                       exc_info=True)
-
             recoverable_error_callback and recoverable_error_callback(exc)
-
             interval = (self.kombu_reconnect_delay + interval
                         if self.kombu_reconnect_delay > 0
                         else interval)
 
             info = {'err_str': exc, 'sleep_time': interval}
             info.update(self.connection.info())
-
             if 'Socket closed' in six.text_type(exc):
                 LOG.error('AMQP server %(hostname)s:%(port)s closed'
                           'the connection. Check login credentials:%(err_str)s' % info)
