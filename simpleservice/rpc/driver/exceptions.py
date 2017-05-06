@@ -148,12 +148,21 @@ class RPCDispatcherError(MessagingServerError):
     """A base class for all RPC dispatcher exceptions."""
 
 
-class NoSuchMethod(RPCDispatcherError, AttributeError):
+class EndpointNoSuchMethod(RPCDispatcherError, AttributeError):
+    """Raised if there is no endpoint which exposes the requested method."""
+
+    def __init__(self, namespace, method):
+        msg = "Endpoint %s does not support RPC method %s" % (namespace, method)
+        super(EndpointNoSuchMethod, self).__init__(msg)
+        self.method = method
+
+
+class ManagerNoSuchMethod(RPCDispatcherError, AttributeError):
     """Raised if there is no endpoint which exposes the requested method."""
 
     def __init__(self, method):
-        msg = "Endpoint does not support RPC method %s" % method
-        super(NoSuchMethod, self).__init__(msg)
+        msg = "Manager does not support RPC method %s" % method
+        super(ManagerNoSuchMethod, self).__init__(msg)
         self.method = method
 
 

@@ -51,6 +51,8 @@ class RPCDispatcher(object):
                 if hasattr(self.manager, method):
                     incoming.reply(self._do_dispatch(None, method, ctxt, args))
                     return
+                else:
+                    raise exceptions.ManagerNoSuchMethod(method)
             for endpoint in self.endpoints:
                 if namespace != endpoint.namespace:
                     continue
@@ -58,7 +60,7 @@ class RPCDispatcher(object):
                     incoming.reply(self._do_dispatch(endpoint, method, ctxt, args))
                     return
                 else:
-                    raise exceptions.NoSuchMethod(method)
+                    raise exceptions.EndpointNoSuchMethod(endpoint.namespace, method)
             raise exceptions.UnsupportedNamespace(namespace, method=method)
         except exceptions.ExpectedException as e:
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
