@@ -3,6 +3,7 @@ from simpleutil.log import log
 
 CONF = cfg.CONF
 
+log.register_options(CONF)
 
 DEFALUT_OPTIONS = [
     cfg.StrOpt('state_path',
@@ -13,14 +14,11 @@ DEFALUT_OPTIONS = [
 
 
 def set_default_for_default_log_levels(extra_log_level_defaults):
-
-    log.register_options(CONF)
     log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
+
 
 def configure(conf=None):
     if conf is None:
         conf = CONF
-
     for option in DEFALUT_OPTIONS:
         conf.register_opt(option)
-
