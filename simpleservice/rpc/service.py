@@ -1,5 +1,4 @@
 from simpleutil.utils import importutils
-from simpleutil.utils import singleton
 
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
@@ -11,6 +10,10 @@ from simpleservice.rpc.server import RpcConnection
 from simpleservice.rpc.config import client_opts
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
+
+from simpleservice.rpc.config import server_opts
+
+from simpleservice.rpc.manager.base import ManagerBase
 
 
 CONF = cfg.CONF
@@ -25,35 +28,37 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, binary, topic, manager, endpoints,
+    def __init__(self, manager, endpoints=None,
                  *args, **kwargs):
-
-        self.binary = binary
+        self.conf = CONF
+        self.conf.register_opts(server_opts)
         self.endpoints = []
-
-        manager_class = importutils.import_class(manager)
-        self.manager = manager_class(*args, **kwargs)
-
-        for endpoint_name in endpoints:
-            try:
-                self.endpoints.append(importutils.import_class(endpoint_name)(*args, **kwargs))
-            except Exception:
-                raise RuntimeError('Init endpoint catch error')
+        if isinstance(manager, basestring):
+            self.manager = importutils.import_class(manager)(*args, **kwargs)
+        elif isinstance(manager, ManagerBase):
+            self.manager = manager
+        else:
+            raise RuntimeError('Manager type error')
+        if endpoints:
+            for endpoint_name in endpoints:
+                try:
+                    self.endpoints.append(importutils.import_class(endpoint_name)(*args, **kwargs))
+                except Exception:
+                    raise RuntimeError('Init endpoint %(endpoint)s catch error' % {'endpoint': endpoint_name})
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
-        LauncheServiceBase.__init__(self, self.binary)
+        LauncheServiceBase.__init__(self, self.manager.namespace)
 
     def start(self):
         self.manager.init_host()
-
         self.conn = RpcConnection(self.manager, self.endpoints)
         LOG.debug("Creating Consumer connection for Service %s",
-                  self.topic)
+                  self.manager.target.topic)
         self.manager.initialize_service_hook(self)
         self.conn.start()
 
         # task must callable
-        for task in self.manager.periodic_tasks:
+        for task in self.manager.periodic_tasks():
             periodic = loopingcall.FixedIntervalLoopingCall(task)
             periodic.start(interval=task.periodic_interval,
                            initial_delay=task.initial_delay)
@@ -93,8 +98,10 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             except Exception:
                 LOG.exception("Exception occurs when waiting for timer")
 
+    def reset(self):
+        pass
 
-@singleton
+
 class RPCClientBase(object):
 
     def __init__(self, timeout=None, retry=None):
@@ -131,7 +138,7 @@ class RPCClientBase(object):
         timeout = timeout or self.timeout
         try:
             return self.rpcdriver.send(target, ctxt, msg,
-                                         wait_for_reply=True, timeout=timeout,
-                                         retry=self.retry)
+                                       wait_for_reply=True, timeout=timeout,
+                                       retry=self.retry)
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
