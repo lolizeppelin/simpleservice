@@ -767,9 +767,6 @@ class Connection(object):
             # with requirement kombu >=3.0.25
             # producer.publish(msg, expiration=self._get_expiration(timeout),
             producer.publish(msg, expiration=int(timeout * 1000) if timeout is not None else None,
-                             # Json only
-                             content_type='application/json',
-                             content_encoding = 'utf-8',
                              compression=self.kombu_compression)
 
     # List of notification queue declared on the channel to avoid

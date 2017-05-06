@@ -35,7 +35,8 @@ def serialize_msg(raw_msg):
 
 
 def deserialize_msg(msg):
-    if not isinstance(msg, dict):
+    # if not isinstance(msg, dict):
+    if isinstance(msg, dict):
         # See #2 above.
         return msg
     return jsonutils.loads(msg)
