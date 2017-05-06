@@ -178,7 +178,8 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         self.dispatcher = dispatcher
         self.listener = None
         self._work_pool = None
-        self._poll_pool = None
+        self.ioloop = None
+        # self._poll_pool = None
         self._started = False
         super(MessageHandlingService, self).__init__()
 
@@ -200,9 +201,10 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         self.listener = self.rpcdriver.listen(targets)
         self._work_pool = \
             threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
-        self._poll_pool = \
-            threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
-        eventlet.spawn_n(self._poll_loop)
+        # self._poll_pool = \
+        #     threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
+        # eventlet.spawn_n(self._poll_loop)
+        self.ioloop = eventlet.spawn(self._runner)
         LOG.info("%(class)s started" % {'class': self.__class__.__name__})
 
     @ordered(after='start')
@@ -226,20 +228,21 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
     @ordered(after='stop')
     def wait(self):
         # wait all self.runner thread finish
-        self._poll_pool.wait()
+        # self._poll_pool.wait()
+        self.ioloop.wait()
         # wait all self._submit_work thread finish
         self._work_pool.wait()
         self.listener.cleanup()
 
-    def _poll_loop(self):
-        LOG.debug("Starting _poll_loop")
-        while True:
-            # Avoid spawning a self._runner after stop
-            self._poll_pool.pool.sem.acquire()
-            self._poll_pool.pool.sem.release()
-            if self._started:
-                self._poll_pool.add_thread_n(self._runner)
-        LOG.debug("End _poll_loop")
+    # def _poll_loop(self):
+    #     LOG.debug("Starting _poll_loop")
+    #     while True:
+    #         # Avoid spawning a self._runner after stop
+    #         self._poll_pool.pool.sem.acquire()
+    #         self._poll_pool.pool.sem.release()
+    #         if self._started:
+    #             self._poll_pool.add_thread_n(self._runner)
+    #     LOG.debug("End _poll_loop")
 
     def _submit_work(self, callback):
         if callback:
