@@ -4,30 +4,31 @@ import abc
 @six.add_metaclass(abc.ABCMeta)
 class ManagerBase(object):
 
-    @abc.abstractmethod
+    def __init__(self, namespace):
+        self.namespace = namespace
+
     def init_host(self):
         pass
 
-    @abc.abstractmethod
     def after_start(self):
         pass
 
-    @abc.abstractmethod
     def after_stop(self):
         pass
 
-    @abc.abstractmethod
     def periodic_tasks(self):
         return []
 
-    @abc.abstractmethod
-    def initialize_service_hook(self, launcherpcservice):
+    def initialize_service_hook(self, rpcservice):
         # check endpoint here
         pass
 
+    @abc.abstractmethod
     def call_endpoint(self, endpoint, method, ctxt, args):
-        func = getattr(endpoint, method)
-        return func(ctxt, args)
+        # func = getattr(endpoint, method)
+        # return func(ctxt, args)
+        pass
 
+    @abc.abstractmethod
     def full(self):
-        return False
+        pass
