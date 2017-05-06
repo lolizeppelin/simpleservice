@@ -175,7 +175,6 @@ class RabbitDriver(object):
 
         self.prefetch_size = (
             conf.rabbit.rabbit_qos_prefetch_count)
-
         connection_pool = connection.ConnectionPool(
             conf, conf.rabbit.rabbit_conn_pool_size)
         self.conf = conf
