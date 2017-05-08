@@ -198,12 +198,14 @@ class RabbitDriver(object):
     def _init_waiter(self):
         if self._reply_q is None:
             with self._reply_q_lock:
-                reply_q = 'reply_' + uuid.uuid4().hex
-                conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
-                self._waiter = ReplyWaiter(reply_q, conn,
-                                           self._allowed_remote_exmods)
-                self._reply_q = reply_q
-                self._reply_q_conn = conn
+                # double check with lock
+                if self._reply_q is None:
+                    reply_q = 'reply_' + uuid.uuid4().hex
+                    conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
+                    self._waiter = ReplyWaiter(reply_q, conn,
+                                               self._allowed_remote_exmods)
+                    self._reply_q = reply_q
+                    self._reply_q_conn = conn
 
     def _get_reply_q(self):
         if self._reply_q is None:
