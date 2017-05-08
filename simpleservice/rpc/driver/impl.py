@@ -58,7 +58,9 @@ class ReplyWaiters(object):
             queue.put(message_data)
 
     def add(self, msg_id):
-        self._queues[msg_id] = moves.queue.Queue()
+        # Do not use moves.queue.Queue
+        # self._queues[msg_id] = moves.queue.Queue()
+        self._queues[msg_id] = eventlet.queue.Queue()
         if len(self._queues) > self._wrn_threshold:
             LOG.warning('Number of call queues is greater than warning '
                         'threshold: %(old_threshold)s. There could be a '
