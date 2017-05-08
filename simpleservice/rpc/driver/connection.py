@@ -94,7 +94,6 @@ class Consumer(object):
             auto_delete=self.queue_auto_delete,
             routing_key=self.routing_key,
             queue_arguments=self.queue_arguments)
-
         try:
             LOG.trace('ConsumerBase.declare: '
                       'queue %s', self.queue_name)
@@ -116,7 +115,6 @@ class Consumer(object):
         Connection.consume() will process the messages,
         calling the appropriate callback.
         """
-
         self.queue.consume(callback=self._callback,
                            consumer_tag=six.text_type(tag),
                            nowait=self.nowait)
