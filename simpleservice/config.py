@@ -20,5 +20,4 @@ def set_default_for_default_log_levels(extra_log_level_defaults):
 def configure(conf=None):
     if conf is None:
         conf = CONF
-    for option in DEFALUT_OPTIONS:
-        conf.register_opt(option)
+    conf.register_opts(DEFALUT_OPTIONS)
