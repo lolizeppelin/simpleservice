@@ -19,7 +19,7 @@ setup(
     # kombu>=3.0.25否则timeout参数有问题
     install_requires=('netaddr>=0.7.5', 'eventlet>=0.15.2', 'routes>=1.12.3'  'routes<2.0',
                       'WebOb'>='1.2.3', 'Paste', 'PasteDeploy>=1.5.0', 'kombu>=3.0.25',
-                      'six>=1.9.0', 'simpleutil>=1.0'),
+                      'six>=1.9.0', 'simpleutil>=1.0', 'sqlalchemy'),
     name='simpleservice',
     version=__version__,
     description='a simple copy of service from openstack',
@@ -43,5 +43,5 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-    ]
+    ], requires=['sqlalchemy']
 )

@@ -6,14 +6,12 @@ import eventlet
 from eventlet.semaphore import Semaphore
 
 from simpleservice.base import ServiceBase
-from simpleservice.rpc import config
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.dispatcher import RPCDispatcher
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.utils import lockutils
-from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
 from simpleutil.utils import timeutils
 

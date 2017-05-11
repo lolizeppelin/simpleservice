@@ -16,7 +16,7 @@ if os.name == 'nt':
     eventlet.monkey_patch(os=False, thread=False)
     import amqp.transport
     import socket
-    # Remove TCP_MAXSEG, or,  koumbu will raise socket error
+    # Remove TCP_MAXSEG, Avoid koumbu raise socket error on windows
     opt_name = 'TCP_MAXSEG'
     opt_id = getattr(socket, 'TCP_MAXSEG')
     amqp.transport.TCP_OPTS.remove(opt_id)

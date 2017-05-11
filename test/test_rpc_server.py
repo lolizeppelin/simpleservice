@@ -1,25 +1,16 @@
-
-from simpleservice.rpc.service import LauncheRpcServiceBase
-
-from simpleservice.rpc.manager import server
-
-from simpleservice.server import launch
-from simpleservice.server import ServerWrapper
-
-
-import os
-
-import logging
-from simpleutil.config import cfg
-from simpleutil.log import log
+import logging as default_logging
 
 from simpleservice import config
+from simpleservice.rpc.plugin.manager import server
+from simpleservice.rpc.service import LauncheRpcServiceBase
 from simpleservice.server import ServerWrapper
 from simpleservice.server import launch
+from simpleutil.config import cfg
+from simpleutil.log import log as logging
 
 
 CONF = cfg.CONF
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 config_file =  'C:\\Users\\loliz_000\\Desktop\\etc\\agent.conf'
@@ -33,8 +24,8 @@ CONF(project='agent', default_config_files=config_files)
 config.configure()
 agent_group = cfg.OptGroup(name='agent', title='agent options')
 CONF.register_group(agent_group)
-log.setup(CONF, 'agent')
-logging.captureWarnings(True)
+logging.setup(CONF, 'agent')
+default_logging.captureWarnings(True)
 
 
 servers = []

@@ -13,7 +13,7 @@ from simpleservice.rpc.driver.impl import RabbitDriver
 
 from simpleservice.rpc.config import server_opts
 
-from simpleservice.rpc.manager.base import ManagerBase
+from simpleservice.rpc.plugin import ManagerBase
 
 
 CONF = cfg.CONF
