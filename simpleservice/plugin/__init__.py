@@ -1,0 +1,1 @@
+from simpleservice.plugin.manager.rpc.base import ManagerBase

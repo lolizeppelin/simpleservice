@@ -10,7 +10,7 @@ from simpleservice import config
 
 from simpleservice.rpc.service import RPCClientBase
 from simpleservice.rpc.target import Target
-from simpleservice.rpc.common import AGENT
+from simpleservice.plugin.manager.common import AGENT
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)

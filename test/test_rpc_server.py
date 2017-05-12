@@ -1,7 +1,7 @@
 import logging as default_logging
 
 from simpleservice import config
-from simpleservice.rpc.plugin.manager import server
+from simpleservice.plugin.plugin.manager import server
 from simpleservice.rpc.service import LauncheRpcServiceBase
 from simpleservice.server import ServerWrapper
 from simpleservice.server import launch

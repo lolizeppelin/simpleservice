@@ -104,7 +104,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
     if 'id' not in sort_keys:
         # TODO(justinsb): If this ever gives a false-positive, check
         # the actual primary key, rather than assuming its id
-        LOG.warning(_LW('Id not in sort_keys; is sort_keys unique?'))
+        LOG.warning('Id not in sort_keys; is sort_keys unique?')
 
     assert(not (sort_dir and sort_dirs))
 
@@ -123,7 +123,7 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
         try:
             inspect(model).all_orm_descriptors[current_sort_key]
         except KeyError:
-            raise exception.InvalidSortKey(current_sort_key)
+            raise exceptions.InvalidSortKey(current_sort_key)
         else:
             sort_key_attr = getattr(model, current_sort_key)
 
@@ -140,8 +140,8 @@ def paginate_query(query, model, limit, sort_keys, marker=None,
                 "nullslast": sort_key_attr.isnot(None),
             }[null_sort_dir]
         except KeyError:
-            raise ValueError(_("Unknown sort direction, "
-                               "must be one of: %s") %
+            raise ValueError("Unknown sort direction, "
+                             "must be one of: %s" %
                              ", ".join(_VALID_SORT_DIR))
 
         if null_order_by_stmt is not None:
@@ -195,8 +195,8 @@ def to_list(x, default=None):
 
 def _read_deleted_filter(query, db_model, deleted):
     if 'deleted' not in db_model.__table__.columns:
-        raise ValueError(_("There is no `deleted` column in `%s` table. "
-                           "Project doesn't use soft-deleted feature.")
+        raise ValueError("There is no `deleted` column in `%s` table. "
+                         "Project doesn't use soft-deleted feature."
                          % db_model.__name__)
 
     default_deleted_value = db_model.__table__.c.deleted.default.arg
@@ -209,7 +209,7 @@ def _read_deleted_filter(query, db_model, deleted):
 
 def _project_filter(query, db_model, project_id):
     if 'project_id' not in db_model.__table__.columns:
-        raise ValueError(_("There is no `project_id` column in `%s` table.")
+        raise ValueError("There is no `project_id` column in `%s` table."
                          % db_model.__name__)
 
     if isinstance(project_id, (list, tuple, set)):
@@ -321,7 +321,7 @@ def model_query(model, session, args=None, **kwargs):
     """
 
     if not issubclass(model, models.ModelBase):
-        raise TypeError(_("model should be a subclass of ModelBase"))
+        raise TypeError("model should be a subclass of ModelBase")
 
     query = session.query(model) if not args else session.query(*args)
     if 'deleted' in kwargs:
@@ -391,16 +391,15 @@ def _get_not_supported_column(col_name_col_instance, column_name):
     try:
         column = col_name_col_instance[column_name]
     except KeyError:
-        msg = _("Please specify column %s in col_name_col_instance "
-                "param. It is required because column has unsupported "
-                "type by SQLite.")
-        raise exception.ColumnError(msg % column_name)
+        msg = "Please specify column %s in col_name_col_instance param. " \
+              "It is required because column has unsupported type by SQLite."
+        raise exceptions.ColumnError(msg % column_name)
 
     if not isinstance(column, Column):
-        msg = _("col_name_col_instance param has wrong type of "
-                "column instance for column %s It should be instance "
-                "of sqlalchemy.Column.")
-        raise exception.ColumnError(msg % column_name)
+        msg = "col_name_col_instance param has wrong type of " \
+              "column instance for column %s It should be instance " \
+              "of sqlalchemy.Column."
+        raise exceptions.ColumnError(msg % column_name)
     return column
 
 
@@ -441,8 +440,8 @@ def drop_old_duplicate_entries_from_table(migrate_engine, table_name,
         rows_to_delete_select = sqlalchemy.sql.select(
             [table.c.id]).where(delete_condition)
         for row in migrate_engine.execute(rows_to_delete_select).fetchall():
-            LOG.info(_LI("Deleting duplicated row with id: %(id)s from table: "
-                         "%(table)s"), dict(id=row[0], table=table_name))
+            LOG.info("Deleting duplicated row with id: %(id)s from table: "
+                     "%(table)s", dict(id=row[0], table=table_name))
 
         if use_soft_delete:
             delete_statement = table.update().\
@@ -462,7 +461,7 @@ def _get_default_deleted_value(table):
         return 0
     if isinstance(table.c.id.type, String):
         return ""
-    raise exception.ColumnError(_("Unsupported id columns type"))
+    raise exceptions.ColumnError("Unsupported id columns type")
 
 
 def _restore_indexes_on_deleted_columns(migrate_engine, table_name, indexes):

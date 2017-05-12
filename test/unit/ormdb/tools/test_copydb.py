@@ -15,7 +15,7 @@ logging.captureWarnings(True)
 
 src = {'host':'172.20.0.3',
        'port':3306,
-       'schema':'db_4',
+       'schema':'db_1',
        'user':'root',
        'passwd':'111111'}
 
