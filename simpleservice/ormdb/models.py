@@ -1,18 +1,7 @@
 import six
 
-from sqlalchemy import Column
-
 from sqlalchemy.orm import object_mapper
 from sqlalchemy.ext import declarative
-
-from sqlalchemy.dialects.mysql import BIGINT
-from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.dialects.mysql import DATETIME
-from sqlalchemy.dialects.mysql import BOOLEAN
-
-
-
-from simpleutil.utils import timeutils
 
 
 class ModelBase(six.Iterator):
@@ -109,24 +98,7 @@ class ModelIterator(six.Iterator):
         return n, getattr(self.model, n)
 
 
-class TimestampMixin(object):
-    created_at = Column(INTEGER(unsigned=True), default=lambda: int(timeutils.realnow()))
-    updated_at = Column(INTEGER(unsigned=True), onupdate=lambda: int(timeutils.realnow()))
-
-
-class SoftDeleteMixin(object):
-    deleted_at = Column(INTEGER(unsigned=True))
-    deleted = Column(BOOLEAN, default=0)
-
-    def soft_delete(self, session):
-        """Mark this object as deleted."""
-        self.deleted = self.id
-        self.deleted_at = int(timeutils.realnow())
-        self.save(session=session)
-
-
 class TableBase(ModelBase):
-
     __table_args__ = {'mysql_engine': 'InnoDB'}
 
     """Base class for Neutron Models."""
@@ -154,10 +126,5 @@ class TableBase(ModelBase):
                                                id(self), ', '.join(items))
 
 
-class __MyISAMTableBase(TableBase):
+class MyISAMTableBase(object):
     __table_args__ = {'mysql_engine': 'MyISAM'}
-
-
-TableBase = declarative.declarative_base(cls=TableBase)
-
-MyISAMTableBase = declarative.declarative_base(cls=__MyISAMTableBase)

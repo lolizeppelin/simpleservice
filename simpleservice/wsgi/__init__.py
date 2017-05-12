@@ -5,6 +5,7 @@ import webob.exc
 
 from simpleutil.log import log
 from simpleutil.utils import jsonutils
+from simpleutil.utils import uuidutils
 
 LOG = log.getLogger(__name__)
 
@@ -38,6 +39,9 @@ def controller_return_response(controller, faults=None, action_status=None):
     # @webob.dec.wsgify(RequestClass=Request)
     @webob.dec.wsgify()
     def resource(req):
+        if getattr(controller, 'ENV_REQUEST_ID'):
+            req_id = uuidutils.generate_uuid()
+            req.environ[controller.ENV_REQUEST_ID] = req_id
         # wsgi.Router的_dispatch通过match找到contorler
         # 在调用contorler(req)
         # 这里就是被调用的那个contorler

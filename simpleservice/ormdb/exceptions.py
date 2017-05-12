@@ -279,3 +279,7 @@ class OsloDBDeprecationWarning(DeprecationWarning):
         https://docs.python.org/2/library/warnings.html
 
     """
+
+
+class AcceptableError(DBError):
+    """error can be accepted"""
