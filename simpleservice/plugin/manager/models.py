@@ -5,6 +5,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.dialects.mysql import SMALLINT
 from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.dialects.mysql import BOOLEAN
 from sqlalchemy.dialects.mysql import LONGBLOB
 
@@ -120,12 +121,16 @@ class Agent(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True), nullable=True,
                          primary_key=True, autoincrement=True)
     host = sa.Column(VARCHAR(256), nullable=False)
-    # 0 not active, 1 active
-    status = sa.Column(BOOLEAN, nullable=False, default=1)
+    ipaddr = sa.Column(VARCHAR(15), nullable=False)
+    # 0 not active, 1 active  -1 mark delete
+    status = sa.Column(TINYINT, nullable=False, default=0)
+    # cpu number
+    cpu = sa.Column(VARCHAR(256), nullable=False)
+    # memory can be used
+    memory = sa.Column(VARCHAR(256), nullable=False)
+    # disk space can be used
     disk = sa.Column(VARCHAR(256), nullable=False)
     entiy = sa.Column(VARCHAR(256), nullable=False)
-    load = sa.Column(VARCHAR(256), nullable=False)
-    memory = sa.Column(VARCHAR(256), nullable=False)
     static_ports = sa.Column(VARCHAR(1024), nullable=True)
     dynamic_ports = sa.Column(VARCHAR(1024), nullable=True)
     ports = orm.relationship(AllocedPort, backref='agent', lazy='joined',
@@ -133,6 +138,51 @@ class Agent(ManagerTableBase):
     endpoints = orm.relationship(AgentEndpoint, backref='agent', lazy='select',
                                  cascade='delete,delete-orphan,save-update')
     __table_args__ = (
-            sa.UniqueConstraint('agent_id'),
+            sa.UniqueConstraint('host'),
+            sa.UniqueConstraint('ipaddr'),
             TableBase.__table_args__
+    )
+
+
+class AgentReportLog(ManagerTableBase):
+    """Table for recode agent status"""
+    agent_id = sa.Column(INTEGER(unsigned=True), nullable=True,
+                         primary_key=True, autoincrement=True)
+    report_time = sa.Column(INTEGER(unsigned=True), nullable=False)
+    # psutil.process_iter()
+    # status()
+    # num_fds()
+    # num_threads()  num_threads()
+    running = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    sleeping = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    fd_num = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    thread_num = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    # cpu info
+    # psutil.cpu_stats() ctx_switches interrupts soft_interrupts
+    context = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    interrupts = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    sinterrupts = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    # psutil.cpu_times() irq softirq user system nice iowait
+    irq = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    sirq = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    user = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
+    system = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
+    nice = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
+    iowait = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
+    # mem info
+    # psutil.virtual_memory() used cached  buffers free
+    used = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    cached = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    buffers = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    free = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    # network
+    # psutil.net_connections()  count(*)
+    syn = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    enable = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    closeing = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+
+    __table_args__ = (
+            sa.UniqueConstraint('agent_id'),
+            sa.Index('report_time_index', 'report_time'),
+            MyISAMTableBase.__table_args__
     )
