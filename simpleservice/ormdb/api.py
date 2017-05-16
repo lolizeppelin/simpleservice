@@ -4,6 +4,7 @@ import six
 
 from simpleutil.utils import excutils
 from simpleutil.utils import reflection
+from simpleutil.common.exceptions import InvalidArgument
 
 
 from simpleservice.ormdb import orm
@@ -147,7 +148,7 @@ class wrap_db_retry(object):
 
 
 class MysqlDriver(object):
-    def __init__(self, name , conf):
+    def __init__(self, name, conf):
         self._started = False
         self.conf = conf
         self.name = name
@@ -246,3 +247,22 @@ class MysqlDriver(object):
         if not self.started:
             self.start()
         return self._get_sessionmaker(read)(**kwargs)
+
+
+def model_query(session, model, filter=None):
+    """filter_args is can be a dict of model's attribte
+    or a callable function form return the args for query.filter
+    """
+    query = session.query(model)
+    if filter is not None:
+        if callable(filter):
+            query = query.filter(filter(model))
+        elif isinstance(filter, dict):
+            try:
+                query = query.filter(*[ model.__dict__[key] == filter[key] for key in filter])
+            except KeyError as e:
+                raise exceptions.ColumnError('No such attribute ~%(attribute)s~ in %(class)s class' %
+                                             {'attribute':e.message, 'class':model.__name__})
+        else:
+            raise InvalidArgument('filter for model_query')
+    return query

@@ -10,6 +10,7 @@ from sqlalchemy.dialects.mysql import BOOLEAN
 from sqlalchemy.dialects.mysql import LONGBLOB
 
 from simpleutil.utils import timeutils
+from simpleutil.utils import uuidutils
 
 from simpleservice.ormdb.models import TableBase
 from simpleservice.ormdb.models import MyISAMTableBase
@@ -53,19 +54,18 @@ class AgentRespone(ManagerTableBase):
 
 
 class WsgiRequest(ManagerTableBase):
-    request_id = sa.Column(VARCHAR(36),
+    request_id = sa.Column(VARCHAR(36), default=uuidutils.generate_uuid,
                            nullable=False, primary_key=True)
     request_time = sa.Column(INTEGER(unsigned=True),
                              default=int(timeutils.realnow()), nullable=False)
     # request shoul finish before this time
     deadline = sa.Column(INTEGER(unsigned=True),
-                         default=int(timeutils.realnow()), nullable=False)
+                         default=int(timeutils.realnow()) + 10, nullable=False)
     # async resopne checker id, means scheduled timer server id
     async_checker = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
     # if request finish
     status = sa.Column(BOOLEAN, nullable=False, default=0)
     # number of agent not resopne
-    unrespone = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
     result = sa.Column(VARCHAR(manager_common.MAX_REQUEST_RESULT),
                        nullable=False, default='waiting respone')
     # AgentRespone list
@@ -98,84 +98,62 @@ class AgentResponeBackLog(ManagerTableBase):
 class AgentEndpoint(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
-                         nullable=True,
+                         nullable=False,
                          primary_key=True)
     endpoint = sa.Column(VARCHAR(manager_common.MAX_ENDPOINT_NAME_SIZE),
                          nullable=False, primary_key=True)
     __table_args__ = (
             sa.UniqueConstraint('agent_id'),
-            TableBase.__table_args__
+            MyISAMTableBase.__table_args__
     )
 
 
 class AllocedPort(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
-                         nullable=True,
+                         nullable=False,
                          primary_key=True)
     port = sa.Column(SMALLINT(unsigned=True), nullable=False, primary_key=True)
-    dynamic = sa.Column(BOOLEAN, nullable=False)
-
-
-class Agent(ManagerTableBase):
-    agent_id = sa.Column(INTEGER(unsigned=True), nullable=True,
-                         primary_key=True, autoincrement=True)
-    host = sa.Column(VARCHAR(256), nullable=False)
-    ipaddr = sa.Column(VARCHAR(15), nullable=False)
-    # 0 not active, 1 active  -1 mark delete
-    status = sa.Column(TINYINT, nullable=False, default=0)
-    # cpu number
-    cpu = sa.Column(VARCHAR(256), nullable=False)
-    # memory can be used
-    memory = sa.Column(VARCHAR(256), nullable=False)
-    # disk space can be used
-    disk = sa.Column(VARCHAR(256), nullable=False)
-    entiy = sa.Column(VARCHAR(256), nullable=False)
-    static_ports = sa.Column(VARCHAR(1024), nullable=True)
-    dynamic_ports = sa.Column(VARCHAR(1024), nullable=True)
-    ports = orm.relationship(AllocedPort, backref='agent', lazy='joined',
-                             cascade='delete,delete-orphan,save-update')
-    endpoints = orm.relationship(AgentEndpoint, backref='agent', lazy='select',
-                                 cascade='delete,delete-orphan,save-update')
-    __table_args__ = (
-            sa.UniqueConstraint('host'),
-            sa.UniqueConstraint('ipaddr'),
-            TableBase.__table_args__
-    )
+    endpoint = sa.Column(VARCHAR(manager_common.MAX_ENDPOINT_NAME_SIZE),
+                         nullable=False, primary_key=True)
+    dynamic = sa.Column(BOOLEAN, default=0, nullable=False)
+    port_desc = sa.Column(VARCHAR(256))
 
 
 class AgentReportLog(ManagerTableBase):
     """Table for recode agent status"""
-    agent_id = sa.Column(INTEGER(unsigned=True), nullable=True,
-                         primary_key=True, autoincrement=True)
+    agent_id = sa.Column(INTEGER(unsigned=True),
+                         sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
+                         nullable=False, primary_key=True)
     report_time = sa.Column(INTEGER(unsigned=True), nullable=False)
     # psutil.process_iter()
     # status()
     # num_fds()
     # num_threads()  num_threads()
-    running = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    sleeping = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    fd_num = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    thread_num = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    # cpu info
+    running = sa.Column(INTEGER(unsigned=True), nullable=False)
+    sleeping = sa.Column(INTEGER(unsigned=True), nullable=False)
+    num_fds = sa.Column(INTEGER(unsigned=True), nullable=False)
+    num_threads = sa.Column(INTEGER(unsigned=True), nullable=False)
+    # cpu info  count
     # psutil.cpu_stats() ctx_switches interrupts soft_interrupts
-    context = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    interrupts = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    sinterrupts = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    context = sa.Column(INTEGER(unsigned=True), nullable=False)
+    interrupts = sa.Column(INTEGER(unsigned=True), nullable=False)
+    sinterrupts = sa.Column(INTEGER(unsigned=True), nullable=False)
     # psutil.cpu_times() irq softirq user system nice iowait
-    irq = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    sirq = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
-    user = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
-    system = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
-    nice = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
-    iowait = sa.Column(TINYINT(unsigned=True), default=0, nullable=False)
-    # mem info
+    irq = sa.Column(INTEGER(unsigned=True), nullable=False)
+    sirq = sa.Column(INTEGER(unsigned=True), nullable=False)
+    # percent of cpu time
+    user = sa.Column(TINYINT(unsigned=True), nullable=False)
+    system = sa.Column(TINYINT(unsigned=True), nullable=False)
+    nice = sa.Column(TINYINT(unsigned=True), nullable=False)
+    iowait = sa.Column(TINYINT(unsigned=True), nullable=False)
+    # mem info  MB
     # psutil.virtual_memory() used cached  buffers free
-    used = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    cached = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    buffers = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    free = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    # network
+    used = sa.Column(INTEGER(unsigned=True), nullable=False)
+    cached = sa.Column(INTEGER(unsigned=True), nullable=False)
+    buffers = sa.Column(INTEGER(unsigned=True), nullable=False)
+    free = sa.Column(INTEGER(unsigned=True), nullable=False)
+    # network  count
     # psutil.net_connections()  count(*)
     syn = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
     enable = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
@@ -185,4 +163,37 @@ class AgentReportLog(ManagerTableBase):
             sa.UniqueConstraint('agent_id'),
             sa.Index('report_time_index', 'report_time'),
             MyISAMTableBase.__table_args__
+    )
+
+
+class Agent(ManagerTableBase):
+    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False,
+                         primary_key=True, autoincrement=True)
+    create_time = sa.Column(INTEGER(unsigned=True),
+                            default=int(timeutils.realnow()), nullable=False)
+    host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), nullable=False)
+    # 0 not active, 1 active  -1 mark delete
+    status = sa.Column(TINYINT, server_default='0', nullable=False)
+    # cpu number
+    cpu = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    # memory can be used
+    memory = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    # disk space can be used
+    disk = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    entiy = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    static_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
+                             server_default='[]',
+                             nullable=False)
+    dynamic_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
+                              server_default='[]',
+                              nullable=False)
+    ports = orm.relationship(AllocedPort, backref='agent', lazy='joined',
+                             cascade='delete,delete-orphan,save-update')
+    endpoints = orm.relationship(AgentEndpoint, backref='agent', lazy='select',
+                                 cascade='delete,delete-orphan,save-update')
+    report = orm.relationship(AgentReportLog, backref='agent', lazy='select',
+                              cascade='delete,delete-orphan')
+    __table_args__ = (
+            sa.UniqueConstraint('host'),
+            TableBase.__table_args__
     )

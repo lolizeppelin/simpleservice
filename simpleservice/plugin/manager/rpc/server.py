@@ -24,7 +24,7 @@ class ServerManager(ManagerBase):
         ManagerBase.__init__(self, manager_group.name)
         self.target = Target(topic=common.AGENT,
                              namespace=self.namespace)
-        self.dbdriver = MysqlDriver(self.namespace, CONF.manager)
+        self.dbdriver = MysqlDriver(self.namespace, CONF[manager_group.name])
         self.dbdriver.start()
         self.session = self.dbdriver.session
         self.rsession = self.dbdriver.session

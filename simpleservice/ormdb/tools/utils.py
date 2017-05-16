@@ -57,7 +57,7 @@ create_databse = create_schema
 drop_databse = drop_schema
 
 
-def init_manager_database(db_info, base):
+def init_manager_database(db_info, declarative_meta):
     manager_connection = connformater % db_info
     engine = create_engine(manager_connection, thread_checkin=False,
                            max_retries=0)
@@ -69,7 +69,7 @@ def init_manager_database(db_info, base):
     except exceptions.DBExist as e:
         raise AcceptableError('Create distribution database error: %s' % e.message)
     try:
-        base.metadata.create_all(bind=engine)
+        declarative_meta.metadata.create_all(bind=engine)
     except (OperationalError, DBError, SQLAlchemyError) as e:
         try:
             drop_schema(engine)

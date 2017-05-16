@@ -59,7 +59,7 @@ class ModelBase(six.Iterator):
         for k, v in six.iteritems(values):
             setattr(self, k, v)
 
-    def _as_dict(self):
+    def to_dict(self):
         """Make the model object behave like a dict.
 
         Includes attributes from joins.
@@ -72,11 +72,11 @@ class ModelBase(six.Iterator):
 
     def iteritems(self):
         """Make the model object behave like a dict."""
-        return six.iteritems(self._as_dict())
+        return six.iteritems(self.to_dict())
 
     def items(self):
         """Make the model object behave like a dict."""
-        return self._as_dict().items()
+        return self.to_dict().items()
 
     def keys(self):
         """Make the model object behave like a dict."""
