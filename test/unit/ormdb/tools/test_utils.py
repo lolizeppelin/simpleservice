@@ -1,4 +1,4 @@
-from simpleservice.ormdb.tools.utils import init_manager_database
+from simpleservice.ormdb.tools.utils import init_database
 
 from simpleservice.plugin.manager.models import ManagerTableBase
 
@@ -8,4 +8,4 @@ dst = {'host': '172.20.0.3',
        'user': 'root',
        'passwd': '111111'}
 
-init_manager_database(dst, ManagerTableBase)
+init_database(dst, ManagerTableBase.metadata)

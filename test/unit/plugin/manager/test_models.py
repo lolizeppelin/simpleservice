@@ -95,8 +95,6 @@ report_row.closeing = 342
 with session.begin():
     session.add(report_row)
 
-x = agent_row.report
-print x
 
 with session.begin():
     session.delete(agent_row)
@@ -110,3 +108,25 @@ with session.begin():
     query = model_query(session, AgentReportLog, filter={'agent_id':agent_row.agent_id})
     ret = query.first()
     print ret
+    print dir(query)
+
+
+from sqlalchemy import MetaData
+metadata = MetaData()
+metadata.reflect(bind=engine)
+
+for tab in metadata.tables.keys():
+    print tab
+
+print 'try get data from metada'
+
+with session.begin():
+    for tab in metadata.tables.keys():
+        print tab, type(tab), type(metadata.tables[tab])
+        if tab is not None:
+            query = model_query(session, metadata.tables[tab])
+            rets = query.all()
+            if rets:
+                print tab
+                print rets
+

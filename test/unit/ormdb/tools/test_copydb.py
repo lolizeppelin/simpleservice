@@ -4,6 +4,7 @@ import logging
 
 
 from simpleservice.ormdb.tools import copydb
+from simpleservice.ormdb.tools.utils import drop_databse
 
 
 LOG = logging
@@ -30,4 +31,4 @@ LOG.info('copy start')
 
 
 
-copydb.copydb(src, dst)
+copydb.copydb(src, dst, tables_need_copy=['campaign_boss_player'])
