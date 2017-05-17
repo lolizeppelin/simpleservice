@@ -91,4 +91,4 @@ def init_database(db_info, metadata,
         if isinstance(e, OperationalError):
             raise AcceptableError('Create table error:%d, %s' %
                                   (e.orig[0], e.orig[1].replace("'", '')))
-        raise AcceptableError('Create tables error: %s' % e.message)
+        raise AcceptableError('Create tables or insert row error: %s' % e.message)
