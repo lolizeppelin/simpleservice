@@ -24,6 +24,7 @@ ManagerTableBase = declarative.declarative_base(cls=TableBase)
 
 class GkeyMap(ManagerTableBase):
     sid = sa.Column(INTEGER(unsigned=True), nullable=False,
+                    default=0,
                     primary_key=True)
     host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), server_default=None,
                      nullable=True)
@@ -36,8 +37,9 @@ class GkeyMap(ManagerTableBase):
 class ResponeDetail(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agentrespones.agent_id', ondelete="CASCADE", onupdate='RESTRICT'),
+                         default=0,
                          nullable=False, primary_key=True)
-    detail_id = sa.Column(INTEGER(unsigned=True), primary_key=True, nullable=False)
+    detail_id = sa.Column(INTEGER(unsigned=True), default=0, primary_key=True, nullable=False)
     result = sa.Column(VARCHAR(manager_common.MAX_DETAIL_RESULT), nullable=False, default='{}')
     __table_args__ = (
             MyISAMTableBase.__table_args__
@@ -45,7 +47,7 @@ class ResponeDetail(ManagerTableBase):
 
 
 class AgentRespone(ManagerTableBase):
-    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False, default=0, primary_key=True)
     request_id = sa.Column(VARCHAR(36),
                            sa.ForeignKey('wsgirequests.request_id', ondelete="RESTRICT", onupdate='RESTRICT'),
                            nullable=False, primary_key=True)
@@ -90,8 +92,9 @@ class AgentResponeBackLog(ManagerTableBase):
     if agent respone affter deadline, will get an error primary key error
     at this time, recode into  agentresponebacklogs table
     """
-    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False, default=0, primary_key=True)
     request_id = sa.Column(VARCHAR(36),
+                           default=None,
                            nullable=False, primary_key=True)
     server_time = sa.Column(INTEGER(unsigned=True), default=int(timeutils.realnow()), nullable=False)
     agent_time = sa.Column(INTEGER(unsigned=True), nullable=False)
@@ -110,9 +113,11 @@ class AgentResponeBackLog(ManagerTableBase):
 class AgentEndpoint(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
+                         default=0,
                          nullable=False,
                          primary_key=True)
     endpoint = sa.Column(VARCHAR(manager_common.MAX_ENDPOINT_NAME_SIZE),
+                         default=None,
                          nullable=False, primary_key=True)
     __table_args__ = (
             sa.UniqueConstraint('agent_id'),
@@ -123,9 +128,12 @@ class AgentEndpoint(ManagerTableBase):
 class AllocedPort(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
+                         default=0,
                          nullable=False,
                          primary_key=True)
-    port = sa.Column(SMALLINT(unsigned=True), nullable=False, primary_key=True)
+    port = sa.Column(SMALLINT(unsigned=True), nullable=False,
+                     default=0,
+                     primary_key=True)
     endpoint = sa.Column(VARCHAR(manager_common.MAX_ENDPOINT_NAME_SIZE),
                          nullable=False)
     dynamic = sa.Column(BOOLEAN, default=0, nullable=False)
@@ -134,6 +142,7 @@ class AllocedPort(ManagerTableBase):
 
 class Agent(ManagerTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True), nullable=False,
+                         default=0,
                          primary_key=True, autoincrement=True)
     create_time = sa.Column(INTEGER(unsigned=True),
                             default=int(timeutils.realnow()), nullable=False)
@@ -166,7 +175,7 @@ class Agent(ManagerTableBase):
 class AgentReportLog(ManagerTableBase):
     """Table for recode agent status"""
     # build by Gprimarykey
-    report_time = sa.Column(BIGINT(unsigned=True), nullable=False, primary_key=True)
+    report_time = sa.Column(BIGINT(unsigned=True), nullable=False, default=0, primary_key=True)
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
                          nullable=False)
@@ -199,9 +208,9 @@ class AgentReportLog(ManagerTableBase):
     free = sa.Column(INTEGER(unsigned=True), nullable=False)
     # network  count
     # psutil.net_connections()  count(*)
-    syn = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    enable = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
-    closeing = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
+    syn = sa.Column(INTEGER(unsigned=True), nullable=False)
+    enable = sa.Column(INTEGER(unsigned=True), nullable=False)
+    closeing = sa.Column(INTEGER(unsigned=True), nullable=False)
 
     __table_args__ = (
             sa.Index('agent_id_index', 'agent_id'),
