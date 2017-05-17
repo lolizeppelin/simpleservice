@@ -5,14 +5,15 @@ from simpleservice.plugin.manager.models import ManagerTableBase
 from simpleservice.plugin.manager.models import GkeyMap
 
 def init_manager_data(engine):
-        session_maker = orm.get_maker(engine=engine)
-        session = session_maker()
-        with session.begin():
-            for i in xrange(0, 2048):
-                row = GkeyMap(sid=i)
-                session.add(row)
-        session.close()
+    session_maker = orm.get_maker(engine=engine)
+    session = session_maker()
+    with session.begin():
+        for i in xrange(0, 2048):
+            row = GkeyMap(sid=i, host=None)
+            session.add(row)
+    session.close()
 
 
 def init_manager_database(db_info):
-    init_database(db_info, ManagerTableBase.metadata, init_manager_data)
+    init_database(db_info, metadata=ManagerTableBase.metadata,
+                  init_data_func=init_manager_data)
