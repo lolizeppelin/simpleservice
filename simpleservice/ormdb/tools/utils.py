@@ -3,6 +3,7 @@ import copy
 import sqlalchemy as sa
 from sqlalchemy.pool import NullPool
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.engine.base import Engine
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
@@ -34,12 +35,14 @@ def get_schema_info(engine):
 
 
 # create a schema
-def create_schema(engine, charcter_set='utf8', collation_type=None):
+def create_schema(engine, charcter_set=None, collation_type=None):
 
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
     if get_schema_info(engine):
         raise exceptions.DBExist(schema)
+    if not charcter_set:
+        charcter_set = 'utf8'
     sql = "CREATE DATABASE %s DEFAULT CHARACTER SET %s" % (schema, charcter_set)
     if collation_type:
         sql += ' COLLATE %s' % collation_type
@@ -57,24 +60,34 @@ create_databse = create_schema
 drop_databse = drop_schema
 
 
-def init_manager_database(db_info, declarative_meta):
-    manager_connection = connformater % db_info
-    engine = create_engine(manager_connection, thread_checkin=False,
-                           max_retries=0)
+def init_database(db_info, metadata,
+                  charcter_set=None,
+                  collation_type=None,
+                  init_data_func=None):
+    if isinstance(db_info, Engine):
+        engine = db_info
+    else:
+        database_connection = db_info
+        if isinstance(db_info, dict):
+            database_connection = connformater % db_info
+        engine = create_engine(database_connection, thread_checkin=False,
+                               poolclass=NullPool)
     try:
-        create_schema(engine)
+        create_schema(engine, charcter_set, collation_type)
     except OperationalError as e:
         raise AcceptableError('Create distribution database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
     except exceptions.DBExist as e:
         raise AcceptableError('Create distribution database error: %s' % e.message)
     try:
-        declarative_meta.metadata.create_all(bind=engine)
-    except (OperationalError, DBError, SQLAlchemyError) as e:
+        metadata.create_all(bind=engine)
+        if init_data_func:
+            init_data_func(engine)
+    except (OperationalError, SQLAlchemyError, DBError, Exception) as e:
         try:
             drop_schema(engine)
         except Exception:
-            raise exceptions.DropCreateedDBFail('Create table fail, Drop database fail', manager_connection)
+            raise exceptions.DropCreatedDBFail('Create table fail, Drop database fail', str(engine.url))
         if isinstance(e, OperationalError):
             raise AcceptableError('Create table error:%d, %s' %
                                   (e.orig[0], e.orig[1].replace("'", '')))
