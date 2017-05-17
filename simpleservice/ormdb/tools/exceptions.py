@@ -6,7 +6,12 @@ class DBExist(DBError):
         self.message = "Database %s already exist" % schema
 
 
-class DropCreateedDBFail(Exception):
+class DropCreatedDBFail(DBError):
     def __init__(self, message, url):
         self.message = message
         self.url = url
+
+
+class CopyRowOverSize(DBError):
+    def __init__(self, message):
+        self.message = message
