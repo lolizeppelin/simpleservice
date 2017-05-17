@@ -5,6 +5,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.dialects.mysql import SMALLINT
 from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.dialects.mysql import BIGINT
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.dialects.mysql import BOOLEAN
 from sqlalchemy.dialects.mysql import LONGBLOB
@@ -19,6 +20,17 @@ from simpleservice.plugin.manager import common as manager_common
 
 
 ManagerTableBase = declarative.declarative_base(cls=TableBase)
+
+
+class GkeyMap(ManagerTableBase):
+    sid = sa.Column(INTEGER(unsigned=True), nullable=False,
+                    primary_key=True)
+    host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), server_default=None,
+                     nullable=True)
+    __table_args__ = (
+            sa.UniqueConstraint('host'),
+            TableBase.__table_args__
+    )
 
 
 class ResponeDetail(ManagerTableBase):
@@ -115,17 +127,49 @@ class AllocedPort(ManagerTableBase):
                          primary_key=True)
     port = sa.Column(SMALLINT(unsigned=True), nullable=False, primary_key=True)
     endpoint = sa.Column(VARCHAR(manager_common.MAX_ENDPOINT_NAME_SIZE),
-                         nullable=False, primary_key=True)
+                         nullable=False)
     dynamic = sa.Column(BOOLEAN, default=0, nullable=False)
     port_desc = sa.Column(VARCHAR(256))
 
 
+class Agent(ManagerTableBase):
+    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False,
+                         primary_key=True, autoincrement=True)
+    create_time = sa.Column(INTEGER(unsigned=True),
+                            default=int(timeutils.realnow()), nullable=False)
+    host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), nullable=False)
+    # 0 not active, 1 active  -1 mark delete
+    status = sa.Column(TINYINT, server_default='0', nullable=False)
+    # cpu number
+    cpu = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    # memory can be used
+    memory = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    # disk space can be used
+    disk = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    entiy = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
+    static_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
+                             server_default='[]',
+                             nullable=False)
+    dynamic_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
+                              server_default='[]',
+                              nullable=False)
+    ports = orm.relationship(AllocedPort, backref='agent', lazy='joined',
+                             cascade='delete,delete-orphan,save-update')
+    endpoints = orm.relationship(AgentEndpoint, backref='agent', lazy='select',
+                                 cascade='delete,delete-orphan,save-update')
+    __table_args__ = (
+            sa.UniqueConstraint('host'),
+            TableBase.__table_args__
+    )
+
+
 class AgentReportLog(ManagerTableBase):
     """Table for recode agent status"""
+    # build by Gprimarykey
+    report_time = sa.Column(BIGINT(unsigned=True), nullable=False, primary_key=True)
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
-                         nullable=False, primary_key=True)
-    report_time = sa.Column(INTEGER(unsigned=True), nullable=False)
+                         nullable=False)
     # psutil.process_iter()
     # status()
     # num_fds()
@@ -160,40 +204,7 @@ class AgentReportLog(ManagerTableBase):
     closeing = sa.Column(INTEGER(unsigned=True), nullable=False, primary_key=True)
 
     __table_args__ = (
-            sa.UniqueConstraint('agent_id'),
-            sa.Index('report_time_index', 'report_time'),
+            sa.Index('agent_id_index', 'agent_id'),
             MyISAMTableBase.__table_args__
     )
 
-
-class Agent(ManagerTableBase):
-    agent_id = sa.Column(INTEGER(unsigned=True), nullable=False,
-                         primary_key=True, autoincrement=True)
-    create_time = sa.Column(INTEGER(unsigned=True),
-                            default=int(timeutils.realnow()), nullable=False)
-    host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), nullable=False)
-    # 0 not active, 1 active  -1 mark delete
-    status = sa.Column(TINYINT, server_default='0', nullable=False)
-    # cpu number
-    cpu = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
-    # memory can be used
-    memory = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
-    # disk space can be used
-    disk = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
-    entiy = sa.Column(INTEGER(unsigned=True), server_default='0', nullable=False)
-    static_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
-                             server_default='[]',
-                             nullable=False)
-    dynamic_ports = sa.Column(VARCHAR(manager_common.MAX_PORT_RANGE_SIZE),
-                              server_default='[]',
-                              nullable=False)
-    ports = orm.relationship(AllocedPort, backref='agent', lazy='joined',
-                             cascade='delete,delete-orphan,save-update')
-    endpoints = orm.relationship(AgentEndpoint, backref='agent', lazy='select',
-                                 cascade='delete,delete-orphan,save-update')
-    report = orm.relationship(AgentReportLog, backref='agent', lazy='select',
-                              cascade='delete,delete-orphan')
-    __table_args__ = (
-            sa.UniqueConstraint('host'),
-            TableBase.__table_args__
-    )
