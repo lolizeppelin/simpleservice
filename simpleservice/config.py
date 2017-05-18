@@ -26,6 +26,18 @@ DEFALUT_OPTIONS = [
     ]
 
 
+service_opts = [
+    cfg.BoolOpt('log_options',
+                default=True,
+                help='Enables or disables logging values of all registered '
+                     'options when starting a service (at DEBUG level).'),
+    cfg.IntOpt('graceful_shutdown_timeout',
+               default=60,
+               help='Specify a timeout after which a gracefully shutdown '
+                    'server will exit. Zero value means endless wait.'),
+]
+
+
 def set_default_for_default_log_levels(extra_log_level_defaults):
     log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
 

@@ -13,6 +13,7 @@ import six
 import eventlet
 import eventlet.hubs
 from eventlet import event
+from eventlet.greenio import GreenPipe
 
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
@@ -20,25 +21,9 @@ from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
 from simpleutil.posix import systemd
 
+from simpleservice.config import service_opts
+
 LOG = logging.getLogger(__name__)
-
-if os.name == 'nt':
-    # For windows
-    class GreenPipe(eventlet.greenio.GreenPipe):
-        setblocking = lambda x: None
-else:
-    GreenPipe = eventlet.greenio.GreenPipe
-
-service_opts = [
-    cfg.BoolOpt('log_options',
-                default=True,
-                help='Enables or disables logging values of all registered '
-                     'options when starting a service (at DEBUG level).'),
-    cfg.IntOpt('graceful_shutdown_timeout',
-               default=60,
-               help='Specify a timeout after which a gracefully shutdown '
-                    'server will exit. Zero value means endless wait.'),
-]
 
 
 def _check_service_base(service):
@@ -105,7 +90,6 @@ class ServiceBase(object):
 
         Called in case service running in daemon mode receives SIGHUP.
         """
-
 
 class LauncheServiceBase(ServiceBase):
 
