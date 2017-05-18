@@ -1,4 +1,3 @@
-import socket
 from simpleutil.config import cfg
 
 client_opts = [
