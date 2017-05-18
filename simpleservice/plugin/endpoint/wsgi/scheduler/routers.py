@@ -1,5 +1,5 @@
 from simpleservice.wsgi import router
-from simpleservice.wsgi import controller_return_response
+
 
 from simpleservice.plugin.manager.wsgi.asyncrequest import controller
 
@@ -8,5 +8,7 @@ COLLECTION_ACTIONS = ['index']
 
 
 class Routers(router.RoutersBase):
-    collection_name = 'agents'
-    resource_name='agent'
+    collection_name = 'schdulers'
+    resource_name='schduler'
+
+    pass

@@ -1,4 +1,3 @@
-import logging
 import time
 import six
 
@@ -6,6 +5,7 @@ from simpleutil.utils import excutils
 from simpleutil.utils import reflection
 from simpleutil.common.exceptions import InvalidArgument
 
+from simpleutil.log import log as logging
 
 from simpleservice.ormdb import orm
 from simpleservice.ormdb import engines

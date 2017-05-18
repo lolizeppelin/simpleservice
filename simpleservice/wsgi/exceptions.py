@@ -9,3 +9,7 @@ class PasteAppNotFound(Exception):
         msg = ("Could not load paste app '%(name)s' from %(path)s" %
                {'name': name, 'path': path})
         super(PasteAppNotFound, self).__init__(msg)
+
+
+class NoFaultsKonwnExcpetion(Exception):
+    """Not any Konwn Excpetion found"""

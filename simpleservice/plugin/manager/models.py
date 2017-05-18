@@ -71,7 +71,8 @@ class WsgiRequest(PluginTableBase):
     respones = orm.relationship(AgentRespone, backref='wsgirequest', lazy='select',
                                 cascade='delete, delete-orphan')
     __table_args__ = (
-            InnoDBTableBase.__table_args__
+        sa.Index('request_time_index', 'request_time'),
+        InnoDBTableBase.__table_args__
     )
 
 
