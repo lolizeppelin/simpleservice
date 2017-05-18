@@ -7,13 +7,14 @@ import logging as defalut_logging
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 
-from simpleservice import config
+from simpleservice import config as base_config
 from simpleservice.wsgi.config import wsgi_options
 from simpleservice.server import ServerWrapper
 from simpleservice.server import launch
 from simpleservice.wsgi.factory import app_factory
 from simpleservice.wsgi.service import load_paste_app
 from simpleservice.wsgi.service import LauncheWsgiServiceBase
+
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ center_group = cfg.OptGroup(name='center', title='group of center')
 
 
 def configure(version=None, config_files=None):
-    config.configure()
-    config.set_default_for_default_log_levels(['routes=INFO', ])
+    base_config.configure()
+    base_config.set_default_for_default_log_levels(['routes=INFO', ])
     CONF(project=center_group.name, version=version,
          default_config_files=config_files)
     CONF.register_group(center_group)
@@ -47,7 +48,7 @@ def run(topdir):
     else:
         config_file = topdir
     paste_config = configure(config_files=[config_file, ])
-    app = load_paste_app(center_group.name, paste_config)
+    app = load_paste_app(center_group, paste_config)
     servers = []
     wsgi_server = LauncheWsgiServiceBase(center_group.name, app,
                                          CONF[center_group.name].bind_ip,
@@ -59,6 +60,11 @@ def run(topdir):
 
 app_factory = app_factory()
 
-config_file =  'C:\\Users\\loliz_000\\Desktop\\etc\\agent.conf'
 
-run(config_file)
+def main():
+    config_file = 'C:\\Users\\loliz_000\\Desktop\\etc\\simpleservice.conf'
+    run(config_file)
+
+
+if __name__ == '__main__':
+    main()
