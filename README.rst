@@ -1,7 +1,9 @@
 simpleservice
 =============
 
-主要代码基于Openstack Mitaka中的oslo_messaging与oslo_service
+模仿openstack写的服务框架,对内rpc通信,对外提供http restful接口
+
+主要代码基于Openstack Mitaka中的oslo_messaging与oslo_service与oslo_db
 
 wsig部分代码来源于keyston和neutron
 
