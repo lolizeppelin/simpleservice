@@ -23,40 +23,6 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-wsgi_opts = [
-    cfg.StrOpt('wsgi_log_format',
-               default='%(client_ip)s "%(request_line)s" status: '
-                       '%(status_code)s  len: %(body_length)s time:'
-                       ' %(wall_seconds).7f',
-               help='A python format string that is used as the template to '
-                    'generate log lines. The following values can be'
-                    'formatted into it: client_ip, date_time, request_line, '
-                    'status_code, body_length, wall_seconds.'),
-    cfg.IntOpt('tcp_keepidle',
-               default=600,
-               help="Sets the value of TCP_KEEPIDLE in seconds for each "
-                    "server socket. Not supported on OS X."),
-    cfg.IntOpt('wsgi_default_pool_size',
-               default=100,
-               help="Size of the pool of greenthreads used by wsgi"),
-    cfg.IntOpt('max_header_line',
-               default=16384,
-               help="Maximum line size of message headers to be accepted. "
-                    "max_header_line may need to be increased when using "
-                    "large tokens (typically those generated when keystone "
-                    "is configured to use PKI tokens with big service "
-                    "catalogs)."),
-    cfg.BoolOpt('wsgi_keep_alive',
-                default=True,
-                help="If False, closes the client socket connection "
-                     "explicitly."),
-    cfg.IntOpt('client_socket_timeout', default=900,
-               help="Timeout for client connections' socket operations. "
-                    "If an incoming connection is idle for this number of "
-                    "seconds it will be closed. A value of '0' means "
-                    "wait forever."),
-    ]
-
 
 class Loader(object):
     """Used to load WSGI applications from paste configurations."""
@@ -68,7 +34,6 @@ class Loader(object):
         :returns: None
 
         """
-        conf.register_opts(wsgi_opts)
         if not os.path.isabs(paste_config):
             self.config_path = conf.find_file(paste_config)
         elif os.path.exists(paste_config):
@@ -93,9 +58,9 @@ class Loader(object):
             raise PasteAppNotFound(name=name, path=self.config_path)
 
 
-def load_paste_app(app_name, paste_config):
-    loader = Loader(CONF, paste_config)
-    app = loader.load_app(app_name)
+def load_paste_app(group, paste_config):
+    loader = Loader(CONF[group.name], paste_config)
+    app = loader.load_app(group.name)
     return app
 
 
@@ -118,16 +83,17 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         :raises: InvalidInput
         :raises: EnvironmentError
         """
-        eventlet.wsgi.MAX_HEADER_LINE = CONF.max_header_line
         self.name = name
         self.app = app
+        self.conf = CONF[name]
         self._server = None
+        eventlet.wsgi.MAX_HEADER_LINE = self.conf.max_header_line
         self._protocol = eventlet.wsgi.HttpProtocol
-        self.pool_size = CONF.wsgi_default_pool_size
+        self.pool_size = self.conf.wsgi_default_pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
         self._logger = logging.getLogger('goperation.service.WsgiServiceBase')
         self._max_url_len = max_url_len
-        self.client_socket_timeout = CONF.client_socket_timeout or None
+        self.client_socket_timeout = self.conf.client_socket_timeout or None
 
         if backlog < 1:
             raise InvalidInput('The backlog must be more than 0')
@@ -194,9 +160,9 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             'protocol': self._protocol,
             'custom_pool': self._pool,
             'log': self._logger,
-            'log_format': CONF.wsgi_log_format,
+            'log_format': self.conf.wsgi_log_format,
             'debug': False,
-            'keepalive': cfg.CONF.wsgi_keep_alive,
+            'keepalive': self.conf.wsgi_keep_alive,
             'socket_timeout': self.client_socket_timeout
             }
 
@@ -214,7 +180,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if hasattr(socket, 'TCP_KEEPIDLE'):
             _socket.setsockopt(socket.IPPROTO_TCP,
                                socket.TCP_KEEPIDLE,
-                               CONF.tcp_keepidle)
+                               self.conf.tcp_keepidle)
 
         return _socket
 
