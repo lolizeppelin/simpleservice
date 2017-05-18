@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 from sqlalchemy import orm
-from sqlalchemy.ext import declarative
+
+from simpleutil.utils import timeutils
+from simpleutil.utils import uuidutils
 
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.dialects.mysql import SMALLINT
@@ -10,31 +12,14 @@ from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.dialects.mysql import BOOLEAN
 from sqlalchemy.dialects.mysql import LONGBLOB
 
-from simpleutil.utils import timeutils
-from simpleutil.utils import uuidutils
-
-from simpleservice.ormdb.models import TableBase
 from simpleservice.ormdb.models import MyISAMTableBase
+from simpleservice.ormdb.models import InnoDBTableBase
+from simpleservice.plugin.models import PluginTableBase
 
 from simpleservice.plugin.manager import common as manager_common
 
 
-ManagerTableBase = declarative.declarative_base(cls=TableBase)
-
-
-class GkeyMap(ManagerTableBase):
-    sid = sa.Column(INTEGER(unsigned=True), nullable=False,
-                    default=0,
-                    primary_key=True)
-    host = sa.Column(VARCHAR(manager_common.MAX_HOST_NAME_SIZE), server_default=None,
-                     nullable=True)
-    __table_args__ = (
-            sa.UniqueConstraint('host'),
-            TableBase.__table_args__
-    )
-
-
-class ResponeDetail(ManagerTableBase):
+class ResponeDetail(PluginTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agentrespones.agent_id', ondelete="CASCADE", onupdate='RESTRICT'),
                          default=0,
@@ -46,7 +31,7 @@ class ResponeDetail(ManagerTableBase):
     )
 
 
-class AgentRespone(ManagerTableBase):
+class AgentRespone(PluginTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True), nullable=False, default=0, primary_key=True)
     request_id = sa.Column(VARCHAR(36),
                            sa.ForeignKey('wsgirequests.request_id', ondelete="RESTRICT", onupdate='RESTRICT'),
@@ -67,7 +52,7 @@ class AgentRespone(ManagerTableBase):
     )
 
 
-class WsgiRequest(ManagerTableBase):
+class WsgiRequest(PluginTableBase):
     request_id = sa.Column(VARCHAR(36), default=uuidutils.generate_uuid,
                            nullable=False, primary_key=True)
     request_time = sa.Column(INTEGER(unsigned=True),
@@ -85,9 +70,12 @@ class WsgiRequest(ManagerTableBase):
     # AgentRespone list
     respones = orm.relationship(AgentRespone, backref='wsgirequest', lazy='select',
                                 cascade='delete, delete-orphan')
+    __table_args__ = (
+            InnoDBTableBase.__table_args__
+    )
 
 
-class AgentResponeBackLog(ManagerTableBase):
+class AgentResponeBackLog(PluginTableBase):
     """request after deadline scheduled timer will upload a AgentRespone log with time out
     if agent respone affter deadline, will get an error primary key error
     at this time, recode into  agentresponebacklogs table
@@ -106,11 +94,11 @@ class AgentResponeBackLog(ManagerTableBase):
     details = sa.Column(LONGBLOB, nullable=True)
     __table_args__ = (
             sa.Index('request_id_index', 'request_id'),
-            TableBase.__table_args__
+            InnoDBTableBase.__table_args__
     )
 
 
-class AgentEndpoint(ManagerTableBase):
+class AgentEndpoint(PluginTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
                          default=0,
@@ -125,7 +113,7 @@ class AgentEndpoint(ManagerTableBase):
     )
 
 
-class AllocedPort(ManagerTableBase):
+class AllocedPort(PluginTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True),
                          sa.ForeignKey('agents.agent_id', ondelete="CASCADE", onupdate='CASCADE'),
                          default=0,
@@ -138,9 +126,12 @@ class AllocedPort(ManagerTableBase):
                          nullable=False)
     dynamic = sa.Column(BOOLEAN, default=0, nullable=False)
     port_desc = sa.Column(VARCHAR(256))
+    __table_args__ = (
+            InnoDBTableBase.__table_args__
+    )
 
 
-class Agent(ManagerTableBase):
+class Agent(PluginTableBase):
     agent_id = sa.Column(INTEGER(unsigned=True), nullable=False,
                          default=0,
                          primary_key=True, autoincrement=True)
@@ -168,11 +159,11 @@ class Agent(ManagerTableBase):
                                  cascade='delete,delete-orphan,save-update')
     __table_args__ = (
             sa.UniqueConstraint('host'),
-            TableBase.__table_args__
+            InnoDBTableBase.__table_args__
     )
 
 
-class AgentReportLog(ManagerTableBase):
+class AgentReportLog(PluginTableBase):
     """Table for recode agent status"""
     # build by Gprimarykey
     report_time = sa.Column(BIGINT(unsigned=True), nullable=False, default=0, primary_key=True)
@@ -216,4 +207,3 @@ class AgentReportLog(ManagerTableBase):
             sa.Index('agent_id_index', 'agent_id'),
             MyISAMTableBase.__table_args__
     )
-

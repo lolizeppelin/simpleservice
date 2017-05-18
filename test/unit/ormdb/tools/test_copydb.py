@@ -1,11 +1,5 @@
-
 import logging
-
-
-
 from simpleservice.ormdb.tools import copydb
-from simpleservice.ormdb.tools.utils import drop_databse
-
 
 LOG = logging
 

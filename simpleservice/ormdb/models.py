@@ -99,8 +99,6 @@ class ModelIterator(six.Iterator):
 
 
 class TableBase(ModelBase):
-    __table_args__ = {'mysql_engine': 'InnoDB'}
-
     """Base class for Neutron Models."""
     @declarative.declared_attr
     def __tablename__(cls):
@@ -124,6 +122,10 @@ class TableBase(ModelBase):
         return "<%s.%s[object at %x] {%s}>" % (self.__class__.__module__,
                                                self.__class__.__name__,
                                                id(self), ', '.join(items))
+
+
+class InnoDBTableBase(object):
+    __table_args__ = {'mysql_engine': 'InnoDB'}
 
 
 class MyISAMTableBase(object):

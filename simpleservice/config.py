@@ -1,3 +1,4 @@
+import socket
 from simpleutil.config import cfg
 from simpleutil.log import log
 
@@ -6,9 +7,21 @@ CONF = cfg.CONF
 log.register_options(CONF)
 
 DEFALUT_OPTIONS = [
+    cfg.StrOpt('user',
+               default='nginx',
+               help='Serivce run user'),
+    cfg.StrOpt('group',
+               default='nginx',
+               help='Serivce run group'),
+    cfg.HostnameOpt('host',
+                    default=socket.gethostname(),
+                    help="Hostname to be used by the server, agents and "
+                         "services running on this machine. All the agents and "
+                         "services running on this machine must use the same "
+                         "host value."),
     cfg.StrOpt('state_path',
-               default='/var/run/goperation',
-               help="Where to store Goperation state files. "
+               default='/var/run/simpleservice',
+               help="Where to store simpleservice state files. "
                     "This directory must be writable by the agent. "),
     ]
 
