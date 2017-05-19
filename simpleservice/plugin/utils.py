@@ -12,7 +12,8 @@ def init_plugin_data(engine):
     session_maker = orm.get_maker(engine=engine)
     session = session_maker()
     with session.begin():
-        for i in xrange(0, 2048):
+        # Start from 1
+        for i in xrange(1, 2048):
             row = GkeyMap(sid=i, host=None)
             session.add(row)
     if hasattr(manager_models, 'init_data'):
