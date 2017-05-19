@@ -59,7 +59,7 @@ class WsgiRequest(PluginTableBase):
                              default=int(timeutils.realnow()), nullable=False)
     # request should finish at finish time
     # when agent get a rpc call, find cur time > finishtime
-    # agent will not drop the package
+    # agent will drop the package
     finishtime = sa.Column(INTEGER(unsigned=True), default=int(timeutils.realnow()) + 3, nullable=False)
     # request should finish before deadline time
     # if task scheduler find cur time > deadline, it will not check return any more
