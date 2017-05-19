@@ -61,7 +61,8 @@ class WsgiRequest(PluginTableBase):
     deadline = sa.Column(INTEGER(unsigned=True),
                          default=int(timeutils.realnow()) + 10, nullable=False)
     # async resopne checker id, means scheduled timer server id
-    async_checker = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
+    # default is -1 means async but no scheduler now
+    async_checker = sa.Column(INTEGER, default=-1, nullable=False)
     # if request finish
     status = sa.Column(BOOLEAN, nullable=False, default=0)
     # number of agent not resopne
