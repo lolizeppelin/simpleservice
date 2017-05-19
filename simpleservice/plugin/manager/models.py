@@ -57,12 +57,17 @@ class WsgiRequest(PluginTableBase):
                            nullable=False, primary_key=True)
     request_time = sa.Column(INTEGER(unsigned=True),
                              default=int(timeutils.realnow()), nullable=False)
-    # request shoul finish before this time
+    # request should finish at finish time
+    # when agent get a rpc call, find cur time > finishtime
+    # agent will not drop the package
+    finishtime = sa.Column(INTEGER(unsigned=True), default=int(timeutils.realnow()) + 3, nullable=False)
+    # request should finish before deadline time
+    # if task scheduler find cur time > deadline, it will not check return any more
     deadline = sa.Column(INTEGER(unsigned=True),
                          default=int(timeutils.realnow()) + 10, nullable=False)
     # async resopne checker id, means scheduled timer server id
-    # default is -1 means async but no scheduler now
-    async_checker = sa.Column(INTEGER, default=-1, nullable=False)
+    # 0 means no checker now
+    async_checker = sa.Column(INTEGER(unsigned=True), default=0, nullable=False)
     # if request finish
     status = sa.Column(BOOLEAN, nullable=False, default=0)
     # number of agent not resopne
