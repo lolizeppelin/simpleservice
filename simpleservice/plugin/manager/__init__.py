@@ -32,5 +32,5 @@ def get_session(readonly=False):
         init_session()
         # raise RuntimeError('Database not connected')
     if readonly:
-        return DbDriver.rsession()
-    return DbDriver.session()
+        return DbDriver.rsession
+    return DbDriver.session
