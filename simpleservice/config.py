@@ -35,6 +35,11 @@ service_opts = [
                default=60,
                help='Specify a timeout after which a gracefully shutdown '
                     'server will exit. Zero value means endless wait.'),
+    cfg.ListOpt('endpoints',
+                item_type=cfg.types.String(regex=cfg.types.ImportString.modregx,
+                                           max_length=20),
+                default=[],
+                help='The endpoint list that Server will run')
 ]
 
 
