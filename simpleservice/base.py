@@ -15,7 +15,6 @@ import eventlet.hubs
 from eventlet import event
 from eventlet.greenio import GreenPipe
 
-from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
