@@ -24,7 +24,7 @@ def fail_gracefully(f):
     return wrapper
 
 
-def app_factory(project_routers):
+def app_factory(project_routers=None):
     @fail_gracefully
     def wrapper_factory(global_conf, **local_conf):
         mapper = routes.Mapper()
@@ -32,8 +32,9 @@ def app_factory(project_routers):
         # NOTE(dstanek): Routers should be ordered by their frequency of use in
         # a live system. This is due to the routes implementation. The most
         # frequently used routers should appear first.
-        all_api_routers = set(project_routers)
-        for api_routers in all_api_routers:
-            api_routers.Routers().append_routers(mapper, sub_routers)
+        if project_routers:
+            all_api_routers = set(project_routers)
+            for api_routers in all_api_routers:
+                api_routers.Routers().append_routers(mapper, sub_routers)
         return router.ComposingRouter(mapper, sub_routers)
     return wrapper_factory
