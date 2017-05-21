@@ -17,7 +17,8 @@ class GkeyMap(PluginTableBase):
     sid = sa.Column(INTEGER(unsigned=True), nullable=False,
                     default=0,
                     primary_key=True)
-    host = sa.Column(VARCHAR(256), server_default=None,
+    # Max host size is 253
+    host = sa.Column(VARCHAR(253), server_default=None,
                      nullable=True)
     __table_args__ = (
             sa.UniqueConstraint('host'),
