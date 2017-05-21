@@ -66,7 +66,8 @@ def load_paste_app(group, paste_config):
 
 class LauncheWsgiServiceBase(LauncheServiceBase):
     """Server class to manage a WSGI server, serving a WSGI application."""
-    def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
+    # def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
+    def __init__(self, name, app,
                  backlog=128, max_url_len=None,
                  socket_family=None, socket_file=None, socket_mode=None):
         """Initialize, but do not start, a WSGI server.
@@ -100,7 +101,9 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
 
         if not socket_family or socket_family in [socket.AF_INET,
                                                   socket.AF_INET6]:
-            self.socket = self._get_socket(host, port, backlog)
+            self.socket = self._get_socket(self.conf.host or '0.0.0.0',
+                                           self.conf.port or 0,
+                                           backlog)
         elif hasattr(socket, "AF_UNIX") and socket_family == socket.AF_UNIX:
             self.socket = self._get_unix_socket(socket_file, socket_mode,
                                                 backlog)
