@@ -58,7 +58,7 @@ def run(topdir):
     launch(servers, CONF.user, CONF.group)
 
 
-app_factory = app_factory()
+app_factory = app_factory([])
 
 
 def main():
