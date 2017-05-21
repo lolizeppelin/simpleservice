@@ -35,13 +35,7 @@ service_opts = [
                default=60,
                help='Specify a timeout after which a gracefully shutdown '
                     'server will exit. Zero value means endless wait.'),
-    cfg.ListOpt('endpoints',
-                item_type=cfg.types.String(regex=cfg.types.ImportString.modregx,
-                                           max_length=20),
-                default=[],
-                help='The endpoint list that Server will run')
 ]
-
 
 def set_default_for_default_log_levels(extra_log_level_defaults):
     log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
