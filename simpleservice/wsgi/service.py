@@ -58,9 +58,9 @@ class Loader(object):
             raise PasteAppNotFound(name=name, path=self.config_path)
 
 
-def load_paste_app(group, paste_config):
-    loader = Loader(CONF[group.name], paste_config)
-    app = loader.load_app(group.name)
+def load_paste_app(name, paste_config):
+    loader = Loader(name, paste_config)
+    app = loader.load_app(name)
     return app
 
 
@@ -101,8 +101,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
 
         if not socket_family or socket_family in [socket.AF_INET,
                                                   socket.AF_INET6]:
-            self.socket = self._get_socket(self.conf.host or '0.0.0.0',
-                                           self.conf.port or 0,
+            self.socket = self._get_socket(self.conf.bind_ip or '0.0.0.0',
+                                           self.conf.bind_port or 0,
                                            backlog)
         elif hasattr(socket, "AF_UNIX") and socket_family == socket.AF_UNIX:
             self.socket = self._get_unix_socket(socket_file, socket_mode,
