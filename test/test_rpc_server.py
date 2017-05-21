@@ -1,12 +1,13 @@
 import logging as default_logging
 
 from simpleservice import config
-from simpleservice.plugin.plugin.manager import server
+from simpleservice.plugin import base
 from simpleservice.rpc.service import LauncheRpcServiceBase
 from simpleservice.server import ServerWrapper
 from simpleservice.server import launch
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
+from simpleservice.rpc.target import Target
 
 
 CONF = cfg.CONF
@@ -29,7 +30,8 @@ default_logging.captureWarnings(True)
 
 
 servers = []
-manager = server.ServerManager()
+manager = base.ManagerBase(Target(topic='agent',
+                                           namespace='manager'))
 rpc_server = LauncheRpcServiceBase(manager)
 wsgi_wrapper = ServerWrapper(rpc_server, workers=1)
 servers.append(wsgi_wrapper)

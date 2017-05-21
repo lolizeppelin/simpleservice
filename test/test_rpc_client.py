@@ -10,7 +10,7 @@ from simpleservice import config
 
 from simpleservice.rpc.service import RPCClientBase
 from simpleservice.rpc.target import Target
-from simpleservice.plugin.manager.common import AGENT
+
 
 CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ default_logging.captureWarnings(True)
 
 client = RPCClientBase()
 
-target = Target(namespace='manager', topic=AGENT)
+target = Target(namespace='manager', topic='agent')
 
 # ret = client.cast(target, {'request_id':'fuck'}, {'method':'show', 'args':{'data':[1,2,3,4,56]}})
 ret = client.call(target, {'request_id':'fuck'}, {'method':'show', 'args':{'data':[1,2,3,4,56]}}, timeout=0.5)

@@ -1,7 +1,8 @@
 class ManagerBase(object):
 
-    def __init__(self, namespace):
-        self.namespace = namespace
+    def __init__(self, target):
+        self.target = target
+        self.namespace = target.namespace
 
     def init_host(self):
         pass

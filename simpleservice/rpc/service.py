@@ -1,15 +1,14 @@
 from simpleservice import loopingcall
 from simpleservice.base import LauncheServiceBase
+from simpleservice.plugin.base import ManagerBase
 from simpleservice.rpc.config import client_opts
 from simpleservice.rpc.config import server_opts
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleservice.rpc.server import RpcConnection
-from simpleservice.plugin.manager.rpc.base import ManagerBase
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.utils import importutils
-
 
 CONF = cfg.CONF
 
