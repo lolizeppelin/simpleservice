@@ -5,6 +5,9 @@ from simpleservice.plugin.models import PluginTableBase
 
 
 def init_plugin_database(db_info, *models):
+    """Table in models must base on PluginTableBase
+    So that table in models can be carete when call init_database
+    """
     def init_plugin_data(engine):
         session_maker = orm.get_maker(engine=engine)
         session = session_maker()
