@@ -1,6 +1,6 @@
 from simpleservice.ormdb.tools.utils import init_database
 
-from simpleservice.plugin.manager.models import *
+from simpleservice.plugin.models import PluginTableBase
 
 dst = {'host': '172.20.0.3',
        'port': 3304,
