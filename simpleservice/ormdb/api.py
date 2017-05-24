@@ -1,6 +1,10 @@
 import time
 import six
 
+from sqlalchemy import func
+from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.dialects.mysql import base
+
 from simpleutil.utils import excutils
 from simpleutil.utils import reflection
 from simpleutil.common.exceptions import InvalidArgument
@@ -161,7 +165,7 @@ class MysqlDriver(object):
 
     @property
     def started(self):
-        return  self._started
+        return self._started
 
     @property
     def session(self):
@@ -249,11 +253,13 @@ class MysqlDriver(object):
         return self._get_sessionmaker(read)(**kwargs)
 
 
-def model_query(session, model, filter=None):
+def model_query(session, model, filter=None, timeout=0.5):
     """filter_args is can be a dict of model's attribte
     or a callable function form return the args for query.filter
     """
     query = session.query(model)
+    if timeout:
+        query = query.execution_options(timeout=timeout)
     if filter is not None:
         if callable(filter):
             query = query.filter(filter(model))
@@ -262,7 +268,43 @@ def model_query(session, model, filter=None):
                 query = query.filter(*[model.__dict__[key] == filter[key] for key in filter])
             except KeyError as e:
                 raise exceptions.ColumnError('No such attribute ~%(attribute)s~ in %(class)s class' %
-                                             {'attribute':e.message, 'class':model.__name__})
+                                             {'attribute': e.message, 'class': model.__name__})
         else:
-            raise InvalidArgument('filter for model_query')
+            raise InvalidArgument('filter type error')
     return query
+
+
+def model_autoincrement_id(session, modelkey, timeout=0.1):
+    query = session.query(func.max(modelkey))
+    if timeout:
+        query = query.execution_options(timeout=timeout)
+    if not isinstance(modelkey.property, ColumnProperty):
+        raise InvalidArgument('modelkey type error')
+    column = modelkey.property.columns[0]
+    column_type = column.type
+    if not isinstance(column_type, base._IntegerType):
+        InvalidArgument('%s column type error, not allow autoincrement' % str(column))
+    max_id = query.one()[0]
+    if max_id is None:
+        if column.default is not None:
+            if column.default.is_callable:
+                try:
+                    max_id = column.default.arg()
+                except TypeError:
+                    InvalidArgument('%s call default function' % str(column))
+        else:
+            if column_type.unsigned:
+                max_id = 0
+            else:
+                # TODO find min value of column
+                max_id = 0
+    else:
+        max_id += 1
+    return max_id
+
+
+def model_count_with_key(session, model, key="*", timeout=0.1):
+    query = session.query(func.count(key)).select_from(model)
+    if timeout:
+        query = query.execution_options(timeout=timeout)
+    return query.scalar()
