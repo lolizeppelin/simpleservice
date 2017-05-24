@@ -3,7 +3,8 @@ class Target(object):
                  version='1.0', server=None, fanout=None):
         self.exchange = exchange
         self.namespace = namespace
-        self.topic = '%s.%s' % (topic, namespace)
+        # self.topic = '%s.%s' % (topic, namespace)
+        self.topic = topic
         self.version = version
         # rpc listener must have server
         self.server = server
