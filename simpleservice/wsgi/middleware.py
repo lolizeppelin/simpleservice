@@ -2,10 +2,13 @@
 import webob.dec
 import webob.exc
 
+from sqlalchemy.exc import OperationalError
+
 from simpleutil.log import log
 from simpleutil.utils import jsonutils
 
 from simpleservice.wsgi.exceptions import NoFaultsKonwnExcpetion
+
 
 LOG = log.getLogger(__name__)
 
@@ -41,7 +44,7 @@ def controller_return_response(controller, faults=None, action_status=None):
         # 这里就是被调用的那个contorler
         match = req.environ['wsgiorg.routing_args'][1]
         args = match.copy()
-        # # 弹出的controller是当前闭包
+        # 弹出的controller
         args.pop('controller', None)
         args.pop('format', None)
         action = args.pop('action', '__call__')
@@ -99,6 +102,15 @@ def controller_return_response(controller, faults=None, action_status=None):
             e.body = default_serializer({'msg': msg})
             e.content_type = DEFAULT_CONTENT_TYPE
             raise e
+        except OperationalError:
+            # Database error details will not send
+            LOG.exception('%s failed', action)
+            # Do not expose details of 500 error to clients.
+            msg = 'Request Failed: internal server error while ' \
+                  'reading or writing database'
+            body = default_serializer({'msg': msg})
+            kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
+            raise webob.exc.HTTPInternalServerError(**kwargs)
         except Exception as e:
             # NOTE(jkoelker) Everything else is 500
             LOG.exception('%s failed', action)
