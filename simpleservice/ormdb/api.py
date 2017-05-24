@@ -3,6 +3,8 @@ import six
 
 from sqlalchemy import func
 from sqlalchemy.orm.properties import ColumnProperty
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.dialects.mysql import base
 
 from simpleutil.utils import excutils
@@ -275,11 +277,13 @@ def model_query(session, model, filter=None, timeout=0.5):
 
 
 def model_autoincrement_id(session, modelkey, timeout=0.1):
+    if not isinstance(modelkey, InstrumentedAttribute):
+        raise InvalidArgument('modelkey type error')
+    if not isinstance(modelkey.property, ColumnProperty):
+        raise InvalidArgument('modelkey type error')
     query = session.query(func.max(modelkey))
     if timeout:
         query = query.execution_options(timeout=timeout)
-    if not isinstance(modelkey.property, ColumnProperty):
-        raise InvalidArgument('modelkey type error')
     column = modelkey.property.columns[0]
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
@@ -303,7 +307,17 @@ def model_autoincrement_id(session, modelkey, timeout=0.1):
     return max_id
 
 
-def model_count_with_key(session, model, key="*", timeout=0.1):
+def model_count_with_key(session, model, timeout=0.1):
+    """model can be DeclarativeMeta of table
+    or InstrumentedAttribute of table column
+    """
+    if isinstance(model, DeclarativeMeta):
+        key = "*"
+    elif isinstance(model, InstrumentedAttribute):
+        key = model.key
+        model = model.class_
+    else:
+        raise InvalidArgument('model type error')
     query = session.query(func.count(key)).select_from(model)
     if timeout:
         query = query.execution_options(timeout=timeout)
