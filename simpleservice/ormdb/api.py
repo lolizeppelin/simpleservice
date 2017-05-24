@@ -296,6 +296,8 @@ def model_autoincrement_id(session, modelkey, timeout=0.1):
                     max_id = column.default.arg()
                 except TypeError:
                     InvalidArgument('%s call default function' % str(column))
+            else:
+                max_id = column.default.arg
         else:
             if column_type.unsigned:
                 max_id = 0
