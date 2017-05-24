@@ -259,7 +259,7 @@ def model_query(session, model, filter=None):
             query = query.filter(filter(model))
         elif isinstance(filter, dict):
             try:
-                query = query.filter(*[ model.__dict__[key] == filter[key] for key in filter])
+                query = query.filter(*[model.__dict__[key] == filter[key] for key in filter])
             except KeyError as e:
                 raise exceptions.ColumnError('No such attribute ~%(attribute)s~ in %(class)s class' %
                                              {'attribute':e.message, 'class':model.__name__})
