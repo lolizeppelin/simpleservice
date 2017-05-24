@@ -281,14 +281,16 @@ def model_autoincrement_id(session, modelkey, timeout=0.1):
         raise InvalidArgument('modelkey type error')
     if not isinstance(modelkey.property, ColumnProperty):
         raise InvalidArgument('modelkey type error')
-    query = session.query(func.max(modelkey))
-    if timeout:
-        query = query.execution_options(timeout=timeout)
     column = modelkey.property.columns[0]
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         InvalidArgument('%s column type error, not allow autoincrement' % str(column))
+    # query max id
+    query = session.query(func.max(modelkey))
+    if timeout:
+        query = query.execution_options(timeout=timeout)
     max_id = query.one()[0]
+    # now row
     if max_id is None:
         if column.default is not None:
             if column.default.is_callable:
