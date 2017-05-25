@@ -273,9 +273,7 @@ def model_query(intance, model, filter=None, timeout=0.5):
     if timeout:
         query = query.execution_options(timeout=timeout)
     if filter is not None:
-        if callable(filter):
-            query = query.filter(filter(model))
-        elif isinstance(filter, (BooleanClauseList, BinaryExpression)):
+        if isinstance(filter, (BooleanClauseList, BinaryExpression)):
             query = query.filter(filter)
         elif isinstance(filter, (list, tuple)):
             query = query.filter(*filter)
@@ -285,6 +283,11 @@ def model_query(intance, model, filter=None, timeout=0.5):
             except KeyError as e:
                 raise exceptions.ColumnError('No such attribute ~%(attribute)s~ in %(class)s class' %
                                              {'attribute': e.message, 'class': model.__name__})
+        elif callable(filter):
+            try:
+                query = query.filter(filter(model))
+            except Exception:
+                raise InvalidArgument('call filter function catch error')
         else:
             raise InvalidArgument('filter type %s not match' % type(filter).__name__)
     return query
