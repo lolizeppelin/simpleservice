@@ -9,6 +9,7 @@ from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.sql.elements import BooleanClauseList
+from sqlalchemy.sql.elements import BinaryExpression
 
 
 from simpleutil.utils import excutils
@@ -274,7 +275,7 @@ def model_query(intance, model, filter=None, timeout=0.5):
     if filter is not None:
         if callable(filter):
             query = query.filter(filter(model))
-        elif isinstance(filter, BooleanClauseList):
+        elif isinstance(filter, (BooleanClauseList, BinaryExpression)):
             query = query.filter(filter)
         elif isinstance(filter, (list, tuple)):
             query = query.filter(*filter)
@@ -285,7 +286,7 @@ def model_query(intance, model, filter=None, timeout=0.5):
                 raise exceptions.ColumnError('No such attribute ~%(attribute)s~ in %(class)s class' %
                                              {'attribute': e.message, 'class': model.__name__})
         else:
-            raise InvalidArgument('filter type error')
+            raise InvalidArgument('filter type %s not match' % type(filter).__name__)
     return query
 
 
