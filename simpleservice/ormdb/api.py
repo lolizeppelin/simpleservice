@@ -297,7 +297,7 @@ def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
     column = modelkey.property.columns[0]
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
-        InvalidArgument('%s column type error, not allow autoincrement' % str(column))
+        raise InvalidArgument('%s column type error, not allow autoincrement' % str(column))
     model = modelkey.class_
     # query max id
     query = session.query(func.max(modelkey))
@@ -310,7 +310,7 @@ def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
                 try:
                     max_id = column.default.arg()
                 except TypeError:
-                    InvalidArgument('%s call default function' % str(column))
+                    raise InvalidArgument('%s call default function' % str(column))
             else:
                 max_id = column.default.arg
         else:
