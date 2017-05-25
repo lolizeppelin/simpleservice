@@ -2,10 +2,14 @@ import time
 import six
 
 from sqlalchemy import func
+from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.query import Query
+from sqlalchemy.dialects.mysql import base
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
-from sqlalchemy.dialects.mysql import base
+from sqlalchemy.sql.elements import BooleanClauseList
+
 
 from simpleutil.utils import excutils
 from simpleutil.utils import reflection
@@ -255,16 +259,25 @@ class MysqlDriver(object):
         return self._get_sessionmaker(read)(**kwargs)
 
 
-def model_query(session, model, filter=None, timeout=0.5):
+def model_query(intance, model, filter=None, timeout=0.5):
     """filter_args is can be a dict of model's attribte
     or a callable function form return the args for query.filter
     """
-    query = session.query(model)
+    if isinstance(intance, Session):
+        query = intance.query(model)
+    elif isinstance(intance, Query):
+        query = intance
+    else:
+        raise InvalidArgument('First must Query or Session of sqlalchemy ')
     if timeout:
         query = query.execution_options(timeout=timeout)
     if filter is not None:
         if callable(filter):
             query = query.filter(filter(model))
+        elif isinstance(filter, BooleanClauseList):
+            query = query.filter(filter)
+        elif isinstance(filter, (list, tuple)):
+            query = query.filter(*filter)
         elif isinstance(filter, dict):
             try:
                 query = query.filter(*[model.__dict__[key] == filter[key] for key in filter])
@@ -276,7 +289,7 @@ def model_query(session, model, filter=None, timeout=0.5):
     return query
 
 
-def model_autoincrement_id(session, modelkey, timeout=0.1):
+def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
     if not isinstance(modelkey, InstrumentedAttribute):
         raise InvalidArgument('modelkey type error')
     if not isinstance(modelkey.property, ColumnProperty):
@@ -285,10 +298,10 @@ def model_autoincrement_id(session, modelkey, timeout=0.1):
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         InvalidArgument('%s column type error, not allow autoincrement' % str(column))
+    model = modelkey.class_
     # query max id
     query = session.query(func.max(modelkey))
-    if timeout:
-        query = query.execution_options(timeout=timeout)
+    query = model_query(query, model, filter, timeout)
     max_id = query.one()[0]
     # now row
     if max_id is None:
@@ -311,7 +324,7 @@ def model_autoincrement_id(session, modelkey, timeout=0.1):
     return max_id
 
 
-def model_count_with_key(session, model, timeout=0.1):
+def model_count_with_key(session, model, filter=None, timeout=0.1):
     """model can be DeclarativeMeta of table
     or InstrumentedAttribute of table column
     """
@@ -323,6 +336,5 @@ def model_count_with_key(session, model, timeout=0.1):
     else:
         raise InvalidArgument('model type error')
     query = session.query(func.count(key)).select_from(model)
-    if timeout:
-        query = query.execution_options(timeout=timeout)
+    query = model_query(query, model, filter, timeout)
     return query.scalar()
