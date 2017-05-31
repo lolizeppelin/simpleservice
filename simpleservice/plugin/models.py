@@ -15,7 +15,7 @@ PluginTableBase = declarative.declarative_base(cls=TableBase)
 class GkeyMap(PluginTableBase):
     """Distribute a sid for host"""
     sid = sa.Column(INTEGER(unsigned=True), nullable=False,
-                    default=0,
+                    default=1,
                     primary_key=True)
     # Max host size is 253
     host = sa.Column(VARCHAR(253), server_default=None,
