@@ -196,7 +196,7 @@ def init_events(engine, mysql_sql_mode=None, **kw):
                     realmode)
 
 
-connformater = 'mysql://%(user)s:%(passwd)s@%(host)s:%(port)s/%(schema)s'
+connformater = 'mysql+mysqlconnector://%(user)s:%(passwd)s@%(host)s:%(port)s/%(schema)s'
 
 
 template = cfg.ConfigOpts()
