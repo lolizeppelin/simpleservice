@@ -17,10 +17,10 @@
 """
 
 import itertools
-import logging
-
 import time
 import six
+
+import logging as default_logging
 
 import sqlalchemy
 import sqlalchemy.engine.url
@@ -28,6 +28,8 @@ from sqlalchemy import event
 from sqlalchemy.pool import NullPool
 
 from sqlalchemy.sql.expression import select
+
+from simpleutil.log import log as logging
 
 from simpleservice.ormdb import exceptions
 from simpleservice.ormdb import exc_filters
@@ -83,14 +85,14 @@ def _setup_logging(connection_debug=0):
     """
     connection_trace = False
     if connection_debug >= 0:
-        logger = logging.getLogger('sqlalchemy.engine')
+        logger = default_logging.getLogger('sqlalchemy.engine')
         if connection_debug >= 100:
             connection_trace = True
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(default_logging.DEBUG)
         elif connection_debug >= 50:
-            logger.setLevel(logging.INFO)
+            logger.setLevel(default_logging.INFO)
         else:
-            logger.setLevel(logging.WARNING)
+            logger.setLevel(default_logging.WARNING)
     return connection_trace
 
 
@@ -135,7 +137,7 @@ def create_engine(sql_connection,
         from simpleutil.common.exceptions import InvalidArgument
         raise InvalidArgument('sql_connection is None')
     if isinstance(sql_connection, dict):
-        sql_connection =  connformater % sql_connection
+        sql_connection = connformater % sql_connection
 
     # Set default value
     idle_timeout = idle_timeout if idle_timeout is not None else template.idle_timeout
