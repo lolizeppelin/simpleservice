@@ -185,6 +185,9 @@ class DBDataError(DBError):
 
     """
 
+class DBExecuteTimeOut(DBError):
+    """Database Execute timeout"""
+
 
 class InvalidSortKey(Exception):
     """A sort key destined for database query usage is invalid."""

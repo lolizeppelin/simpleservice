@@ -4,6 +4,9 @@ import time
 import sqlalchemy
 import sqlalchemy.event
 
+import eventlet
+from eventlet import hubs
+
 from sqlalchemy import pool
 from sqlalchemy import exc
 
@@ -11,9 +14,22 @@ from simpleutil.log import log as logging
 from simpleutil.config import cfg
 
 from simpleservice.ormdb import utils
+from simpleservice.ormdb import exceptions
 from simpleservice.ormdb.config import database_opts
 
+
+
+hub = hubs.get_hub()
+
 LOG = logging.getLogger(__name__)
+
+
+def cancel_execute(gleent):
+    if gleent.dead:
+        return
+    gleent.switch()
+    LOG.warning('Cursor Execute Over Time')
+    raise exceptions.DBExecuteTimeOut('Cursor Execute Over Time')
 
 
 def _thread_yield(dbapi_con, con_record):
@@ -194,6 +210,43 @@ def init_events(engine, mysql_sql_mode=None, **kw):
                         "MySQL SQL mode is '%s', "
                         "consider enabling TRADITIONAL or STRICT_ALL_TABLES",
                     realmode)
+
+
+@init_events.dispatch_for("mysql+mysqlconnector")
+def init_events(engine, **kw):
+    """python mysql driver can use eventlet to cancel on executeing"""
+    @sqlalchemy.event.listens_for(engine, "before_cursor_execute")
+    def execute_timeout_task(self, conn, cursor, statement,
+                             parameters, context, executemany):
+        if cursor is None:
+            return
+        timer = None
+        timeout = context.execution_options.get('timeout', None)
+        if timeout and timeout > 0.0:
+            timer = hub.schedule_call_global(timeout, cancel_execute, eventlet.getcurrent())
+        setattr(cursor, 'timeout_task', timer)
+
+
+    @sqlalchemy.event.listens_for(engine, "after_cursor_execute")
+    def execute_nottimeout(self, conn, cursor, statement,
+                             parameters, context, executemany):
+        if cursor is None:
+            return
+        timer = getattr(cursor, 'timeout_task', None)
+        if timer:
+            timer.cancel()
+            delattr(cursor, 'timeout_task')
+
+
+    @sqlalchemy.event.listens_for(engine, "dbapi_error")
+    def execute_error(self, conn, cursor, statement,
+                      parameters, context, executemany):
+        if cursor is None:
+            return
+        timer = getattr(cursor, 'timeout_task', None)
+        if timer:
+            timer.cancel()
+            delattr(cursor, 'timeout_task')
 
 
 connformater = 'mysql+mysqlconnector://%(user)s:%(passwd)s@%(host)s:%(port)s/%(schema)s'
