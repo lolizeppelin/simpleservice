@@ -4,14 +4,14 @@ import webob.exc
 
 from sqlalchemy.exc import OperationalError
 
-from simpleutil.log import log
+from simpleutil.log import log as logging
 from simpleutil.utils import jsonutils
 
 from simpleservice.ormdb.exceptions import DBError
 from simpleservice.wsgi.exceptions import NoFaultsKonwnExcpetion
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 DEFAULT_CONTENT_TYPE = 'application/json'
 STREAM_CONTENT_TYPE = 'application/octet-stream'

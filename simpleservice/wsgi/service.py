@@ -92,7 +92,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         self._protocol = eventlet.wsgi.HttpProtocol
         self.pool_size = self.conf.wsgi_default_pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
-        self._logger = logging.getLogger('goperation.service.WsgiServiceBase')
+        # self._logger = logging.getLogger('goperation.service.WsgiServiceBase')
+        # self._logger = LOG
         self._max_url_len = max_url_len
         self.client_socket_timeout = self.conf.client_socket_timeout or None
 
@@ -162,7 +163,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             'site': self.app,
             'protocol': self._protocol,
             'custom_pool': self._pool,
-            'log': self._logger,
+            # 'log': self._logger,
+            'log': LOG,
             'log_format': self.conf.wsgi_log_format,
             'debug': False,
             'keepalive': self.conf.wsgi_keep_alive,

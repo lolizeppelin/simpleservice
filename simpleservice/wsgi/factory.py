@@ -2,12 +2,12 @@ import functools
 import sys
 import routes
 
-from simpleutil.log import log
+from simpleutil.log import log as logging
 
 from simpleservice.wsgi import router
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def fail_gracefully(f):

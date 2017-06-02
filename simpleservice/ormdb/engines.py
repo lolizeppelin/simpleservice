@@ -85,14 +85,14 @@ def _setup_logging(connection_debug=0):
     """
     connection_trace = False
     if connection_debug >= 0:
-        logger = default_logging.getLogger('sqlalchemy.engine')
+        # logger = default_logging.getLogger('sqlalchemy.engine')
         if connection_debug >= 100:
             connection_trace = True
-            logger.setLevel(default_logging.DEBUG)
+            LOG.setLevel(default_logging.DEBUG)
         elif connection_debug >= 50:
-            logger.setLevel(default_logging.INFO)
+            LOG.setLevel(default_logging.INFO)
         else:
-            logger.setLevel(default_logging.WARNING)
+            LOG.setLevel(default_logging.WARNING)
     return connection_trace
 
 
