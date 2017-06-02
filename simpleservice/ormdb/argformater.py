@@ -18,7 +18,6 @@ from simpleservice.ormdb import exceptions
 from simpleservice.ormdb.config import database_opts
 
 
-
 hub = hubs.get_hub()
 
 LOG = logging.getLogger(__name__)
@@ -27,9 +26,8 @@ LOG = logging.getLogger(__name__)
 def cancel_execute(gleent):
     if gleent.dead:
         return
-    gleent.switch()
     LOG.warning('Cursor Execute Over Time')
-    raise exceptions.DBExecuteTimeOut('Cursor Execute Over Time')
+    gleent.throw(exceptions.DBExecuteTimeOut('Cursor Execute Over Time'))
 
 
 def _thread_yield(dbapi_con, con_record):
