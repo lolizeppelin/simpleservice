@@ -6,7 +6,7 @@ CONF = cfg.CONF
 
 log.register_options(CONF)
 
-DEFALUT_OPTIONS = [
+default_opts = [
     cfg.StrOpt('user',
                default='nginx',
                help='Serivce run user'),
@@ -23,7 +23,7 @@ DEFALUT_OPTIONS = [
                default='/var/run/simpleservice',
                help="Where to store simpleservice state files. "
                     "This directory must be writable by the agent. "),
-    ]
+]
 
 
 service_opts = [
@@ -44,4 +44,4 @@ def set_default_for_default_log_levels(extra_log_level_defaults):
 def configure(conf=None):
     if conf is None:
         conf = CONF
-    conf.register_opts(DEFALUT_OPTIONS)
+    conf.register_opts(default_opts)
