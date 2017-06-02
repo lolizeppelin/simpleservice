@@ -261,7 +261,7 @@ class MysqlDriver(object):
         return self._get_sessionmaker(read)(**kwargs)
 
 
-def model_query(intance, model, filter=None, timeout=0.5):
+def model_query(intance, model, filter=None, timeout=1.0):
     """filter_args is can be a dict of model's attribte
     or a callable function form return the args for query.filter
     """
