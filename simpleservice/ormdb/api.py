@@ -196,7 +196,6 @@ class MysqlDriver(object):
                                                         logging_name=self.name,
                                                         thread_checkin=True,
                                                         idle_timeout=self.conf.idle_timeout,
-                                                        connection_debug=self.conf.connection_debug,
                                                         max_pool_size=self.conf.max_pool_size,
                                                         max_overflow=self.conf.max_overflow,
                                                         pool_timeout=self.conf.pool_timeout,

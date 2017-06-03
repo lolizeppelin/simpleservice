@@ -51,12 +51,12 @@ def _add_trace_comments(engine):
     import sys
     import traceback
     target_paths = set([
-        os.path.dirname(sys.modules['oslo_db'].__file__),
+        os.path.dirname(sys.modules['simpleservice.ormdb'].__file__),
         os.path.dirname(sys.modules['sqlalchemy'].__file__)
     ])
     try:
         skip_paths = set([
-            os.path.dirname(sys.modules['oslo_db.tests'].__file__),
+            os.path.dirname(sys.modules['simpleservice.ormdb.tools'].__file__),
         ])
     except KeyError:
         skip_paths = set()

@@ -52,10 +52,6 @@ database_opts = [
                default=50,
                help='If set, use this value for max_overflow with '
                     'SQLAlchemy.'),
-    cfg.IntOpt('connection_debug',
-               default=0,
-               help='Verbosity of SQL debugging information: 0=None, '
-                    '100=Everything.'),
     cfg.BoolOpt('connection_trace',
                 default=False,
                 help='Add Python stack traces to SQL as comment strings.'),

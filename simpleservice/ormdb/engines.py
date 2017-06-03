@@ -74,25 +74,17 @@ def _connect_ping_listener(connection, branch):
         connection.should_close_with_result = save_should_close_with_result
 
 
-def _setup_logging(connection_debug=0):
+def _setup_logging():
     """setup_logging function maps SQL debug level to Python log level.
-
-    Connection_debug is a verbosity of SQL debugging information.
-    0=None(default value),
-    1=Processed only messages with WARNING level or higher
-    50=Processed only messages with INFO level or higher
-    100=Processed only messages with DEBUG level
     """
     connection_trace = False
-    if connection_debug >= 0:
-        # logger = default_logging.getLogger('sqlalchemy.engine')
-        if connection_debug >= 100:
-            connection_trace = True
-            LOG.setLevel(default_logging.DEBUG)
-        elif connection_debug >= 50:
-            LOG.setLevel(default_logging.INFO)
-        else:
-            LOG.setLevel(default_logging.WARNING)
+    level = default_logging.getLogger(__name__).level
+    # log level of sqlalchemy.engine use same value as
+    # log level of simpleservice.ormdb.engines
+    logger = default_logging.getLogger('sqlalchemy.engine')
+    logger.setLevel(level)
+    if level <= default_logging.DEBUG:
+        connection_trace = True
     return connection_trace
 
 
@@ -122,7 +114,6 @@ def create_engine(sql_connection,
                   logging_name=None,
                   thread_checkin=True,
                   idle_timeout=None,
-                  connection_debug=None,
                   max_pool_size=None,
                   max_overflow=None,
                   pool_timeout=None,
@@ -141,7 +132,6 @@ def create_engine(sql_connection,
 
     # Set default value
     idle_timeout = idle_timeout if idle_timeout is not None else template.idle_timeout
-    connection_debug = connection_debug if connection_debug is not None else template.connection_debug
     max_pool_size = max_pool_size if max_pool_size is not None else template.max_pool_size
     max_overflow = max_overflow if max_overflow is not None else template.max_overflow
     pool_timeout = pool_timeout if pool_timeout is not None else template.pool_timeout
@@ -173,7 +163,7 @@ def create_engine(sql_connection,
     )
     engine = sqlalchemy.create_engine(url, **engine_args)
 
-    connection_trace = _setup_logging(connection_debug)
+    connection_trace = _setup_logging()
     init_events(
         engine,
         mysql_sql_mode=mysql_sql_mode,
