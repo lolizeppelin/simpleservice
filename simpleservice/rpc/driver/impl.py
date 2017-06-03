@@ -5,8 +5,6 @@ import eventlet.semaphore
 
 from six import moves
 
-from simpleutil.utils import singleton
-
 from simpleutil.config import cfg
 
 from simpleutil.log import log as logging
@@ -159,7 +157,6 @@ class ReplyWaiter(object):
         return final_reply
 
 
-@singleton
 class RabbitDriver(object):
 
     prefetch_size = 0
@@ -173,15 +170,14 @@ class RabbitDriver(object):
     def __init__(self, conf):
 
         self.missing_destination_retry_timeout = (
-            conf.rabbit.kombu_missing_consumer_retry_timeout)
+            conf.kombu_missing_consumer_retry_timeout)
 
         self.prefetch_size = (
-            conf.rabbit.rabbit_qos_prefetch_count)
-        connection_pool = connection.ConnectionPool(
-            conf, conf.rabbit.rabbit_conn_pool_size)
+            conf.rabbit_qos_prefetch_count)
+        connection_pool = connection.ConnectionPool(conf)
         self.conf = conf
         self._allowed_remote_exmods = []
-        self._default_exchange = conf.rabbit.exchange
+        self._default_exchange = conf.exchange
         # self._default_exchange = default_exchange
         self._connection_pool = connection_pool
         # self._reply_q_lock = threading.Lock()

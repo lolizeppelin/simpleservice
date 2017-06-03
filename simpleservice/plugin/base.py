@@ -28,3 +28,7 @@ class ManagerBase(object):
     def full(self):
         """If agent is full load"""
         raise NotImplemented
+
+
+class EndpointBase(object):
+    """"""

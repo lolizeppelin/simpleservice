@@ -162,39 +162,39 @@ class Connection(object):
 
     def __init__(self, conf, purpose):
         # NOTE(viktors): Parse config options
-        driver_conf = conf.rabbit
+        # driver_conf = conf.rabbit
 
-        self.max_retries = driver_conf.rabbit_max_retries
-        self.interval_start = driver_conf.rabbit_retry_interval
-        self.interval_stepping = driver_conf.rabbit_retry_backoff
-        self.interval_max = driver_conf.rabbit_interval_max
-        self.login_method = driver_conf.rabbit_login_method
+        self.max_retries = conf.rabbit_max_retries
+        self.interval_start = conf.rabbit_retry_interval
+        self.interval_stepping = conf.rabbit_retry_backoff
+        self.interval_max = conf.rabbit_interval_max
+        self.login_method = conf.rabbit_login_method
         # self.fake_rabbit = driver_conf.fake_rabbit
-        self.virtual_host = driver_conf.rabbit_virtual_host
-        self.rabbit_host = driver_conf.rabbit_host
+        self.virtual_host = conf.rabbit_virtual_host
+        self.rabbit_host = conf.rabbit_host
         # self.rabbit_hosts = driver_conf.rabbit_hosts
-        self.rabbit_port = driver_conf.rabbit_port
-        self.rabbit_userid = driver_conf.rabbit_userid
-        self.rabbit_password = driver_conf.rabbit_password
-        self.rabbit_ha_queues = driver_conf.rabbit_ha_queues
-        self.rabbit_transient_queues_ttl = driver_conf.rabbit_transient_queues_ttl
-        self.rabbit_qos_prefetch_count = driver_conf.rabbit_qos_prefetch_count
-        self.heartbeat_timeout_threshold = driver_conf.heartbeat_timeout_threshold
-        self.heartbeat_rate = driver_conf.heartbeat_rate
-        self.kombu_reconnect_delay = driver_conf.kombu_reconnect_delay
-        self.amqp_durable_queues = driver_conf.amqp_durable_queues
-        self.amqp_auto_delete = driver_conf.amqp_auto_delete
-        self.rabbit_use_ssl = driver_conf.rabbit_use_ssl
+        self.rabbit_port = conf.rabbit_port
+        self.rabbit_userid = conf.rabbit_userid
+        self.rabbit_password = conf.rabbit_password
+        self.rabbit_ha_queues = conf.rabbit_ha_queues
+        self.rabbit_transient_queues_ttl = conf.rabbit_transient_queues_ttl
+        self.rabbit_qos_prefetch_count = conf.rabbit_qos_prefetch_count
+        self.heartbeat_timeout_threshold = conf.heartbeat_timeout_threshold
+        self.heartbeat_rate = conf.heartbeat_rate
+        self.kombu_reconnect_delay = conf.kombu_reconnect_delay
+        self.amqp_durable_queues = conf.amqp_durable_queues
+        self.amqp_auto_delete = conf.amqp_auto_delete
+        self.rabbit_use_ssl = conf.rabbit_use_ssl
         self.kombu_missing_consumer_retry_timeout = \
-            driver_conf.kombu_missing_consumer_retry_timeout
-        self.kombu_failover_strategy = driver_conf.kombu_failover_strategy
-        self.kombu_compression = driver_conf.kombu_compression
+            conf.kombu_missing_consumer_retry_timeout
+        self.kombu_failover_strategy = conf.kombu_failover_strategy
+        self.kombu_compression = conf.kombu_compression
 
         if self.rabbit_use_ssl:
-            self.kombu_ssl_version = driver_conf.kombu_ssl_version
-            self.kombu_ssl_keyfile = driver_conf.kombu_ssl_keyfile
-            self.kombu_ssl_certfile = driver_conf.kombu_ssl_certfile
-            self.kombu_ssl_ca_certs = driver_conf.kombu_ssl_ca_certs
+            self.kombu_ssl_version = conf.kombu_ssl_version
+            self.kombu_ssl_keyfile = conf.kombu_ssl_keyfile
+            self.kombu_ssl_certfile = conf.kombu_ssl_certfile
+            self.kombu_ssl_ca_certs = conf.kombu_ssl_ca_certs
 
         # Try forever?
         if self.max_retries <= 0:
@@ -881,10 +881,10 @@ class Connection(object):
 
 class ConnectionPool(object):
     """Class that implements a Pool of Connections."""
-    def __init__(self, conf, rpc_conn_pool_size):
+    def __init__(self, conf):
         self.conf = conf
         # self.url = url
-        self._max_size = rpc_conn_pool_size
+        self._max_size = conf.rabbit_conn_pool_size
         self._current_size = 0
         # self._cond = threading.Condition()
         self._cond = eventlet.semaphore.Semaphore()

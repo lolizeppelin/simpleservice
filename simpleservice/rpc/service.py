@@ -1,16 +1,15 @@
 from simpleservice import loopingcall
 from simpleservice.base import LauncheServiceBase
 from simpleservice.plugin.base import ManagerBase
-from simpleservice.rpc.config import client_opts
-from simpleservice.rpc.config import server_opts
+from simpleservice.plugin.base import EndpointBase
+from simpleservice.rpc.config import rpc_client_opts
+from simpleservice.rpc.config import rpc_server_opts
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleservice.rpc.server import RpcConnection
-from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.utils import importutils
 
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
@@ -22,30 +21,33 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, manager, endpoints=None,
+    def __init__(self, conf, manager, endpoints=None,
                  *args, **kwargs):
-        self.conf = CONF
-        self.conf.register_opts(server_opts)
+        self.conf = conf
+        self.conf.register_opts(rpc_server_opts)
         self.endpoints = []
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(*args, **kwargs)
-        elif isinstance(manager, ManagerBase):
-            self.manager = manager
         else:
+            self.manager = manager
+        if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
         if endpoints:
             for endpoint_name in endpoints:
-                try:
-                    self.endpoints.append(importutils.import_class(endpoint_name)(*args, **kwargs))
-                except Exception:
-                    raise RuntimeError('Init endpoint %(endpoint)s catch error' % {'endpoint': endpoint_name})
+                if isinstance(endpoint_name, basestring):
+                    endpoint = importutils.import_class(endpoint_name)(*args, **kwargs)
+                else:
+                    endpoint = endpoint_name
+                if not isinstance(endpoint, EndpointBase):
+                    RuntimeError('Endpoint type error')
+                self.endpoints.append(endpoint)
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
         LauncheServiceBase.__init__(self, self.manager.namespace)
 
     def start(self):
         self.manager.init_host()
-        self.conn = RpcConnection(self.manager, self.endpoints)
+        self.conn = RpcConnection(self.conf, self.manager, self.endpoints)
         LOG.debug("Creating Consumer connection for Service %s",
                   self.manager.target.topic)
         self.manager.initialize_service_hook(self)
@@ -98,17 +100,16 @@ class LauncheRpcServiceBase(LauncheServiceBase):
 
 class RPCClientBase(object):
 
-    def __init__(self, timeout=None, retry=None):
-        self.conf = CONF
-        self.conf.register_opts(client_opts)
-        self.rpcdriver = RabbitDriver(CONF)
+    def __init__(self, conf, timeout=None, retry=None):
+        self.conf = conf
+        self.conf.register_opts(rpc_client_opts)
+        self.rpcdriver = RabbitDriver(conf)
         self.timeout = timeout or self.conf.rpc_response_timeout
-        self.retry = retry
+        self.retry = retry or self.conf.rpc_send_retry
 
     def notify(self, target, ctxt, msg):
         try:
             self.rpcdriver.send_notification(target, ctxt, msg, retry=self.retry)
-        # except driver_base.TransportDriverError as ex:
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
 
@@ -117,7 +118,6 @@ class RPCClientBase(object):
         try:
             self.rpcdriver.send(target, ctxt, msg,
                                 retry=self.retry)
-        # except driver_base.TransportDriverError as ex:
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
 

@@ -134,9 +134,8 @@ amqp_opts = [
                 help='Auto-delete queues in AMQP.'),
 ]
 
-base_opts = [
+rpc_base_opts = [
     cfg.IntOpt('rabbit_conn_pool_size',
                default=30,
                help='Size of rabbit RPC connection pool for send rpc request.'),
 ]
-rabbit_group = cfg.OptGroup(name='rabbit', title='RabbitMQ driver options')

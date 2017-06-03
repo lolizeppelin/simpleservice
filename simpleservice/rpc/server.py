@@ -9,13 +9,11 @@ from simpleservice.base import ServiceBase
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.dispatcher import RPCDispatcher
 from simpleservice.rpc.driver.impl import RabbitDriver
-from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.utils import lockutils
 from simpleutil.utils import threadgroup
 from simpleutil.utils import timeutils
 
-CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
@@ -176,7 +174,7 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         self.dispatcher = dispatcher
         self.listener = None
         self._work_pool = None
-        self.ioloop = None
+        self._ioloop = None
         # self._poll_pool = None
         self._started = False
         super(MessageHandlingService, self).__init__()
@@ -190,20 +188,12 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
                         'need to restart MessageHandlingServer you should '
                         'instantiate a new object.')
         self._started = True
-
-        # try:
-        #     self.listener = self.dispatcher._listen(self.transport)
-        # except driver_base.TransportDriverError as ex:
-        #     raise ServerListenError(self.target, ex)
         targets = [endpoint.target for endpoint in self.dispatcher.endpoints]
         targets.insert(0, self.dispatcher.manager.target)
         self.listener = self.rpcdriver.listen(targets)
         self._work_pool = \
             threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
-        # self._poll_pool = \
-        #     threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
-        # eventlet.spawn_n(self._poll_loop)
-        self.ioloop = eventlet.spawn(self._runner)
+        self._ioloop = eventlet.spawn(self._runner)
         LOG.info("%(class)s started" % {'class': self.__class__.__name__})
 
     @ordered(after='start')
@@ -227,21 +217,10 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
     @ordered(after='stop')
     def wait(self):
         # wait all self.runner thread finish
-        # self._poll_pool.wait()
-        self.ioloop.wait()
-        # wait all self._submit_work thread finish
+        self._ioloop.wait()
         self._work_pool.wait()
         self.listener.cleanup()
 
-    # def _poll_loop(self):
-    #     LOG.debug("Starting _poll_loop")
-    #     while True:
-    #         # Avoid spawning a self._runner after stop
-    #         self._poll_pool.pool.sem.acquire()
-    #         self._poll_pool.pool.sem.release()
-    #         if self._started:
-    #             self._poll_pool.add_thread_n(self._runner)
-    #     LOG.debug("End _poll_loop")
 
     def _submit_work(self, callback):
         if callback:
@@ -255,8 +234,8 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
 
 class RpcConnection(object):
 
-    def __init__(self, manager, endpoints):
-        rpcserver = RabbitDriver(CONF)
+    def __init__(self, conf, manager, endpoints):
+        rpcserver = RabbitDriver(conf)
         self.rpcserver = MessageHandlingService(rpcdriver=rpcserver,
                                                 dispatcher=RPCDispatcher(manager,
                                                                          endpoints)
