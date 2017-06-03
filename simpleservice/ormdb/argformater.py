@@ -214,7 +214,7 @@ def init_events(engine, mysql_sql_mode=None, **kw):
 def init_events(engine, **kw):
     """python mysql driver can use eventlet to cancel on executeing"""
     @sqlalchemy.event.listens_for(engine, "before_cursor_execute")
-    def execute_timeout_task(self, conn, cursor, statement,
+    def execute_timeout_task(conn, cursor, statement,
                              parameters, context, executemany):
         if cursor is None:
             return
@@ -226,7 +226,7 @@ def init_events(engine, **kw):
 
 
     @sqlalchemy.event.listens_for(engine, "after_cursor_execute")
-    def execute_nottimeout(self, conn, cursor, statement,
+    def execute_nottimeout(conn, cursor, statement,
                              parameters, context, executemany):
         if cursor is None:
             return
