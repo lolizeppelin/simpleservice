@@ -117,7 +117,8 @@ def controller_return_response(controller, faults=None, action_status=None):
             LOG.exception('%s failed', action)
             # Do not expose details of 500 error to clients.
             msg = 'Request Failed: internal server error while ' \
-                  'processing your request. %s' % e.message
+                  'processing your request. %(class)s, %(message)s' %  {'class': e.__class__.__name__,
+                                                                        'message': e.message}
             body = default_serializer({'msg': msg})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise webob.exc.HTTPInternalServerError(**kwargs)
