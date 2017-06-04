@@ -121,11 +121,6 @@ class RPCClientBase(object):
         except exceptions.RabbitDriverError as ex:
             raise exceptions.ClientSendError(target, ex)
 
-    def broadcast(self, target, ctxt, msg):
-        broadtarget = target(**target.to_dict())
-        broadtarget.topic = '%s.*' % broadtarget.topic
-        self.cast(broadtarget, ctxt, msg)
-
     def call(self, target, ctxt, msg, timeout=None):
         if target.fanout:
             raise exceptions.InvalidTarget('A call cannot be used with fanout', target)
