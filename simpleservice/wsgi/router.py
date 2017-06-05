@@ -107,13 +107,15 @@ class RoutersBase(object):
     def append_routers(self, mapper, routers):
         """Append routers.
         Subclasses should override this method to map its routes.
-        添加路由
-        这里有三种实现方式
+        添加路由有三种实现方式
 
-        1、生成ComposableRouter实例并添加到到routers列表中
-           外部一次性用ComposingRouter组装routers列表中的所有路由
-        2、直接调用_add_resource生成路由
-        3、直接在里面写mapper.connect、mapper.collection等
+        1、直接在当前函数中写mapper.connect、mapper.collection等
+           neutron里使用这种方式
+        2、将生成的路由添加到routers（参数）这个列表中,
+           外部会一次性用ComposingRouter组装routers列表中的所有路由
+           这个方式一般是让路由延后加载,keystone有部分路由使用这个方式
+        3、调用下面的_add_resource生成路由(里面封装了mapper.connect)
+           这个方式keystone里用得比较多
         """
 
     def _add_resource(self, mapper, controller, path,
