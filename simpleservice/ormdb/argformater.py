@@ -237,7 +237,7 @@ def init_events(engine, **kw):
 
 
     @sqlalchemy.event.listens_for(engine, "dbapi_error")
-    def execute_error(self, conn, cursor, statement,
+    def execute_error(conn, cursor, statement,
                       parameters, context, executemany):
         if cursor is None:
             return
