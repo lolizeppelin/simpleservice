@@ -208,7 +208,6 @@ class MysqlDriver(object):
                                                             logging_name=self.name,
                                                             thread_checkin=True,
                                                             idle_timeout=self.conf.idle_timeout,
-                                                            connection_debug=self.conf.connection_debug,
                                                             max_pool_size=self.conf.max_pool_size,
                                                             max_overflow=self.conf.max_overflow,
                                                             pool_timeout=self.conf.pool_timeout,
@@ -269,7 +268,9 @@ def model_query(intance, model, filter=None, timeout=1.0):
     elif isinstance(intance, Query):
         query = intance
     else:
-        raise InvalidArgument('First must Query or Session of sqlalchemy ')
+        raise InvalidArgument('First must Query or Session of sqlalchemy')
+    if not isinstance(model, DeclarativeMeta):
+        raise InvalidArgument('Model must be a instance of DeclarativeMeta')
     if timeout:
         query = query.execution_options(timeout=timeout)
     if filter is not None:
