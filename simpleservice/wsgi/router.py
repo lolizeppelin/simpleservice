@@ -125,42 +125,42 @@ class RoutersBase(object):
                       put_action=None, post_action=None, patch_action=None,
                       delete_action=None, get_post_action=None):
         if get_head_action:
-            getattr(controller, get_head_action)
+            # getattr(controller, get_head_action)
             mapper.connect(get_head_action + '_' + self.resource_name,
                            path, controller=controller, action=get_head_action,
                            conditions=dict(method=['GET', 'HEAD']))
         if get_action:
-            getattr(controller, get_action)
+            # getattr(controller, get_action)
             mapper.connect(get_action + '_' + self.resource_name,
                            path, controller=controller, action=get_action,
                            conditions=dict(method=['GET']))
         if head_action:
-            getattr(controller, head_action)
+            # getattr(controller, head_action)
             mapper.connect(head_action + '_' + self.resource_name,
                            path, controller=controller, action=head_action,
                            conditions=dict(method=['HEAD']))
         if put_action:
-            getattr(controller, put_action)
+            # getattr(controller, put_action)
             mapper.connect(put_action + '_' + self.resource_name,
                            path, controller=controller, action=put_action,
                            conditions=dict(method=['PUT']))
         if post_action:
-            getattr(controller, post_action)
+            # getattr(controller, post_action)
             mapper.connect(post_action + '_' + self.resource_name,
                            path, controller=controller, action=post_action,
                            conditions=dict(method=['POST']))
         if patch_action:
-            getattr(controller, patch_action)
+            # getattr(controller, patch_action)
             mapper.connect(patch_action + '_' + self.resource_name,
                            path, controller=controller, action=patch_action,
                            conditions=dict(method=['PATCH']))
         if delete_action:
-            getattr(controller, delete_action)
+            # getattr(controller, delete_action)
             mapper.connect(delete_action + '_' + self.resource_name,
                            path, controller=controller, action=delete_action,
                            conditions=dict(method=['DELETE']))
         if get_post_action:
-            getattr(controller, get_post_action)
+            # getattr(controller, get_post_action)
             mapper.connect(get_post_action + '_' + self.resource_name,
                            path, controller=controller, action=get_post_action,
                            conditions=dict(method=['GET', 'POST']))
