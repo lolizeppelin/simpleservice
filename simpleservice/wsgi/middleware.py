@@ -2,7 +2,7 @@
 import webob.dec
 import webob.exc
 
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import SQLAlchemyError
 
 from simpleutil.log import log as logging
 from simpleutil.utils import jsonutils
@@ -103,7 +103,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             e.body = default_serializer({'msg': msg})
             e.content_type = DEFAULT_CONTENT_TYPE
             raise e
-        except (OperationalError, DBError):
+        except (SQLAlchemyError, DBError):
             # Database error details will not send
             LOG.exception('%s failed', action)
             # Do not expose details of 500 error to clients.
