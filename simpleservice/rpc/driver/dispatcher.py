@@ -45,7 +45,7 @@ class RPCDispatcher(object):
         if not method.startswith('rpc_'):
             method = 'rpc_%(method)s' % {'method': method}
         args = message.get('args', {})
-        namespace = message.get('namespace')
+        namespace = ctxt.get('namespace')
         try:
             if namespace == self.manager.namespace:
                 if hasattr(self.manager, method):

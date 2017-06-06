@@ -203,7 +203,7 @@ class RabbitDriver(object):
         context = ctxt
         msg = message
         # Set namespace for dispatcher
-        msg.update({'namespace': target.namespace})
+        ctxt.update({'namespace': target.namespace})
         if wait_for_reply:
             msg_id = uuid.uuid4().hex
             msg.update({'_msg_id': msg_id})
