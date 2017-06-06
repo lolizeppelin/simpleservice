@@ -100,8 +100,8 @@ class RPCClientBase(object):
     def __init__(self, conf, timeout=None, retry=None):
         self.conf = conf
         self.rpcdriver = RabbitDriver(conf)
-        self.timeout = timeout or self.conf.rpc_response_timeout
-        self.retry = retry or self.conf.rpc_send_retry
+        self.timeout = timeout or 5
+        self.retry = retry or 3
 
     def notify(self, target, ctxt, msg):
         try:
