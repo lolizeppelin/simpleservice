@@ -1,17 +1,5 @@
 from simpleutil.config import cfg
 
-rpc_client_opts = [
-    cfg.IntOpt('rpc_response_timeout',
-               max=15,
-               min=1,
-               default=3,
-               help='Seconds to wait for a response from a call.'),
-    cfg.IntOpt('rpc_send_retry',
-               min=0,
-               max=5,
-               default=3,
-               help='Rpc send retry times')
-]
 
 rpc_server_opts = [
     cfg.IntOpt('rpc_process',
