@@ -148,7 +148,11 @@ class RPCDispatcherError(MessagingServerError):
     """A base class for all RPC dispatcher exceptions."""
 
 
-class EndpointNoSuchMethod(RPCDispatcherError, AttributeError):
+class NoSuchMethod(RPCDispatcherError, AttributeError):
+    """Raised if no Method found"""
+
+
+class EndpointNoSuchMethod(NoSuchMethod):
     """Raised if there is no endpoint which exposes the requested method."""
 
     def __init__(self, namespace, method):
@@ -157,7 +161,7 @@ class EndpointNoSuchMethod(RPCDispatcherError, AttributeError):
         self.method = method
 
 
-class ManagerNoSuchMethod(RPCDispatcherError, AttributeError):
+class ManagerNoSuchMethod(NoSuchMethod):
     """Raised if there is no endpoint which exposes the requested method."""
 
     def __init__(self, method):
