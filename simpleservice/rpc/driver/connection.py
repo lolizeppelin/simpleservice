@@ -178,6 +178,7 @@ class Connection(object):
         self.rabbit_password = conf.rabbit_password
         self.rabbit_ha_queues = conf.rabbit_ha_queues
         self.rabbit_transient_queues_ttl = conf.rabbit_transient_queues_ttl
+        self.rabbit_connect_timeout = conf.rabbit_connect_timeout
         self.rabbit_qos_prefetch_count = conf.rabbit_qos_prefetch_count
         self.heartbeat_timeout_threshold = conf.heartbeat_timeout_threshold
         self.heartbeat_rate = conf.heartbeat_rate
@@ -228,6 +229,7 @@ class Connection(object):
             login_method=self.login_method,
             heartbeat=self.heartbeat_timeout_threshold,
             failover_strategy=self.kombu_failover_strategy,
+            connect_timeout=self.rabbit_connect_timeout,
             transport_options={
                 'confirm_publish': True,
                 'client_properties': {'capabilities': {

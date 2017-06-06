@@ -64,15 +64,15 @@ rabbit_opts = [
                default=1,
                help='How frequently to retry connecting with RabbitMQ.'),
     cfg.IntOpt('rabbit_retry_backoff',
-               default=2,
+               default=1,
                help='How long to backoff for between retries when connecting '
                     'to RabbitMQ.'),
     cfg.IntOpt('rabbit_interval_max',
-               default=30,
+               default=3,
                help='Maximum interval of RabbitMQ connection retries. '
                     'Default is 30 seconds.'),
     cfg.IntOpt('rabbit_max_retries',
-               default=0,
+               default=5,
                help='Maximum number of RabbitMQ connection retries. '
                     'Default is 0 (infinite retry count).'),
     cfg.IntOpt('rabbit_transient_queues_ttl',
@@ -82,12 +82,15 @@ rabbit_opts = [
                     'queue TTL (x-expires). Queues which are unused for the '
                     'duration of the TTL are automatically deleted. The '
                     'parameter affects only reply and fanout queues.'),
+    cfg.FloatOpt('rabbit_connect_timeout',
+                 default=0.5,
+                 help='Timeout connect to rabbit server'),
     cfg.IntOpt('rabbit_qos_prefetch_count',
                default=0,
                help='Specifies the number of messages to prefetch. Setting to '
                     'zero allows unlimited messages.'),
     cfg.IntOpt('heartbeat_timeout_threshold',
-               default=60,
+               default=30,
                help="Number of seconds after which the Rabbit broker is "
                "considered down if heartbeat's keep-alive fails "
                "(0 disable the heartbeat). EXPERIMENTAL"),
