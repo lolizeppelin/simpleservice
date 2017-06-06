@@ -2,8 +2,6 @@ from simpleservice import loopingcall
 from simpleservice.base import LauncheServiceBase
 from simpleservice.plugin.base import ManagerBase
 from simpleservice.plugin.base import EndpointBase
-from simpleservice.rpc.config import rpc_client_opts
-from simpleservice.rpc.config import rpc_server_opts
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleservice.rpc.server import RpcConnection
@@ -24,7 +22,6 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     def __init__(self, conf, manager, endpoints=None,
                  *args, **kwargs):
         self.conf = conf
-        self.conf.register_opts(rpc_server_opts)
         self.endpoints = []
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(*args, **kwargs)
@@ -102,7 +99,6 @@ class RPCClientBase(object):
 
     def __init__(self, conf, timeout=None, retry=None):
         self.conf = conf
-        self.conf.register_opts(rpc_client_opts)
         self.rpcdriver = RabbitDriver(conf)
         self.timeout = timeout or self.conf.rpc_response_timeout
         self.retry = retry or self.conf.rpc_send_retry
