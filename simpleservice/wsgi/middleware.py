@@ -76,20 +76,21 @@ def controller_return_response(controller, faults=None, action_status=None):
                 LOG.info('%(action)s failed (client error): %(exc)s',
                          {'action': action, 'exc': e})
             else:
-                LOG.exception('%s failed', action)
+                LOG.error('%s failed', action)
             body = default_serializer({'msg': e.message})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise mapped_exc(**kwargs)
         except NotImplementedError as e:
-            body = default_serializer({'msg': 'Request Failed: '
-                                              'NotImplementedError %s' % e.message})
+            body = default_serializer({'msg': 'Request Failed: NotImplementedError %s' % e.message})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
+            LOG.error('%s failed %s', (action, e.message))
             raise webob.exc.HTTPNotImplemented(**kwargs)
         except webob.exc.HTTPException as e:
             # type_, value, tb = sys.exc_info()
             if not isinstance(e, webob.Response):
-                msg = e.message if e.message else 'unkonwon'
+                msg = e.message if hasattr(e, 'message') and e.message else 'unkonwon'
                 msg = 'Request Failed: HTTPException Reson: %s' % msg
+                LOG.error('%s failed %s', (action, msg))
                 body = default_serializer({'msg': msg})
                 kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
                 raise webob.exc.HTTPInternalServerError(**kwargs)
@@ -98,7 +99,7 @@ def controller_return_response(controller, faults=None, action_status=None):
                 LOG.info(msg)
             else:
                 msg = '%s failed' % action
-                LOG.exception(msg)
+                LOG.error(msg)
             msg = 'Request Failed: HTTPException on %s' % msg
             e.body = default_serializer({'msg': msg})
             e.content_type = DEFAULT_CONTENT_TYPE
