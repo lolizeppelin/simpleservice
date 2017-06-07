@@ -45,7 +45,7 @@ rabbit_opts = [
 
 
     cfg.FloatOpt('kombu_reconnect_delay',
-                 default=1.0,
+                 default=0.5,
                  help='How long to wait before reconnecting in response to an '
                       'AMQP consumer cancel notification.'),
     cfg.IntOpt('kombu_missing_consumer_retry_timeout',
@@ -68,9 +68,9 @@ rabbit_opts = [
                help='How long to backoff for between retries when connecting '
                     'to RabbitMQ.'),
     cfg.IntOpt('rabbit_interval_max',
-               default=3,
+               default=2,
                help='Maximum interval of RabbitMQ connection retries. '
-                    'Default is 30 seconds.'),
+                    'Default is 3 seconds.'),
     cfg.IntOpt('rabbit_max_retries',
                default=5,
                help='Maximum number of RabbitMQ connection retries. '
