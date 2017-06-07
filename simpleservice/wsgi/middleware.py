@@ -77,7 +77,7 @@ def controller_return_response(controller, faults=None, action_status=None):
                          {'action': action, 'exc': e})
             else:
                 LOG.error('%s failed', action)
-            body = default_serializer({'msg': e.message})
+            body = default_serializer({'msg': '%s: %s' % (e.__class__.__name__, e.message)})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise mapped_exc(**kwargs)
         except NotImplementedError as e:
