@@ -766,7 +766,7 @@ class Connection(object):
             # version 3.0.25, so do conversion according to kombu version.
             # with requirement kombu >=3.0.25
             # producer.publish(msg, expiration=self._get_expiration(timeout),
-            producer.publish(msg, expiration=int(timeout * 1000) if timeout is not None else None,
+            producer.publish(msg, expiration=timeout if timeout is not None else None,
                              compression=self.kombu_compression)
 
     # List of notification queue declared on the channel to avoid
