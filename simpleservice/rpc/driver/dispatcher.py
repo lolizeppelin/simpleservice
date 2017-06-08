@@ -1,8 +1,11 @@
 import sys
 
+from simpleservice.common import RESULT_OVER_DEADLINE
+from simpleservice.result import BaseResult
 from simpleservice.rpc.driver import exceptions
-
 from simpleutil.log import log as logging
+from simpleutil.utils import timeutils
+
 
 __all__ = [
     'RPCDispatcher',
@@ -22,6 +25,11 @@ class RPCDispatcher(object):
         """NOTE: Return dict just fine
         The Max deep is jsonutils.MAX_DEEP - 1
         """
+        deadline = ctxt.get('deadline', None)
+        if deadline and int(timeutils.realnow()) >= deadline:
+            LOG.warning('RPCDispatcher find deadline over localtime')
+            return BaseResult(resultcode=RESULT_OVER_DEADLINE,
+                              result='local time over deadline').to_dict()
         if endpoint:
             return self.manager.call_endpoint(endpoint, method, ctxt, args)
         else:
@@ -41,7 +49,10 @@ class RPCDispatcher(object):
         """
         ctxt = incoming.ctxt
         message = incoming.message
-        method = message.get('method', None)
+        try:
+            method = message.get('method')
+        except KeyError:
+            raise exceptions.NoSuchMethod('Method is None')
         if not method.startswith('rpc_'):
             method = 'rpc_%(method)s' % {'method': method}
         args = message.get('args', {})
