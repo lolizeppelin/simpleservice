@@ -276,6 +276,7 @@ class RabbitDriver(object):
                                                          target.server),
                                         callback=listener)
             # conn.declare_fanout_consumer(target.topic, listener)
+        self._init_waiter()
         return listener
 
     def cleanup(self):
