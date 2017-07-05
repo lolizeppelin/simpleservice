@@ -3,7 +3,7 @@ import uuid
 import eventlet
 import eventlet.semaphore
 
-from six import moves
+# from six import moves
 
 from simpleutil.log import log as logging
 
@@ -27,7 +27,8 @@ class ReplyWaiters(object):
     def get(self, msg_id, timeout):
         try:
             return self._queues[msg_id].get(block=True, timeout=timeout)
-        except moves.queue.Empty:
+        # except moves.queue.Empty:
+        except eventlet.queue.Empty:
             raise exceptions.MessagingTimeout(
                 'Timed out waiting for a reply '
                 'to message ID %s' % msg_id)
@@ -132,7 +133,8 @@ class ReplyWaiter(object):
             timeout = timer.check_return(self._raise_timeout_exception, msg_id)
             try:
                 message = self.waiters.get(msg_id, timeout=timeout)
-            except moves.queue.Empty:
+            # except moves.queue.Empty:
+            except eventlet.queue.Empty:
                 self._raise_timeout_exception(msg_id)
             reply, ending = self._process_reply(message)
             if reply is not None:
