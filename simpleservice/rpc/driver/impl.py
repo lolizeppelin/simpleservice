@@ -20,9 +20,10 @@ class ReplyWaiters(object):
 
     WAKE_UP = object()
 
-    def __init__(self):
+    def __init__(self, reply_q):
         self._queues = {}
         self._wrn_threshold = 10
+        self.reply_q = reply_q
 
     def get(self, msg_id, timeout):
         try:
@@ -39,6 +40,11 @@ class ReplyWaiters(object):
             LOG.info('No calling threads waiting for msg_id : %s' % msg_id)
             LOG.debug('queues: %(queues)s, message: %(message)s' %
                       {'queues': len(self._queues), 'message': message_data})
+            LOG.database('msg waiter has disappear',
+                         data={'msg_id': msg_id,
+                               'queues': self.reply_q,
+                               'queue_size': len(self._queues)},
+                         raw_data=message_data)
         else:
             queue.put(message_data)
 
@@ -63,7 +69,7 @@ class ReplyWaiter(object):
         self.conn = conn
         self.allowed_remote_exmods = allowed_remote_exmods
         self.msg_id_cache = rpc_common._MsgIdCache()
-        self.waiters = ReplyWaiters()
+        self.waiters = ReplyWaiters(reply_q)
         self.conn.declare_direct_consumer(reply_q, self)
         # self._thread_exit_event = threading.Event()
         self._thread_exit_event = False
@@ -104,6 +110,8 @@ class ReplyWaiter(object):
 
     @staticmethod
     def _raise_timeout_exception(msg_id):
+        LOG.database('Timed out waiting for a reply',
+                     data={'msg_id': msg_id})
         raise exceptions.MessagingTimeout('Timed out waiting for a reply to message ID %s.' % msg_id)
 
     def _process_reply(self, data):
