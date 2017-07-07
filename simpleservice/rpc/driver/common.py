@@ -20,6 +20,7 @@ _EXCEPTIONS_MODULE = 'exceptions' if six.PY2 else 'builtins'
 
 LOG = logging.getLogger(__name__)
 
+MsgTimeoutRecorder = None
 
 def _add_unique_id(msg):
     """Add unique_id for checking duplicate messages."""
