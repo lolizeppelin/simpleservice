@@ -3,10 +3,13 @@ import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
 from sqlalchemy.dialects.mysql import VARCHAR
+from sqlalchemy.dialects.mysql import CHAR
 from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.dialects.mysql import BIGINT
 
 from simpleservice.ormdb.models import TableBase
 from simpleservice.ormdb.models import InnoDBTableBase
+from simpleservice.ormdb.models import MyISAMTableBase
 
 
 PluginTableBase = declarative.declarative_base(cls=TableBase)
@@ -23,4 +26,17 @@ class GkeyMap(PluginTableBase):
     __table_args__ = (
             sa.UniqueConstraint('host'),
             InnoDBTableBase.__table_args__
+    )
+
+
+class MsgTimeoutRecord(PluginTableBase):
+    """Rpc call timeout message recode"""
+    record_time = sa.Column(BIGINT(unsigned=True),
+                            nullable=False,
+                            default=0, primary_key=True)
+    msg_id = sa.Column(CHAR(32), nullable=False)
+    queue_name = sa.Column(CHAR(38), nullable=False)
+    raw_message = sa.Column(VARCHAR(60000), nullable=True, default=None)
+    __table_args__ = (
+            MyISAMTableBase.__table_args__
     )
