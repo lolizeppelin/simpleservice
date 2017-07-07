@@ -12,6 +12,10 @@ from simpleservice.rpc.driver import poller
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver import common as rpc_common
 
+from simpleservice.plugin.models import MsgTimeoutRecord
+
+from simpleutil.utils.uuidutils import Gkey
+from simpleutil.utils.timeutils import realnow
 
 LOG = logging.getLogger(__name__)
 
@@ -40,11 +44,8 @@ class ReplyWaiters(object):
             LOG.info('No calling threads waiting for msg_id : %s' % msg_id)
             LOG.debug('queues: %(queues)s, message: %(message)s' %
                       {'queues': len(self._queues), 'message': message_data})
-            LOG.database('msg waiter has disappear',
-                         data={'msg_id': msg_id,
-                               'queues': self.reply_q,
-                               'queue_size': len(self._queues)},
-                         raw_data=message_data)
+            if rpc_common.MsgTimeoutRecorder is not None:
+                rpc_common.MsgTimeoutRecorder(msg_id, self.reply_q, message_data)
         else:
             queue.put(message_data)
 
@@ -71,6 +72,7 @@ class ReplyWaiter(object):
         self.msg_id_cache = rpc_common._MsgIdCache()
         self.waiters = ReplyWaiters(reply_q)
         self.conn.declare_direct_consumer(reply_q, self)
+        self.reply_q = reply_q
         # self._thread_exit_event = threading.Event()
         self._thread_exit_event = False
         # self._thread = threading.Thread(target=self.poll)
@@ -109,9 +111,9 @@ class ReplyWaiter(object):
         self.waiters.remove(msg_id)
 
     @staticmethod
-    def _raise_timeout_exception(msg_id):
-        LOG.database('Timed out waiting for a reply',
-                     data={'msg_id': msg_id})
+    def _raise_timeout_exception(msg_id, reply_q):
+        if rpc_common.MsgTimeoutRecorder is not None:
+            rpc_common.MsgTimeoutRecorder(msg_id, reply_q, 'Timeout')
         raise exceptions.MessagingTimeout('Timed out waiting for a reply to message ID %s.' % msg_id)
 
     def _process_reply(self, data):
@@ -138,12 +140,12 @@ class ReplyWaiter(object):
         final_reply = None
         ending = False
         while not ending:
-            timeout = timer.check_return(self._raise_timeout_exception, msg_id)
+            timeout = timer.check_return(self._raise_timeout_exception, msg_id, self.reply_q)
             try:
                 message = self.waiters.get(msg_id, timeout=timeout)
             # except moves.queue.Empty:
             except eventlet.queue.Empty:
-                self._raise_timeout_exception(msg_id)
+                self._raise_timeout_exception(msg_id, self.reply_q)
             reply, ending = self._process_reply(message)
             if reply is not None:
                 # NOTE(viktors): This can be either first _send_reply() with an
@@ -182,6 +184,24 @@ class RabbitDriver(object):
         self._reply_q_conn = None
         self._waiter = None
 
+    def init_timeout_record(self, session):
+        """this init func for set MsgTimeoutRecorder
+        so that, ReplyWaiter can wirite timeout log
+        into database
+        """
+        if rpc_common.MsgTimeoutRecorder is not None:
+            raise RuntimeError('Do not init MsgTimeoutRecorder more then once')
+
+        def record_closure(msg_id, queue_name, raw_message):
+            """A closure for write message into database"""
+            row = MsgTimeoutRecord(record_time=Gkey(),
+                                   msg_id=msg_id, queue_name=queue_name,
+                                   raw_message=raw_message)
+            session.add(row)
+            session.flush()
+
+        rpc_common.MsgTimeoutRecorder = record_closure
+
     def _get_exchange(self, target):
         return target.exchange or self._default_exchange
 
@@ -213,7 +233,8 @@ class RabbitDriver(object):
         context = ctxt
         msg = message
         # Set namespace for dispatcher
-        ctxt.update({'namespace': target.namespace})
+        ctxt.update({'namespace': target.namespace,
+                     'casttime': int(realnow())})
         if wait_for_reply:
             msg_id = uuid.uuid4().hex
             msg.update({'_msg_id': msg_id})
@@ -286,7 +307,7 @@ class RabbitDriver(object):
                                                          target.server),
                                         callback=listener)
             # conn.declare_fanout_consumer(target.topic, listener)
-        self._init_waiter()
+        # self._init_waiter()
         return listener
 
     def cleanup(self):
