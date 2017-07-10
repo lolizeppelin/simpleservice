@@ -22,7 +22,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     def __init__(self, conf, manager, endpoints=None,
                  *args, **kwargs):
         self.conf = conf
-        self.endpoints = []
+        self.endpoints = set()
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(*args, **kwargs)
         else:
@@ -30,14 +30,16 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
         if endpoints:
-            for endpoint_name in endpoints:
+            endpoints = set(list(endpoints))
+            while endpoints:
+                endpoint_name = endpoints.pop(0)
                 if isinstance(endpoint_name, basestring):
                     endpoint = importutils.import_class(endpoint_name)(*args, **kwargs)
                 else:
                     endpoint = endpoint_name
                 if not isinstance(endpoint, EndpointBase):
                     RuntimeError('Endpoint type error')
-                self.endpoints.append(endpoint)
+                self.endpoints.add(endpoint)
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
         LauncheServiceBase.__init__(self, self.manager.namespace)
