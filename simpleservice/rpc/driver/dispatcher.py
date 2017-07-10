@@ -1,4 +1,5 @@
 import sys
+import eventlet
 
 from simpleservice.common import RESULT_OVER_DEADLINE
 from simpleservice.result import BaseResult
@@ -38,6 +39,7 @@ class RPCDispatcher(object):
 
     def __call__(self, incoming):
         if self.manager.full():
+            eventlet.sleep(0.005)
             incoming.requeue()
             LOG.info('RPCDispatcher find manager is full, requeue')
             return None
@@ -72,7 +74,13 @@ class RPCDispatcher(object):
                     return
                 else:
                     raise exceptions.EndpointNoSuchMethod(endpoint.namespace, method)
-            raise exceptions.UnsupportedNamespace(namespace, method=method)
+            # msg_id is not None means get a rpc call
+            # if a rpc call can not found endpoint
+            # raise the UnsupportedNamespace error
+            # rpc cast or notify will igonre this msg
+            if incoming.msg_id:
+                raise exceptions.UnsupportedNamespace(namespace, method)
+            LOG.debug('Rpc cast can not find endpoint %s, method %s not called' % (namespace, method))
         except exceptions.ExpectedException as e:
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
             incoming.reply(failure=e.exc_info, log_failure=False)
