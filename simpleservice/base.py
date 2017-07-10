@@ -90,6 +90,7 @@ class ServiceBase(object):
         Called in case service running in daemon mode receives SIGHUP.
         """
 
+
 class LauncheServiceBase(ServiceBase):
 
     def __init__(self, name):
