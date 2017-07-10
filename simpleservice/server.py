@@ -6,6 +6,7 @@ from simpleutil.log import log as logging
 
 from simpleutil.config import cfg
 
+from simpleservice.config import ntp_opts
 from simpleservice.base import ProcessLauncher
 from simpleservice.base import ServiceLauncher
 from simpleutil.posix import systemd
@@ -33,6 +34,11 @@ class ServerWrapper(object):
 
 
 def launch(servers, user='root', group='root'):
+    CONF.register_cli_opt(ntp_opts)
+    if CONF.ntp_server:
+        from simpleutil.utils.timeutils import ntptime
+        if abs(ntptime(CONF.ntp_server, CONF.ntp_versio, CONF.ntp_port, CONF.ntp_timeout).offset) >= 1.0:
+            raise RuntimeError('Ntp offset more then 1 second, Please sync time first before launch')
     if max([server.workers for server in servers]) > 1:
         launcher = ProcessLauncher(CONF)
     else:

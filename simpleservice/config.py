@@ -37,6 +37,30 @@ service_opts = [
                     'server will exit. Zero value means endless wait.'),
 ]
 
+
+ntp_opts = [
+    cfg.IPOpt('ntp_server',
+              help='Specify server ip address of ntp request'
+              ),
+    cfg.PortOpt('ntp_port',
+                default=123,
+                help='Specify port of ntp request'
+                ),
+    cfg.IntOpt('ntp_version',
+               default=4,
+               help='Specify the version of ntp request',
+               min=1,
+               max=4,
+               ),
+    cfg.IntOpt('ntp_timeout',
+               default=1,
+               help='Specify a timeout for ntp request',
+               min=1,
+               max=5,
+               ),
+]
+
+
 def set_default_for_default_log_levels(extra_log_level_defaults):
     log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
 
