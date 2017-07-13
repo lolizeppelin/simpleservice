@@ -32,10 +32,10 @@ class RPCDispatcher(object):
             return BaseResult(resultcode=RESULT_OVER_DEADLINE,
                               result='local time over deadline').to_dict()
         if endpoint:
-            return self.manager.call_endpoint(endpoint, method, ctxt, args)
+            return self.manager.call_endpoint(endpoint, method, ctxt, **args)
         else:
             func = getattr(self.manager, method)
-            return func(ctxt, args)
+            return func(ctxt, **args)
 
     def __call__(self, incoming):
         if self.manager.full():
