@@ -378,3 +378,17 @@ class RetryDecorator(object):
             LOG.debug("Waiting for function %s to return.", func_name)
             return evt.wait()
         return func
+
+
+class IntervalLoopinTask(object):
+    """
+    Task class for FixedIntervalLoopingCall
+    """
+    def __init__(self, periodic_interval, initial_delay, stop_on_exception=True):
+        self.periodic_interval = periodic_interval
+        self.initial_delay = initial_delay
+        self.stop_on_exception = stop_on_exception
+
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplemented("IntervalLoopinTask call not Implemented")

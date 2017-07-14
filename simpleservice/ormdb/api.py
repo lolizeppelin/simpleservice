@@ -343,3 +343,16 @@ def model_count_with_key(session, model, filter=None, timeout=0.1):
     query = session.query(func.count(key)).select_from(model)
     query = model_query(query, model, filter, timeout)
     return query.scalar()
+
+
+def model_max_with_key(session, attribute, filter=None, timeout=0.1):
+    """model can be DeclarativeMeta of table
+    or InstrumentedAttribute of table column
+    """
+    if isinstance(attribute, InstrumentedAttribute):
+        model = attribute.class_
+    else:
+        raise InvalidArgument('model type error')
+    query = session.query(func.max(attribute)).select_from(model)
+    query = model_query(query, model, filter, timeout)
+    return query.scalar()

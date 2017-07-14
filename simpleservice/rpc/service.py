@@ -1,3 +1,7 @@
+from simpleutil.utils import importutils
+from simpleutil.config import cfg
+from simpleutil.log import log as logging
+
 from simpleservice import loopingcall
 from simpleservice.base import LauncheServiceBase
 from simpleservice.plugin.base import ManagerBase
@@ -5,9 +9,9 @@ from simpleservice.plugin.base import EndpointBase
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleservice.rpc.server import RpcConnection
-from simpleutil.log import log as logging
-from simpleutil.utils import importutils
 
+
+CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
 
@@ -19,9 +23,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, conf, manager, endpoints=None,
+    def __init__(self, manager, endpoints=None,
                  *args, **kwargs):
-        self.conf = conf
         self.endpoints = set()
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(*args, **kwargs)
@@ -43,10 +46,15 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
         LauncheServiceBase.__init__(self, self.manager.namespace)
+        self.conn = None
 
     def start(self):
         self.manager.init_host()
-        self.conn = RpcConnection(self.conf, self.manager, self.endpoints)
+        if hasattr(self.manager, 'rabbit_conf'):
+            rabbit_conf = self.manager.rabbit_conf
+        else:
+            rabbit_conf = CONF.rabbit
+        self.conn = RpcConnection(rabbit_conf, self.manager, self.endpoints)
         LOG.debug("Creating Consumer connection for Service %s",
                   self.manager.target.topic)
         self.manager.initialize_service_hook(self)
@@ -56,7 +64,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         for task in self.manager.periodic_tasks():
             periodic = loopingcall.FixedIntervalLoopingCall(task)
             periodic.start(interval=task.periodic_interval,
-                           initial_delay=task.initial_delay)
+                           initial_delay=task.initial_delay,
+                           stop_on_exception=task.stop_on_exception)
             self.timers.append(periodic)
 
         self.manager.after_start()
@@ -70,6 +79,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.stop()
 
     def stop(self):
+        if self.conn is None:
+            raise RuntimeError('Service not started? conn is None')
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         # This function will call by Launcher from outside
@@ -83,8 +94,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.stop()
             except Exception:
                 LOG.exception("Exception occurs when timer stops")
-        del self.timers[:]
-        del self.endpoints[:]
+        self.conn = None
+        # del self.timers[:]
+        # del self.endpoints[:]
 
     def wait(self):
         for x in self.timers:
@@ -92,6 +104,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.wait()
             except Exception:
                 LOG.exception("Exception occurs when waiting for timer")
+        del self.timers[:]
+        del self.endpoints[:]
+
 
     def reset(self):
         pass
