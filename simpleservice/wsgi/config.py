@@ -3,6 +3,12 @@ from simpleutil.config import cfg
 CONF = cfg.CONF
 
 wsgi_options =  [
+        cfg.StrOpt('user',
+                   default='nginx',
+                   help='Serivce run user'),
+        cfg.StrOpt('group',
+                   default='nginx',
+                   help='Serivce run group'),
         cfg.IntOpt('wsgi_process',
                    default=5,
                    min=1,

@@ -7,12 +7,6 @@ CONF = cfg.CONF
 log.register_options(CONF)
 
 default_opts = [
-    cfg.StrOpt('user',
-               default='nginx',
-               help='Serivce run user'),
-    cfg.StrOpt('group',
-               default='nginx',
-               help='Serivce run group'),
     cfg.HostnameOpt('host',
                     default=socket.gethostname(),
                     help="Hostname to be used by the server, agents and "
