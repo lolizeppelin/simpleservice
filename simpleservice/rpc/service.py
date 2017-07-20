@@ -49,7 +49,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.conn = None
 
     def start(self):
-        self.manager.init_host()
+        self.manager.init_host(self.endpoints)
         if hasattr(self.manager, 'rabbit_conf'):
             rabbit_conf = self.manager.rabbit_conf
         else:
