@@ -18,12 +18,14 @@ from eventlet.greenio import GreenPipe
 from simpleutil.log import log as logging
 from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
+from simpleutil.utils import uuidutils
 from simpleutil.posix import systemd
 
 from simpleservice.config import service_opts
 
 LOG = logging.getLogger(__name__)
 
+SnowflakeId = 0
 
 def _check_service_base(service):
     if not isinstance(service, ServiceBase):
@@ -188,7 +190,31 @@ class ServiceWrapper(object):
         self.workers = workers
         self.children = set()
         self.forktimes = []
+        # for snowflaked id
+        self.free_snowflakeid = set()
+        for i in xrange(1, 256):
+            self.free_snowflakeid.add(i)
+        self.snowflakeid_map = dict()
 
+    def per_set_snowflake_pid(self):
+        global SnowflakeId
+        while True:
+            try:
+                SnowflakeId = self.free_snowflakeid.pop()
+                break
+            except KeyError:
+                time.sleep(0.5)
+
+    def post_set_snowflake_pid(self, pid):
+        global SnowflakeId
+        self.snowflakeid_map[pid] = SnowflakeId
+        SnowflakeId = None
+
+    def free_snowflake_pid(self, pid):
+        try:
+            self.free_snowflakeid.add(self.snowflakeid_map.pop(pid))
+        except KeyError:
+            LOG.warning('pid %d not in snowflake id map', pid)
 
 # 单例装饰器
 @singleton
@@ -505,13 +531,14 @@ class ProcessLauncher(object):
             if time.time() - wrap.forktimes[0] < wrap.workers:
                 LOG.info('Forking too fast, sleeping')
                 time.sleep(1)
-
             wrap.forktimes.pop(0)
-
         wrap.forktimes.append(time.time())
+
+        wrap.per_set_snowflake_pid()
 
         pid = os.fork()
         if pid == 0:
+            uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:
                 self._child_process_handle_signal()
@@ -523,12 +550,12 @@ class ProcessLauncher(object):
                 self.launcher.restart()
 
             os._exit(status)
-
         LOG.debug('Started child %d', pid)
+
+        wrap.post_set_snowflake_pid(pid)
 
         wrap.children.add(pid)
         self.children[pid] = wrap
-
         return pid
 
     def launch_service(self, service, workers=1):
@@ -572,6 +599,8 @@ class ProcessLauncher(object):
 
         wrap = self.children.pop(pid)
         wrap.children.remove(pid)
+        # free snowflake pid
+        wrap.free_snowflake_pid(pid)
         return wrap
 
     def _respawn_children(self):
