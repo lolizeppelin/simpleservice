@@ -49,7 +49,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.conn = None
 
     def start(self):
-        self.manager.init_host(self.endpoints)
+        self.manager.pre_start(self)
+
         if hasattr(self.manager, 'rabbit_conf'):
             rabbit_conf = self.manager.rabbit_conf
         else:
@@ -57,10 +58,10 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.conn = RpcConnection(rabbit_conf, self.manager, self.endpoints)
         LOG.debug("Creating Consumer connection for Service %s",
                   self.manager.target.topic)
-        self.manager.initialize_service_hook(self)
-        self.conn.start()
 
-        # task must callable
+        self.manager.initialize_service_hook()
+
+        self.conn.start()
         for task in self.manager.periodic_tasks():
             periodic = loopingcall.FixedIntervalLoopingCall(task)
             periodic.start(interval=task.periodic_interval,
@@ -68,7 +69,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                            stop_on_exception=task.stop_on_exception)
             self.timers.append(periodic)
 
-        self.manager.after_start()
+        self.manager.post_start()
 
     def __getattr__(self, key):
         manager = self.__dict__.get('manager', None)
@@ -86,7 +87,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         # This function will call by Launcher from outside
         try:
             self.conn.close()
-            self.manager.after_stop()
+            # self.manager.post_stop()
         except Exception:
             pass
         for x in self.timers:
@@ -94,9 +95,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.stop()
             except Exception:
                 LOG.exception("Exception occurs when timer stops")
+        self.manager.post_stop()
         self.conn = None
-        # del self.timers[:]
-        # del self.endpoints[:]
+
 
     def wait(self):
         for x in self.timers:
@@ -104,9 +105,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.wait()
             except Exception:
                 LOG.exception("Exception occurs when waiting for timer")
-        del self.timers[:]
-        del self.endpoints[:]
-
+        # del self.timers[:]
+        # del self.endpoints[:]
 
     def reset(self):
         pass
