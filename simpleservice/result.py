@@ -1,3 +1,4 @@
+
 class BaseResult(object):
 
     def __init__(self, resultcode=0, result=None, data=None):
