@@ -208,7 +208,7 @@ class ServiceWrapper(object):
     def post_set_snowflake_pid(self, pid):
         global SnowflakeId
         self.snowflakeid_map[pid] = SnowflakeId
-        SnowflakeId = None
+        SnowflakeId = 0
 
     def free_snowflake_pid(self, pid):
         try:
