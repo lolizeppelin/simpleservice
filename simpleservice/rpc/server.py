@@ -188,7 +188,7 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
                         'need to restart MessageHandlingServer you should '
                         'instantiate a new object.')
         self._started = True
-        targets = [endpoint.target for endpoint in self.dispatcher.endpoints]
+        targets = [endpoint.target for endpoint in self.dispatcher.manager.endpoints]
         targets.insert(0, self.dispatcher.manager.target)
         self.listener = self.rpcdriver.listen(targets)
         self._work_pool = \
@@ -220,7 +220,8 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
         self._ioloop.wait()
         self._work_pool.wait()
         self.listener.cleanup()
-
+        self.dispatcher = None
+        self.rpcdriver = None
 
     def _submit_work(self, callback):
         if callback:
@@ -231,20 +232,3 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
     def reset(self):
         pass
 
-
-class RpcConnection(object):
-
-    def __init__(self, conf, manager, endpoints):
-        rpcserver = RabbitDriver(conf)
-        self.rpcserver = MessageHandlingService(rpcdriver=rpcserver,
-                                                dispatcher=RPCDispatcher(manager,
-                                                                         endpoints)
-                                                )
-
-    def start(self):
-        self.rpcserver.start()
-        # return self.rpcserver
-
-    def close(self):
-        self.rpcserver.stop()
-        self.rpcserver.wait()
