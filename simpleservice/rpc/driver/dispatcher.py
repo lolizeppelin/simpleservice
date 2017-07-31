@@ -15,9 +15,8 @@ LOG = logging.getLogger(__name__)
 
 class RPCDispatcher(object):
 
-    def __init__(self, manager, endpoints):
+    def __init__(self, manager):
         self.manager = manager
-        self.endpoints = endpoints
 
     def _do_dispatch(self, endpoint, method, ctxt, args):
         """NOTE: Return dict just fine
@@ -58,7 +57,7 @@ class RPCDispatcher(object):
                     return
                 else:
                     raise exceptions.ManagerNoSuchMethod(method)
-            for endpoint in self.endpoints:
+            for endpoint in self.manager.endpoints:
                 if namespace != endpoint.namespace:
                     continue
                 if hasattr(endpoint, method):
