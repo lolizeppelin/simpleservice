@@ -8,7 +8,8 @@ from simpleservice.plugin.base import ManagerBase
 from simpleservice.plugin.base import EndpointBase
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
-from simpleservice.rpc.server import RpcConnection
+from simpleservice.rpc.driver.dispatcher import RPCDispatcher
+from simpleservice.rpc.server import MessageHandlingService
 
 
 CONF = cfg.CONF
@@ -42,26 +43,29 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                     endpoint = endpoint_name
                 if not isinstance(endpoint, EndpointBase):
                     RuntimeError('Endpoint type error')
-                self.endpoints.add(endpoint)
+                self.endpoints.add(endpoint())
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
-        LauncheServiceBase.__init__(self, self.manager.namespace)
-        self.conn = None
+        super(LauncheRpcServiceBase, self).__init__(self.manager.namespace)
+        self.messageservice = None
+
 
     def start(self):
         self.manager.pre_start(self)
-
+        # if process not a forked process
         if hasattr(self.manager, 'rabbit_conf'):
             rabbit_conf = self.manager.rabbit_conf
         else:
             rabbit_conf = CONF.rabbit
-        self.conn = RpcConnection(rabbit_conf, self.manager, self.endpoints)
+        self.messageservice = MessageHandlingService(rpcdriver=RabbitDriver(rabbit_conf),
+                                                     dispatcher=RPCDispatcher(self.manager))
         LOG.debug("Creating Consumer connection for Service %s",
                   self.manager.target.topic)
 
         self.manager.initialize_service_hook()
 
-        self.conn.start()
+        self.messageservice.start()
+
         for task in self.manager.periodic_tasks():
             periodic = loopingcall.FixedIntervalLoopingCall(task)
             periodic.start(interval=task.periodic_interval,
@@ -80,13 +84,14 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.stop()
 
     def stop(self):
-        if self.conn is None:
+        if self.messageservice is None:
             raise RuntimeError('Service not started? conn is None')
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         # This function will call by Launcher from outside
         try:
-            self.conn.close()
+            self.messageservice.stop()
+            self.messageservice.wait()
             # self.manager.post_stop()
         except Exception:
             pass
@@ -96,8 +101,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             except Exception:
                 LOG.exception("Exception occurs when timer stops")
         self.manager.post_stop()
-        self.conn = None
-
+        self.messageservice = None
 
     def wait(self):
         for x in self.timers:
