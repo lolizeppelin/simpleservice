@@ -306,7 +306,8 @@ class RabbitDriver(object):
                                         topic='%s.%s' % (target.topic,
                                                          target.server),
                                         callback=listener)
-            # conn.declare_fanout_consumer(target.topic, listener)
+            if target.fanout:
+                conn.declare_fanout_consumer(target.fanout, listener)
         # self._init_waiter()
         return listener
 
