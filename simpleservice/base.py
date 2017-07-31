@@ -214,7 +214,7 @@ class ServiceWrapper(object):
         try:
             self.free_snowflakeid.add(self.snowflakeid_map.pop(pid))
         except KeyError:
-            LOG.warning('pid %d not in snowflake id map', pid)
+            LOG.warning('pid %d not in snowflake id map list', pid)
 
 # 单例装饰器
 @singleton
