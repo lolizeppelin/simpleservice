@@ -77,7 +77,7 @@ rabbit_opts = [
                     'Default is 0 (infinite retry count).'),
     cfg.IntOpt('rabbit_transient_queues_ttl',
                min=1,
-               default=1800,
+               default=300,
                help='Positive integer representing duration in seconds for '
                     'queue TTL (x-expires). Queues which are unused for the '
                     'duration of the TTL are automatically deleted. The '
