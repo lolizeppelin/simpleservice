@@ -706,16 +706,16 @@ class Connection(object):
 
         self.declare_consumer(consumer)
 
-    def declare_fanout_consumer(self, topic, callback):
+    def declare_fanout_consumer(self, fanout, callback):
         """Create a 'fanout' consumer."""
 
         unique = uuid.uuid4().hex
-        exchange_name = '%s_fanout' % topic
-        queue_name = '%s_fanout_%s' % (topic, unique)
+        exchange_name = '%s_fanout' % fanout
+        queue_name = '%s_fanout_%s' % (fanout, unique)
 
         consumer = Consumer(exchange_name=exchange_name,
                             queue_name=queue_name,
-                            routing_key=topic,
+                            routing_key=fanout,
                             type='fanout',
                             durable=False,
                             exchange_auto_delete=True,
