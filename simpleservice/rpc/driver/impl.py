@@ -161,10 +161,6 @@ class RabbitDriver(object):
 
     missing_destination_retry_timeout = 0
 
-    # def __init__(self, conf, url,
-    # def __init__(self, conf,
-    #              default_exchange=None,
-    #              allowed_remote_exmods=None):
     def __init__(self, conf):
 
         self.missing_destination_retry_timeout = (
@@ -228,7 +224,6 @@ class RabbitDriver(object):
 
     def _send(self, target, ctxt, message,
               wait_for_reply=None, timeout=None,
-              # envelope=True, notify=False, retry=None):
               notify=False, retry=None):
         context = ctxt
         msg = message
