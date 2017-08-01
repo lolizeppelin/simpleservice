@@ -391,4 +391,4 @@ class IntervalLoopinTask(object):
 
 
     def __call__(self, *args, **kwargs):
-        raise NotImplemented("IntervalLoopinTask call not Implemented")
+        raise NotImplementedError("IntervalLoopinTask call not Implemented")
