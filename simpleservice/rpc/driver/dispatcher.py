@@ -1,6 +1,7 @@
 import sys
 import eventlet
 
+from simpleservice.rpc.result import BaseRpcResult
 from simpleservice.rpc.driver import exceptions
 from simpleutil.log import log as logging
 
@@ -23,10 +24,13 @@ class RPCDispatcher(object):
         The Max deep is jsonutils.MAX_DEEP - 1
         """
         if endpoint:
-            return self.manager.call_endpoint(endpoint, method, ctxt, **args)
+            ret = self.manager.call_endpoint(endpoint, method, ctxt, **args)
         else:
             func = getattr(self.manager, method)
-            return func(ctxt, **args)
+            ret = func(ctxt, **args)
+        if isinstance(ret, BaseRpcResult):
+            ret = ret.to_dict()
+        return ret
 
     def __call__(self, incoming):
         if self.manager.full():
