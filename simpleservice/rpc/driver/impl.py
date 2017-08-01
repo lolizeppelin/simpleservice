@@ -236,14 +236,13 @@ class RabbitDriver(object):
         ctxt.update({'namespace': target.namespace,
                      'casttime': int(realnow())})
         if wait_for_reply:
+            ctxt.update({'reply': True})
             msg_id = uuid.uuid4().hex
             msg.update({'_msg_id': msg_id})
             msg.update({'_reply_q': self._get_reply_q()})
         rpc_common._add_unique_id(msg)
         unique_id = msg[rpc_common.UNIQUE_ID]
         rpc_common.pack_context(msg, context)
-        # if envelope:
-        #     msg = rpc_common.serialize_msg(msg)
         msg = rpc_common.serialize_msg(msg)
         if wait_for_reply:
             self._waiter.listen(msg_id)
