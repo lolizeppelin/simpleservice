@@ -74,6 +74,6 @@ class ServerExecuteRequestError(AfterRequestError):
 
 
 class ServerRsopneCodeError(AfterRequestError):
-    def __init__(self, message='Server rsopne http code out of range',
+    def __init__(self, message='Server respone http code out of range',
                  code=common.RESULT_UNKNOWN, resone='unkonwon resone'):
         super(ServerRsopneCodeError, self).__init__(message, code, resone)
