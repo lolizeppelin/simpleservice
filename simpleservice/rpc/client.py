@@ -25,7 +25,7 @@ class RPCClientBase(object):
         try:
             self.rpcdriver.send_notification(target, ctxt, msg, retry=self.retry)
         except exceptions.RabbitDriverError as ex:
-            raise exceptions.ClientSendError(target, ex)
+            raise exceptions.RpcClientSendError(target, ex)
 
     def cast(self, target, ctxt, msg):
         """Invoke a method and return immediately. See RPCClient.cast()."""
@@ -33,7 +33,7 @@ class RPCClientBase(object):
             self.rpcdriver.send(target, ctxt, msg,
                                 retry=self.retry)
         except exceptions.RabbitDriverError as ex:
-            raise exceptions.ClientSendError(target, ex)
+            raise exceptions.RpcClientSendError(target, ex)
 
     def call(self, target, ctxt, msg, timeout=None):
         if target.fanout:
@@ -44,4 +44,4 @@ class RPCClientBase(object):
                                        wait_for_reply=True, timeout=timeout,
                                        retry=self.retry)
         except exceptions.RabbitDriverError as ex:
-            raise exceptions.ClientSendError(target, ex)
+            raise exceptions.RpcClientSendError(target, ex)

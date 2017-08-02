@@ -112,12 +112,12 @@ class RPCVersionCapError(MessagingException):
         super(RPCVersionCapError, self).__init__(msg)
 
 
-class ClientSendError(MessagingException):
+class RpcClientSendError(MessagingException):
     """Raised if we failed to send a message to a target."""
 
     def __init__(self, target, ex):
         msg = 'Failed to send to target "%s": %s' % (target, ex)
-        super(ClientSendError, self).__init__(msg)
+        super(RpcClientSendError, self).__init__(msg)
         self.target = target
         self.ex = ex
 
