@@ -10,18 +10,15 @@ from paste import deploy
 
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
+from simpleutil.common.exceptions import InvalidInput
 
 from simpleservice.base import LauncheServiceBase
-
-from simpleutil.common.exceptions import InvalidInput
 from simpleservice.wsgi.exceptions import ConfigNotFound
 from simpleservice.wsgi.exceptions import PasteAppNotFound
-
 
 CONF = cfg.CONF
 
 LOG = logging.getLogger(__name__)
-
 
 
 class Loader(object):
