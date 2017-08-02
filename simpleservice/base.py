@@ -94,6 +94,7 @@ class ServiceBase(object):
 
 
 class LauncheServiceBase(ServiceBase):
+    """ServiceBase for Launche"""
 
     def __init__(self, name):
         self.name = name
