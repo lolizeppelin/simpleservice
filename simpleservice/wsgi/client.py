@@ -44,7 +44,7 @@ def results(total=0,
 
 
 class HttpClientBase(object):
-    """Client for the OpenStack Neutron v2.0 API.
+    """Client for the Http request.
     """
     USER_AGENT = 'simpleservice-httpclient'
     CONTENT_TYPE = 'application/json'
@@ -69,18 +69,22 @@ class HttpClientBase(object):
         self.action_prefix = "/v%s" % self.version
         self.retry_interval = 1
 
-    def _do_request(self, action, method, headers, body):
+    def _do_request(self, action, method, headers, body, timeout):
         request_url = self.wsgi_url + action
         if len(request_url) > common.MAX_URI_LEN:
             raise exceptions.BeforeRequestError('Error url, url len over then %d' % common.MAX_URI_LEN)
         if self.session:
-            resp = self.session.request(method, request_url, headers, data=body, timeout=self.timeout)
+            resp = self.session.request(method, request_url, headers, data=body,
+                                        timeout=timeout, allow_redirects=False)
         else:
-            resp = requests.request(method, request_url, data=body, timeout=self.timeout)
+            resp = requests.request(method, request_url, data=body,
+                                    timeout=timeout, allow_redirects=False)
         return resp, resp.content
 
-    def do_request(self, method, action, body=None, headers=None, params=None):
+    def do_request(self, method, action,
+                   body=None, headers=None, params=None, timeout=None):
         # action += ".%s" % self.FORMAT
+        timeout = timeout if timeout else self.timeout
         headers = headers or {}
         headers.setdefault('User-Agent', self.USER_AGENT)
         headers.setdefault('Content-Type', self.CONTENT_TYPE)
@@ -95,7 +99,7 @@ class HttpClientBase(object):
         except Exception as e:
             raise exceptions.BeforeRequestError('Encode params or serialize catch %s' % e.__class__.__name__)
         try:
-            resp, replybody = self._do_request(action, method, headers, body=body)
+            resp, replybody = self._do_request(action, method, headers, body=body, timeout=timeout)
         except Exception as e:
             LOG.warning('Send request to %s error, error type %s' % (action, e.__class__.__name__))
             raise exceptions.ConnectionFailed('Send request catch error')
@@ -120,13 +124,14 @@ class HttpClientBase(object):
                 replybody = resp.reason
             self._handle_fault_response(status_code, replybody, resp)
 
-    def retry_request(self, method, action, body=None,
-                      headers=None, params=None):
+    def retry_request(self, method, action,
+                      body=None, headers=None, params=None, timeout=None):
         """Call do_request with the default retry configuration.
 
         Only idempotent requests should retry failed connection attempts.
         :raises: ConnectionFailed if the maximum # of retries is exceeded
         """
+        timeout = timeout if timeout else self.timeout
         max_attempts = self.retries + 1
         for i in range(max_attempts):
             try:
@@ -160,11 +165,11 @@ class HttpClientBase(object):
         except ValueError:
             resone = response_body
         if 400 <= status_code < 500:
-            raise exceptions.ClientRequestError(resone)
-        elif 500<= status_code < 600:
+            raise exceptions.ClientRequestError(code=status_code, resone=resone)
+        elif 500 <= status_code < 600:
             if status_code == 501:
                 raise exceptions.ServerNotImplementedError(resone=resone)
-            raise exceptions.ServerExecuteRequestError(code=status_code, resone=resone)
+            raise exceptions.ServerInternalError(code=status_code, resone=resone)
         else:
             raise exceptions.ServerRsopneCodeError(code=status_code, resone=resone)
 
