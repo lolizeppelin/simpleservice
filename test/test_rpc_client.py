@@ -8,7 +8,7 @@ from simpleutil.log import log as logging
 from simpleservice import config
 
 
-from simpleservice.rpc.service import RPCClientBase
+from simpleservice.rpc.client import RPCClientBase
 from simpleservice.rpc.target import Target
 
 
@@ -31,7 +31,7 @@ logging.setup(CONF, 'rpclient')
 default_logging.captureWarnings(True)
 
 
-client = RPCClientBase()
+client = RPCClientBase(CONF['rabbit'])
 
 target = Target(namespace='manager', topic='agent')
 
