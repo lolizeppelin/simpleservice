@@ -44,6 +44,7 @@ class ClientRequestError(AfterRequestError):
                  code=400, resone='unkonwon'):
         super(ClientRequestError, self).__init__(message, code, resone)
 
+
 class ServerInternalError(AfterRequestError):
     """Request send success, server internal error"""
     def __init__(self, message='Server internal error',
