@@ -1,24 +1,29 @@
-class ManagerBase(object):
+class Deliverinterface(object):
+
+    def pre_start(self, external_objects):
+        """before external_objects start"""
+
+    def post_start(self):
+        """after external_objects start"""
+
+    def post_stop(self):
+        """after external_objects stop"""
+
+    def initialize_service_hook(self):
+        """"""
+
+
+class ManagerBase(Deliverinterface):
 
     def __init__(self, target):
         self.target = target
         self.namespace = target.namespace
 
-    def init_host(self):
-        pass
-
-    def after_start(self):
-        pass
-
-    def after_stop(self):
-        pass
-
     def periodic_tasks(self):
         return []
 
-    def initialize_service_hook(self, rpcservice):
-        # check endpoint here
-        pass
+    def add_periodic_task(self, task):
+        self.periodic_tasks().append(task)
 
     def call_endpoint(self, endpoint, method, ctxt, args):
         """Check before call endpoint method, cover it"""
@@ -30,5 +35,5 @@ class ManagerBase(object):
         raise NotImplemented
 
 
-class EndpointBase(object):
+class EndpointBase(Deliverinterface):
     """"""
