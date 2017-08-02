@@ -293,13 +293,14 @@ class RabbitDriver(object):
         conn = self._get_connection(rpc_common.PURPOSE_LISTEN)
         listener = poller.AMQPListener(self, conn)
         for target in targets:
-            conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
-                                        topic=target.topic,
-                                        callback=listener)
-            conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
-                                        topic='%s.%s' % (target.topic,
-                                                         target.server),
-                                        callback=listener)
+            if target.topic:
+                conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
+                                            topic=target.topic,
+                                            callback=listener)
+                conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
+                                            topic='%s.%s' % (target.topic,
+                                                             target.server),
+                                            callback=listener)
             if target.fanout:
                 conn.declare_fanout_consumer(target.fanout, listener)
         # self._init_waiter()
