@@ -224,6 +224,8 @@ class Connection(object):
         else:
             self._connection_lock = DummyLock()
 
+        # kombu set cloexec after socket connect
+        # see function amqp.transport._AbstractTransport._connect
         self.connection = kombu.connection.Connection(
             self._url, ssl=self._fetch_ssl_params(),
             login_method=self.login_method,
