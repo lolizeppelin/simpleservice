@@ -209,6 +209,10 @@ class HttpClientBase(object):
         return self.do_request("POST", action, body=body,
                                headers=headers, params=params)
 
+    def retryable_post(self, action, body=None, headers=None, params=None):
+        return self.retry_request("POST", action, body=body,
+                                  headers=headers, params=params)
+
     def put(self, action, body=None, headers=None, params=None):
         return self.retry_request("PUT", action, body=body,
                                   headers=headers, params=params)
