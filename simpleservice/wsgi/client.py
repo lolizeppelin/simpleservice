@@ -65,6 +65,7 @@ class HttpClientBase(object):
         self.version = kwargs.pop('version', '1.0')
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
+        self.token = kwargs.pop('token')
         self.raise_errors = kwargs.pop('raise_errors', True)
         self.action_prefix = "/v%s" % self.version
         self.retry_interval = 1
@@ -89,6 +90,8 @@ class HttpClientBase(object):
         headers.setdefault('User-Agent', self.USER_AGENT)
         headers.setdefault('Content-Type', self.CONTENT_TYPE)
         headers.setdefault('Accept', self.CONTENT_TYPE)
+        if self.token:
+            headers.setdefault('Token', self.token)
         action = self.action_prefix + action
         try:
             if isinstance(params, dict) and params:
@@ -136,7 +139,7 @@ class HttpClientBase(object):
         for i in range(max_attempts):
             try:
                 return self.do_request(method, action, body=body,
-                                       headers=headers, params=params)
+                                       headers=headers, params=params, timeout=timeout)
             except (exceptions.BeforeRequestError,
                     exceptions.ServerNotImplementedError,
                     exceptions.ClientRequestError):
