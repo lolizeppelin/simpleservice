@@ -11,6 +11,7 @@ from paste import deploy
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.common.exceptions import InvalidInput
+from simpleutil.posix.linux import set_cloexec_flag
 
 from simpleservice.base import LauncheServiceBase
 from simpleservice.wsgi.exceptions import ConfigNotFound
@@ -107,6 +108,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                                                 backlog)
         else:
             raise ValueError("Unsupported socket family: %s", socket_family)
+        self.dup_socket = None
 
         (self.host, self.port) = self.socket.getsockname()[0:2]
         LauncheServiceBase.__init__(self, name)
@@ -222,3 +224,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                 self._pool.waitall()
         except greenlet.GreenletExit:
             LOG.info("WSGI server has stopped.")
+
+    def close_exec(self):
+        if self.dup_socket:
+            set_cloexec_flag(self.dup_socket.fd, cloexec=True)
+        set_cloexec_flag(self.socket.fd, cloexec=True)

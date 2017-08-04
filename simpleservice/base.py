@@ -33,6 +33,12 @@ def _check_service_base(service):
                         % {'service': service, 'base': ServiceBase})
 
 
+def _check_launch_service_base(service):
+    if not isinstance(service, LauncheServiceBase):
+        raise TypeError("Service %(service)s must an instance of %(base)s!"
+                        % {'service': service, 'base': LauncheServiceBase})
+
+
 def _is_daemon():
     # The process group for a foreground process will match the
     # process group of the controlling terminal. If those values do
@@ -99,30 +105,8 @@ class LauncheServiceBase(ServiceBase):
     def __init__(self, name):
         self.name = name
 
-
-class Service(ServiceBase):
-    """Service object for binaries running on hosts."""
-
-    def __init__(self, threads=1000):
-        self.tg = threadgroup.ThreadGroup(threads)
-
-    def reset(self):
-        """Reset a service in case it received a SIGHUP."""
-
-    def start(self):
-        """Start a service."""
-
-    def stop(self, graceful=False):
-        """Stop a service.
-
-        :param graceful: indicates whether to wait for all threads to finish
-               or terminate them instantly
-        """
-        self.tg.stop(graceful)
-
-    def wait(self):
-        """Wait for a service to shut down."""
-        self.tg.wait()
+    def close_exec(self):
+        """set  close_exec here"""
 
 
 class Services(object):
@@ -178,6 +162,8 @@ class Services(object):
         """
         try:
             service.start()
+            # call close_exec to set
+            service.close_exec()
         except Exception:
             LOG.exception('Error starting thread.')
             raise SystemExit(1)
@@ -297,7 +283,7 @@ class Launcher(object):
         :returns: None
 
         """
-        _check_service_base(service)
+        _check_launch_service_base(service)
         self.services.add(service)
 
     def stop(self):
@@ -567,7 +553,7 @@ class ProcessLauncher(object):
        :param workers: a number of processes in which a service
               will be running
         """
-        _check_service_base(service)
+        _check_launch_service_base(service)
         wrap = ServiceWrapper(service, workers)
 
         LOG.info('Starting %d workers', wrap.workers)
