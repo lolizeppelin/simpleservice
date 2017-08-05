@@ -227,5 +227,5 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
 
     def close_exec(self):
         if self.dup_socket:
-            set_cloexec_flag(self.dup_socket.fd, cloexec=True)
-        set_cloexec_flag(self.socket.fd, cloexec=True)
+            set_cloexec_flag(self.dup_socket.fileno())
+        set_cloexec_flag(self.socket.fileno())
