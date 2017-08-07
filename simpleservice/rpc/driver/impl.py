@@ -231,7 +231,7 @@ class RabbitDriver(object):
         ctxt.update({'namespace': target.namespace,
                      'casttime': int(realnow())})
         if wait_for_reply:
-            ctxt.update({'reply': True})
+            # ctxt.update({'reply': True})
             msg_id = uuid.uuid4().hex
             msg.update({'_msg_id': msg_id})
             msg.update({'_reply_q': self._get_reply_q()})
