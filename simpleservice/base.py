@@ -15,12 +15,12 @@ import eventlet.hubs
 from eventlet import event
 from eventlet.greenio import GreenPipe
 
+from simpleutil import system
 from simpleutil.log import log as logging
 from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
 from simpleutil.utils import uuidutils
 from simpleutil.posix import systemd
-from simpleutil.posix import linux
 
 from simpleservice.config import service_opts
 
@@ -527,7 +527,9 @@ class ProcessLauncher(object):
         pid = os.fork()
         if pid == 0:
             # set cloexec to readpipe
-            linux.set_cloexec_flag(self.readpipe.fileno())
+            if system.LINUX:
+                from simpleutil.posix import linux
+                linux.set_cloexec_flag(self.readpipe.fileno())
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:
