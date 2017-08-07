@@ -97,12 +97,13 @@ class DispatcherExecutorContext(object):
         self._dispatch = dispatch
 
     def run(self):
-        try:
-            self._dispatch(self._incoming)
-        except Exception:
-            msg = 'The dispatcher method must catches all exceptions'
-            LOG.exception(msg)
-            raise RuntimeError(msg)
+        self._dispatch(self._incoming)
+        # try:
+        #     self._dispatch(self._incoming)
+        # except Exception:
+        #     msg = 'The dispatcher method must catches all exceptions'
+        #     LOG.exception(msg)
+        #     raise RuntimeError(msg)
 
     def done(self, *args, **kwargs):
         pass
