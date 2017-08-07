@@ -2,7 +2,7 @@ from simpleutil.utils import timeutils
 
 class BaseRpcResult(object):
 
-    def __init__(self, ctxt=None, agent_id=0,
+    def __init__(self, agent_id, ctxt=None,
                  resultcode=0, result=None, details=None):
         self.agent_id = agent_id
         self.resultcode = resultcode
@@ -14,11 +14,10 @@ class BaseRpcResult(object):
 
 
     def to_dict(self):
-        ret_dict = {'resultcode': self.resultcode,
+        ret_dict = {'agent_id': self.agent_id,
+                    'resultcode': self.resultcode,
                     'result': self.result if self.result else 'unkonwn result',
                     'agent_time': self.agent_time}
-        if self.agent_id:
-            ret_dict['agent_id'] = self.agent_id
         if self.details:
             ret_dict['details'] = self.details
         if self.persist:
