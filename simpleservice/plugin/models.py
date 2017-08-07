@@ -6,6 +6,7 @@ from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.dialects.mysql import CHAR
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.dialects.mysql import BIGINT
+from sqlalchemy.dialects.mysql import LONGBLOB
 
 from simpleservice.ormdb.models import TableBase
 from simpleservice.ormdb.models import InnoDBTableBase
@@ -36,7 +37,7 @@ class MsgTimeoutRecord(PluginTableBase):
                             default=0, primary_key=True)
     msg_id = sa.Column(CHAR(32), nullable=False)
     queue_name = sa.Column(CHAR(38), nullable=False)
-    raw_message = sa.Column(VARCHAR(60000), nullable=True, default=None)
+    raw_message = sa.Column(LONGBLOB, nullable=True, default=None)
     __table_args__ = (
             MyISAMTableBase.__table_args__
     )
