@@ -79,7 +79,11 @@ class ComposableRouter(Router):
     @abc.abstractmethod
     def add_routes(self, mapper):
         """Add routes to given mapper.
-        这里写具体mapper.connect调用
+        这里写具体mapper.connect调用,例如
+        mapper.connect('action_name', # some action join self.resource_name with "_"
+                       path='/%s/{id}/action' % self.collection_name,
+                       controller=controller_intance, action='action_function_name',
+                       conditions=dict(method=['HEAD']))
         """
 
 
@@ -106,14 +110,14 @@ class RoutersBase(object):
         self.resources = []
 
     @abc.abstractmethod
-    def append_routers(self, mapper, routers):
+    def append_routers(self, mapper, routers=None):
         """Append routers.
         Subclasses should override this method to map its routes.
         添加路由有三种实现方式
 
         1、直接在当前函数中写mapper.connect、mapper.collection等
            neutron里使用这种方式
-        2、将生成的路由添加到routers（参数）这个列表中,
+        2、将生成的路由(继承自ComposableRouter)添加到routers(参数)这个列表中,
            外部会一次性用ComposingRouter组装routers列表中的所有路由
            这个方式一般是让路由延后加载,keystone有部分路由使用这个方式
         3、调用下面的_add_resource生成路由(里面封装了mapper.connect)
