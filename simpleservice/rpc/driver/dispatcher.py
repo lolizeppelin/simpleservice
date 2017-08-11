@@ -24,7 +24,7 @@ class RPCDispatcher(object):
         The Max deep is jsonutils.MAX_DEEP - 1
         """
         if endpoint:
-            ret = self.manager.call_endpoint(endpoint, method, ctxt=ctxt, **args)
+            ret = self.manager.call_endpoint(endpoint, method, ctxt, **args)
         else:
             func = getattr(self.manager, method)
             ret = func(ctxt, **args)
