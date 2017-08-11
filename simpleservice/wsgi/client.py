@@ -226,6 +226,10 @@ class HttpClientBase(object):
         return self.do_request("PATCH", action, body=body,
                                headers=headers, params=params)
 
+    def retryable_patch(self, action, body=None, headers=None, params=None):
+        return self.retry_request("PATCH", action, body=body,
+                                  headers=headers, params=params)
+
     def options(self, action, body=None, headers=None, params=None):
         return self.retry_request("OPTIONS", action, body=body,
                                   headers=headers, params=params)
