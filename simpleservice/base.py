@@ -205,7 +205,7 @@ class ServiceWrapper(object):
             LOG.warning('pid %d not in snowflake id map list', pid)
 
 # 单例装饰器
-@singleton
+@singleton.singleton
 class SignalHandler(object):
 
     def __init__(self, *args, **kwargs):
