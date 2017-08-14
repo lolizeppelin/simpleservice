@@ -250,26 +250,13 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, manager, endpoints=None,
-                 *args, **kwargs):
-        self.endpoints = set()
+    def __init__(self, manager, *args, **kwargs):
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(*args, **kwargs)
         else:
             self.manager = manager
         if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
-        if endpoints:
-            endpoints = set(list(endpoints))
-            while endpoints:
-                endpoint_name = endpoints.pop(0)
-                if isinstance(endpoint_name, basestring):
-                    endpoint = importutils.import_class(endpoint_name)(*args, **kwargs)
-                else:
-                    endpoint = endpoint_name
-                if not isinstance(endpoint, EndpointBase):
-                    RuntimeError('Endpoint type error')
-                self.endpoints.add(endpoint())
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
         super(LauncheRpcServiceBase, self).__init__(self.manager.namespace)
