@@ -18,7 +18,6 @@ from simpleservice import loopingcall
 from simpleservice.base import ServiceBase
 from simpleservice.base import LauncheServiceBase
 from simpleservice.plugin.base import ManagerBase
-from simpleservice.plugin.base import EndpointBase
 from simpleservice.rpc.driver import exceptions
 from simpleservice.rpc.driver.impl import RabbitDriver
 from simpleservice.rpc.driver.dispatcher import RPCDispatcher
