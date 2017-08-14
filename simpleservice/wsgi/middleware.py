@@ -57,7 +57,7 @@ def controller_return_response(controller, faults=None, action_status=None):
         except KeyError:
             body = default_serializer({'msg': 'can not find %s deserializer' % req.content_type})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
-            raise webob.exc.HTTPInternalServerError(**kwargs)
+            raise webob.exc.HTTPNotImplemented(**kwargs)
         if req.body:
             try:
                 args['body'] = deserializer(req.body)
