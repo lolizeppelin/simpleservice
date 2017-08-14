@@ -15,6 +15,8 @@ class Deliverinterface(object):
 
 class ManagerBase(Deliverinterface):
 
+    agent_type = None
+
     def __init__(self, target):
         self.target = target
         self.namespace = target.namespace
@@ -37,3 +39,11 @@ class ManagerBase(Deliverinterface):
 
 class EndpointBase(Deliverinterface):
     """"""
+
+    def _entiys(self):
+        raise NotImplementedError
+
+    @property
+    def entiys(self):
+        """return count of entiy"""
+        return  self._entiys()
