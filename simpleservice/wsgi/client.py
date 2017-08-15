@@ -51,12 +51,14 @@ class HttpClientBase(object):
     FORMAT = 'json'
 
     def __init__(self, host, local_ip, agent_type,
-                 wsgi_url, **kwargs):
+                 wsgi_url, wsgi_port, **kwargs):
         """Initialize a new client for the http request."""
         super(HttpClientBase, self).__init__()
         if local_ip is None or wsgi_url is None:
             raise RuntimeError('wsgi_url or local ip address is None')
         self.wsgi_url = 'http://%s' % wsgi_url
+        if wsgi_port != 80:
+            self.wsgi_url = self.wsgi_url + ':%d' % wsgi_port
         self.agent_type = agent_type
         self.local_ip = local_ip
         self.host = host
@@ -75,10 +77,10 @@ class HttpClientBase(object):
         if len(request_url) > common.MAX_URI_LEN:
             raise exceptions.BeforeRequestError('Error url, url len over then %d' % common.MAX_URI_LEN)
         if self.session:
-            resp = self.session.request(method, request_url, headers, data=body,
+            resp = self.session.request(method, request_url, headers=headers, data=body,
                                         timeout=timeout, allow_redirects=False)
         else:
-            resp = requests.request(method, request_url, data=body,
+            resp = requests.request(method, request_url, headers=headers, data=body,
                                     timeout=timeout, allow_redirects=False)
         return resp, resp.content
 
@@ -104,7 +106,7 @@ class HttpClientBase(object):
         try:
             resp, replybody = self._do_request(action, method, headers, body=body, timeout=timeout)
         except Exception as e:
-            LOG.warning('Send request to %s error, error type %s' % (action, e.__class__.__name__))
+            LOG.warning('Send %s to %s fail, %s' % (method, action, e.__class__.__name__))
             raise exceptions.ConnectionFailed('Send request catch error')
         # 200: ('ok', 'okay', 'all_ok', 'all_okay', 'all_good',
         # 201: ('created',),
