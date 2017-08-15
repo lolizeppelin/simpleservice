@@ -67,7 +67,7 @@ class HttpClientBase(object):
         self.version = kwargs.pop('version', '1.0')
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
-        self.token = kwargs.pop('token')
+        self.token = kwargs.pop('token', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
         self.action_prefix = "/v%s" % self.version
         self.retry_interval = 1
