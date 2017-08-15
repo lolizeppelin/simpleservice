@@ -170,12 +170,15 @@ class HttpClientBase(object):
         except ValueError:
             resone = response_body
         if 400 <= status_code < 500:
+            LOG.warning('Http request get client error: %s' % str(resone))
             raise exceptions.ClientRequestError(code=status_code, resone=resone)
         elif 500 <= status_code < 600:
+            LOG.warning('Http request get server error: %s' % str(resone))
             if status_code == 501:
                 raise exceptions.ServerNotImplementedError(resone=resone)
             raise exceptions.ServerInternalError(code=status_code, resone=resone)
         else:
+            LOG.error('Http request unknown error: %s' % str(resone))
             raise exceptions.ServerRsopneCodeError(code=status_code, resone=resone)
 
     def serialize(self, data):
