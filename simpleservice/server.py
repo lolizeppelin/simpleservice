@@ -55,6 +55,6 @@ def launch(servers, user='root', group='root'):
             raise
     # notify calling process we are ready to serve
     systemd.notify_once()
+    launcher.wait()
     for server in servers:
-        launcher.wait()
-        LOG.info('Stop the %(name)s server' % {'name': server.server.name})
+        LOG.info('Stoped %(name)s server' % {'name': server.server.name})
