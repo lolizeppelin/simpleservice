@@ -161,6 +161,8 @@ class RpcContext(object):
         self.msg_id = kwargs.pop('msg_id', None)
         self.reply_q = kwargs.pop('reply_q', None)
         self.values = kwargs
+        if self.msg_id:
+            self.values.setdefault('reply', True)
 
     def __getattr__(self, key):
         try:
