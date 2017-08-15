@@ -296,7 +296,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
 
     def stop(self):
         if self.messageservice is None:
-            raise RuntimeError('Service not started? conn is None')
+            LOG.warning('Service not started, conn is None, f')
+            return None
         # Try to shut the connection down, but if we get any sort of
         # errors, go ahead and ignore them.. as we're shutting down anyway
         # This function will call by Launcher from outside
