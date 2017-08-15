@@ -258,7 +258,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             raise RuntimeError('Manager type error')
         self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
-        super(LauncheRpcServiceBase, self).__init__(self.manager.namespace)
+        super(LauncheRpcServiceBase, self).__init__(self.manager.__class__.__name__)
         self.messageservice = None
 
     def start(self):
@@ -295,18 +295,19 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.stop()
 
     def stop(self):
-        if self.messageservice is None:
-            LOG.warning('Service not started, conn is None, f')
-            return None
-        # Try to shut the connection down, but if we get any sort of
-        # errors, go ahead and ignore them.. as we're shutting down anyway
-        # This function will call by Launcher from outside
-        try:
-            self.messageservice.stop()
-            self.messageservice.wait()
-            # self.manager.post_stop()
-        except Exception:
-            pass
+        LOG.info('Launche rpc service base trying stop')
+        if self.messageservice is not None:
+            LOG.warning('Message service started, try stop it')
+            # Try to shut the connection down, but if we get any sort of
+            # errors, go ahead and ignore them.. as we're shutting down anyway
+            # This function will call by Launcher from outside
+            try:
+                self.messageservice.stop()
+                self.messageservice.wait()
+                LOG.info('Launche messageservice stoped')
+                # self.manager.post_stop()
+            except Exception:
+                pass
         for x in self.timers:
             try:
                 x.stop()
@@ -314,6 +315,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 LOG.exception("Exception occurs when timer stops")
         self.manager.post_stop()
         self.messageservice = None
+        LOG.info('Launche rpc service base stoped')
 
     def wait(self):
         for x in self.timers:
