@@ -2,7 +2,7 @@ from simpleutil.config import cfg
 
 
 rpc_client_opts = [
-    cfg.IntOpt('rpc_call_timeout',
+    cfg.IntOpt('rpc_send_timeout',
                max=5,
                min=1,
                default=3,
