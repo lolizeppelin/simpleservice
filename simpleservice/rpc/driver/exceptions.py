@@ -6,6 +6,10 @@ from simpleutil.log import log as logging
 LOG = logging.getLogger(__name__)
 
 
+class MessageNotForMe(Exception):
+    """rpc not for this this agent"""
+
+
 class AMQPDestinationNotFound(Exception):
     pass
 

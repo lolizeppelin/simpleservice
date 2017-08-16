@@ -76,6 +76,8 @@ class RPCDispatcher(object):
             if incoming.msg_id:
                 raise exceptions.UnsupportedNamespace(namespace, method)
             LOG.debug('Rpc cast can not find endpoint %s, method %s not called' % (namespace, method))
+        except exceptions.MessageNotForMe:
+            LOG.debug('Dispatch find meassage not for this agent')
         except exceptions.ExpectedException as e:
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
             incoming.reply(failure=e.exc_info, log_failure=False)
