@@ -197,8 +197,10 @@ class MessageHandlingService(ServiceBase, _OrderedTaskRunner):
                         'need to restart MessageHandlingServer you should '
                         'instantiate a new object.')
         self._started = True
-        targets = [endpoint.target for endpoint in self.dispatcher.manager.endpoints]
-        targets.insert(0, self.dispatcher.manager.target)
+        targets = [self.dispatcher.manager.target, ]
+        for endpoint in self.dispatcher.manager.endpoints:
+            if hasattr(endpoint, 'target'):
+                targets.append(endpoint.target)
         self.listener = self.rpcdriver.listen(targets)
         self._work_pool = \
             threadgroup.ThreadGroup(self.conf.rpc_eventlet_pool_size)
