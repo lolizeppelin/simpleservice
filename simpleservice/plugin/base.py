@@ -27,10 +27,10 @@ class ManagerBase(Deliverinterface):
     def add_periodic_task(self, task):
         self.periodic_tasks().append(task)
 
-    def call_endpoint(self, endpoint, method, ctxt, args):
+    def call_endpoint(self, endpoint, method, ctxt, **kwargs):
         """Check before call endpoint method, cover it"""
         func = getattr(endpoint, method)
-        return func(ctxt, args)
+        return func(ctxt, **kwargs)
 
     def full(self):
         """If agent is full load"""
