@@ -163,11 +163,8 @@ class RabbitDriver(object):
 
     def __init__(self, conf):
 
-        self.missing_destination_retry_timeout = (
-            conf.kombu_missing_consumer_retry_timeout)
-
-        self.prefetch_size = (
-            conf.rabbit_qos_prefetch_count)
+        self.missing_destination_retry_timeout = conf.kombu_missing_consumer_retry_timeout
+        self.prefetch_size = conf.rabbit_qos_prefetch_count
         connection_pool = connection.ConnectionPool(conf)
         self.conf = conf
         self._allowed_remote_exmods = []
