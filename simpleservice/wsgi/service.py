@@ -207,23 +207,27 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if self._server is not None:
             # let eventlet close socket
             self._pool.resize(0)
-            self._server.kill()
+            eventlet.wsgi.is_accepting = False
+            # wati greenlet eixt
+            while not self._server.dead:
+                eventlet.sleep(0.25)
 
-    def wait(self):
-        """Block, until the server has stopped.
 
-        Waits on the server's eventlet to finish, then returns.
-
-        :returns: None
-
-        """
-        try:
-            if self._server is not None:
-                num = self._pool.running()
-                LOG.debug("Waiting WSGI server to finish %d requests.", num)
-                self._pool.waitall()
-        except greenlet.GreenletExit:
-            LOG.info("WSGI server has stopped.")
+    # def wait(self):
+    #     """Block, until the server has stopped.
+    #
+    #     Waits on the server's eventlet to finish, then returns.
+    #
+    #     :returns: None
+    #
+    #     """
+    #     try:
+    #         if self._server is not None:
+    #             num = self._pool.running()
+    #             LOG.debug("Waiting WSGI server to finish %d requests.", num)
+    #             self._pool.waitall()
+    #     except greenlet.GreenletExit:
+    #         LOG.info("WSGI server has stopped.")
 
     def close_exec(self):
         if system.LINUX:
