@@ -190,8 +190,6 @@ class Connection(object):
             conf.kombu_missing_consumer_retry_timeout
         self.kombu_failover_strategy = conf.kombu_failover_strategy
         self.kombu_compression = conf.kombu_compression
-        # default socket timeout for message send
-        self.send_timeout = conf.send_timeout
 
         if self.rabbit_use_ssl:
             self.kombu_ssl_version = conf.kombu_ssl_version
@@ -501,13 +499,25 @@ class Connection(object):
         return False
 
     def set_transport_socket_timeout(self, timeout=None):
+        # NOTE(sileht): they are some case where the heartbeat check
+        # or the producer.send return only when the system socket
+        # timeout if reach. kombu doesn't allow use to customise this
+        # timeout so for py-amqp we tweak ourself
+        # NOTE(dmitryme): Current approach works with amqp==1.4.9 and
+        # kombu==3.0.33. Once the commit below is released, we should
+        # try to set the socket timeout in the constructor:
+        # https://github.com/celery/py-amqp/pull/64
+
         heartbeat_timeout = self.heartbeat_timeout_threshold
-        send_timeout = self.send_timeout
         if self._heartbeat_supported_and_enabled():
+            # NOTE(sileht): we are supposed to send heartbeat every
+            # heartbeat_timeout, no need to wait more otherwise will
+            # disconnect us, so raise timeout earlier ourself
             if timeout is None:
                 timeout = heartbeat_timeout
             else:
-                timeout = min(send_timeout, heartbeat_timeout, timeout)
+                timeout = min(heartbeat_timeout, timeout)
+
         try:
             sock = self.channel.connection.sock
         except AttributeError as e:
