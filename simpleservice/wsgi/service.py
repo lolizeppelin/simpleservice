@@ -208,7 +208,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             # let eventlet close socket
             self._pool.resize(0)
             eventlet.wsgi.is_accepting = False
-            # wati greenlet eixt
+            # wait greenlet exit
             while not self._server.dead:
                 eventlet.sleep(0.25)
 
