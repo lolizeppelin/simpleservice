@@ -40,8 +40,8 @@ def launch(servers, user='root', group='root'):
         if abs(ntptime(CONF.ntp_server, CONF.ntp_versio, CONF.ntp_port, CONF.ntp_timeout).offset) >= 1.0:
             raise RuntimeError('Ntp offset more then 1 second, Please sync time first before launch')
     if max([server.workers for server in servers]) > 1:
-        if not system.LINUX:
-            raise RuntimeError('ProcessLauncher just for linux system')
+        if not system.POSIX:
+            raise RuntimeError('ProcessLauncher just for posix system')
         launcher = ProcessLauncher(CONF)
     else:
         launcher = ServiceLauncher(CONF)
