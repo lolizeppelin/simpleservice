@@ -49,10 +49,10 @@ rabbit_opts = [
                  help='How long to wait before reconnecting in response to an '
                       'AMQP consumer cancel notification.'),
     cfg.IntOpt('kombu_missing_consumer_retry_timeout',
-               default=60,
+               default=5,
                help='How long to wait a missing client beforce abandoning to '
                     'send it its replies. This value should not be longer '
-                    'than rpc_response_timeout.'),
+                    'than rpc_send_timeout.'),
     cfg.StrOpt('kombu_failover_strategy',
                choices=('round-robin', 'shuffle'),
                default='round-robin',
@@ -89,11 +89,6 @@ rabbit_opts = [
                default=0,
                help='Specifies the number of messages to prefetch. Setting to '
                     'zero allows unlimited messages.'),
-    cfg.IntOpt('send_timeout',
-               default=3,
-               min=1, max=10,
-               help="Give this number of seconds to socket.settimeout as default "
-                    "when Rabbit message send"),
     cfg.IntOpt('heartbeat_timeout_threshold',
                default=30,
                help="Number of seconds after which the Rabbit broker is "
