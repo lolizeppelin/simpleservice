@@ -212,7 +212,6 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             while not self._server.dead:
                 eventlet.sleep(0.25)
 
-
     def wait(self):
         try:
             if self._server is not None:
