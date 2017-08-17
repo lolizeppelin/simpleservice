@@ -89,6 +89,11 @@ rabbit_opts = [
                default=0,
                help='Specifies the number of messages to prefetch. Setting to '
                     'zero allows unlimited messages.'),
+    cfg.IntOpt('send_timeout',
+               default=3,
+               min=1, max=10,
+               help="Give this number of seconds to socket.settimeout as default "
+                    "when Rabbit message send"),
     cfg.IntOpt('heartbeat_timeout_threshold',
                default=30,
                help="Number of seconds after which the Rabbit broker is "

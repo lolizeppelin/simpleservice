@@ -15,11 +15,9 @@ DEFAULT_LOG_AFTER = 30
 
 class RPCClientBase(object):
 
-    def __init__(self, conf, timeout=None, retry=None):
-        self.conf = conf
+    def __init__(self, conf):
         self.rpcdriver = RabbitDriver(conf)
-        self.timeout = timeout or conf.rpc_send_timeout
-        self.retry = retry or conf.rpc_send_retry
+        self.retry = conf.rpc_send_retry
 
     def notify(self, target, ctxt, msg):
         try:
@@ -38,7 +36,6 @@ class RPCClientBase(object):
     def call(self, target, ctxt, msg, timeout=None):
         if target.fanout:
             raise exceptions.InvalidTarget('A call cannot be used with fanout', target)
-        timeout = timeout or self.timeout
         try:
             return self.rpcdriver.send(target, ctxt, msg,
                                        wait_for_reply=True, timeout=timeout,
