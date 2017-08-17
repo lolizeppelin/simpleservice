@@ -2,13 +2,16 @@ from simpleutil.config import cfg
 
 
 rpc_client_opts = [
+    cfg.IntOpt('rpc_send_timeout',
+               default=5,
+               min=3, max=10,
+               help="Give this number of seconds to socket.settimeout as default "
+                    "when Rabbit message send"),
     cfg.IntOpt('rpc_send_retry',
-               min=0,
-               max=5,
                default=1,
-               help='Rpc send retry times')
+               min=0, max=3,
+               help="Rabbit message default send retry times"),
 ]
-
 
 rpc_server_opts = [
     cfg.IntOpt('rpc_process',
