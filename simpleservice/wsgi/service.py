@@ -213,21 +213,14 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                 eventlet.sleep(0.25)
 
 
-    # def wait(self):
-    #     """Block, until the server has stopped.
-    #
-    #     Waits on the server's eventlet to finish, then returns.
-    #
-    #     :returns: None
-    #
-    #     """
-    #     try:
-    #         if self._server is not None:
-    #             num = self._pool.running()
-    #             LOG.debug("Waiting WSGI server to finish %d requests.", num)
-    #             self._pool.waitall()
-    #     except greenlet.GreenletExit:
-    #         LOG.info("WSGI server has stopped.")
+    def wait(self):
+        try:
+            if self._server is not None:
+                num = self._pool.running()
+                LOG.debug("Waiting WSGI server to finish %d requests.", num)
+                self._pool.waitall()
+        except greenlet.GreenletExit:
+            LOG.info("WSGI server has stopped.")
 
     def close_exec(self):
         if system.LINUX:
