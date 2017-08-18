@@ -103,8 +103,9 @@ class ServiceBase(object):
 class LauncheServiceBase(ServiceBase):
     """ServiceBase for Launche"""
 
-    def __init__(self, name):
+    def __init__(self, name, plugin_threadpool=None):
         self.name = name
+        self.plugin_threadpool = plugin_threadpool
 
     def close_exec(self):
         """set  close_exec here"""

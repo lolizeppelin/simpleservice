@@ -251,16 +251,17 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, manager, *args, **kwargs):
+    def __init__(self, manager, **kwargs):
+        plugin_threadpool = kwargs.pop('plugin_threadpool', None)
         if isinstance(manager, basestring):
-            self.manager = importutils.import_class(manager)(*args, **kwargs)
+            self.manager = importutils.import_class(manager)(**kwargs)
         else:
             self.manager = manager
         if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
-        self.saved_args, self.saved_kwargs = args, kwargs
         self.timers = []
-        super(LauncheRpcServiceBase, self).__init__(self.manager.__class__.__name__)
+        super(LauncheRpcServiceBase, self).__init__(self.manager.__class__.__name__.lower(),
+                                                    plugin_threadpool)
         self.messageservice = None
 
     def start(self):
@@ -317,6 +318,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 LOG.exception("Exception occurs when timer stops")
         self.manager.post_stop()
         self.messageservice = None
+        if self.plugin_threadpool:
+            LOG.info('Launche rpc service call plugin threadpool stop')
+            self.plugin_threadpool.stop()
         LOG.info('Launche rpc service base stoped')
 
     def wait(self):
@@ -325,6 +329,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.wait()
             except Exception:
                 LOG.exception("Exception occurs when waiting for timer")
+        if self.plugin_threadpool:
+            LOG.info('Launche wait plugin threadpool')
+            self.plugin_threadpool.wait()
         # del self.timers[:]
         # del self.endpoints[:]
 

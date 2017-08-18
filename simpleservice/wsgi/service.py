@@ -1,10 +1,8 @@
 import os
 import socket
 
-
 import eventlet
 import eventlet.wsgi
-import greenlet
 
 from paste import deploy
 
@@ -67,7 +65,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
     # def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
     def __init__(self, name, app,
                  backlog=128, max_url_len=None,
-                 socket_family=None, socket_file=None, socket_mode=None):
+                 socket_family=None, socket_file=None, socket_mode=None,
+                 **kwargs):
         """Initialize, but do not start, a WSGI server.
         :param name: Pretty name for logging.
         :param app: The WSGI application to serve.
@@ -78,6 +77,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         :param socket_family: Socket family.
         :param socket_file: location of UNIX socket.
         :param socket_mode: UNIX socket mode.
+        :param plugin_threadpool: external thread pool need to stop
         :returns: None
         :raises: InvalidInput
         :raises: EnvironmentError
@@ -101,7 +101,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if not socket_family or socket_family in [socket.AF_INET,
                                                   socket.AF_INET6]:
             self.socket = self._get_socket(self.conf.bind_ip or '0.0.0.0',
-                                           self.conf.bind_port or 0,
+                                           self.conf.bind_port or 7999,
                                            backlog)
         elif hasattr(socket, "AF_UNIX") and socket_family == socket.AF_UNIX:
             self.socket = self._get_unix_socket(socket_file, socket_mode,
@@ -111,7 +111,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         self.dup_socket = None
 
         (self.host, self.port) = self.socket.getsockname()[0:2]
-        LauncheServiceBase.__init__(self, name)
+        plugin_threadpool = kwargs.pop('plugin_threadpool', None)
+        super(LauncheWsgiServiceBase, self).__init__(name, plugin_threadpool)
 
     def _get_socket(self, host, port, backlog):
         bind_addr = (host, port)
@@ -173,7 +174,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if self._max_url_len:
             wsgi_kwargs['url_length_limit'] = self._max_url_len
 
-        self._server = eventlet.spawn_n(**wsgi_kwargs)
+        self._server = eventlet.spawn(**wsgi_kwargs)
 
     def _set_socket_opts(self, _socket):
         _socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -205,21 +206,23 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         LOG.info("Stopping WSGI server.")
 
         if self._server is not None:
+            num = self._pool.running()
+            LOG.debug("Waiting WSGI server to finish %d requests.", num)
             # let eventlet close socket
             self._pool.resize(0)
             eventlet.wsgi.is_accepting = False
-            # wait greenlet exit
-            while not self._server.dead:
-                eventlet.sleep(0.25)
+
+        if self.plugin_pool:
+            self.plugin_pool.stop()
+
 
     def wait(self):
-        try:
-            if self._server is not None:
-                num = self._pool.running()
-                LOG.debug("Waiting WSGI server to finish %d requests.", num)
-                self._pool.waitall()
-        except greenlet.GreenletExit:
-            LOG.info("WSGI server has stopped.")
+        if self._server is not None:
+            self._server.wait()
+
+        if self.plugin_pool:
+            self.plugin_pool.wait()
+
 
     def close_exec(self):
         if system.LINUX:
