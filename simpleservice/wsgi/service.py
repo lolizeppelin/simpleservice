@@ -212,16 +212,13 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             self._pool.resize(0)
             eventlet.wsgi.is_accepting = False
 
-        if self.plugin_pool:
-            self.plugin_pool.stop()
+        if self.plugin_threadpool:
+            self.plugin_threadpool.stop(graceful=True)
 
 
     def wait(self):
         if self._server is not None:
             self._server.wait()
-
-        if self.plugin_pool:
-            self.plugin_pool.wait()
 
 
     def close_exec(self):

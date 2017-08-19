@@ -320,7 +320,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.messageservice = None
         if self.plugin_threadpool:
             LOG.info('Launche rpc service call plugin threadpool stop')
-            self.plugin_threadpool.stop()
+            self.plugin_threadpool.stop(graceful=True)
         LOG.info('Launche rpc service base stoped')
 
     def wait(self):
@@ -329,9 +329,6 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.wait()
             except Exception:
                 LOG.exception("Exception occurs when waiting for timer")
-        if self.plugin_threadpool:
-            LOG.info('Launche wait plugin threadpool')
-            self.plugin_threadpool.wait()
         # del self.timers[:]
         # del self.endpoints[:]
 
