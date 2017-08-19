@@ -3,13 +3,13 @@ import six
 
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
-from sqlalchemy.orm.query import Query
 from sqlalchemy.dialects.mysql import base
 from sqlalchemy.orm.properties import ColumnProperty
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.sql.elements import BooleanClauseList
 from sqlalchemy.sql.elements import BinaryExpression
+from sqlalchemy.orm.query import orm_exc
 
 
 from simpleutil.utils import excutils
@@ -259,18 +259,16 @@ class MysqlDriver(object):
         return self._get_sessionmaker(read)(**kwargs)
 
 
-def model_query(intance, model, filter=None, timeout=1.0):
+def model_query(session, model, filter=None, timeout=1.0):
     """filter_args is can be a dict of model's attribte
     or a callable function form return the args for query.filter
     """
-    if isinstance(intance, Session):
-        query = intance.query(model)
-    elif isinstance(intance, Query):
-        query = intance
+    if not isinstance(session, Session):
+        raise InvalidArgument('First must Session of sqlalchemy')
+    if isinstance(model, (list, tuple, set)):
+        query = session.query(*model)
     else:
-        raise InvalidArgument('First must Query or Session of sqlalchemy')
-    if not isinstance(model, DeclarativeMeta):
-        raise InvalidArgument('Model must be a instance of DeclarativeMeta')
+        query = session.query(model)
     if timeout:
         query = query.execution_options(timeout=timeout)
     if filter is not None:
@@ -294,7 +292,10 @@ def model_query(intance, model, filter=None, timeout=1.0):
     return query
 
 
-def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
+def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
+    """model can be DeclarativeMeta of table
+    or InstrumentedAttribute of table column
+    """
     if not isinstance(modelkey, InstrumentedAttribute):
         raise InvalidArgument('modelkey type error')
     if not isinstance(modelkey.property, ColumnProperty):
@@ -303,30 +304,30 @@ def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         raise InvalidArgument('%s column type error, not allow autoincrement' % str(column))
-    model = modelkey.class_
-    # query max id
-    query = session.query(func.max(modelkey))
-    query = model_query(query, model, filter, timeout)
-    max_id = query.one()[0]
-    # now row
-    if max_id is None:
+    # query = session.query(func.max(attribute)).select_from(model)
+    return model_query(session, func.max(modelkey), filter, timeout).scalar()
+
+
+def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
+    try:
+        return model_max_with_key(session, modelkey, filter, timeout) + 1
+    except orm_exc.NoResultFound:
+        column = modelkey.property.columns[0]
         if column.default is not None:
             if column.default.is_callable:
                 try:
-                    max_id = column.default.arg()
+                    default_id = column.default.arg()
                 except TypeError:
                     raise InvalidArgument('%s call default function' % str(column))
             else:
-                max_id = column.default.arg
+                default_id = column.default.arg
         else:
-            if column_type.unsigned:
-                max_id = 0
+            if column.type.unsigned:
+                default_id = 0
             else:
                 # TODO find min value of column
-                max_id = 0
-    else:
-        max_id += 1
-    return max_id
+                default_id = 0
+        return default_id
 
 
 def model_count_with_key(session, model, filter=None, timeout=0.1):
@@ -334,25 +335,16 @@ def model_count_with_key(session, model, filter=None, timeout=0.1):
     or InstrumentedAttribute of table column
     """
     if isinstance(model, DeclarativeMeta):
-        key = "*"
+        query = session.query(func.count("*")).select_from(model)
     elif isinstance(model, InstrumentedAttribute):
         key = model.key
-        model = model.class_
+        query = model_query(session, func.count(key), filter, timeout)
+        # model = model.class_
     else:
         raise InvalidArgument('model type error')
-    query = session.query(func.count(key)).select_from(model)
-    query = model_query(query, model, filter, timeout)
-    return query.scalar()
+    # query = session.query(func.count(key)).select_from(model)
 
-
-def model_max_with_key(session, attribute, filter=None, timeout=0.1):
-    """model can be DeclarativeMeta of table
-    or InstrumentedAttribute of table column
-    """
-    if isinstance(attribute, InstrumentedAttribute):
-        model = attribute.class_
-    else:
-        raise InvalidArgument('model type error')
-    query = session.query(func.max(attribute)).select_from(model)
-    query = model_query(query, model, filter, timeout)
-    return query.scalar()
+    try:
+        return query.scalar()
+    except orm_exc.NoResultFound:
+        return 0
