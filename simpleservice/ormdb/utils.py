@@ -33,7 +33,6 @@ from sqlalchemy.engine import reflection
 from sqlalchemy.engine import url as sa_url
 from sqlalchemy import func
 from sqlalchemy import Index
-from sqlalchemy import inspect
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy.sql.expression import literal_column
@@ -43,8 +42,6 @@ from sqlalchemy import Table
 from sqlalchemy.types import NullType
 
 from simpleservice.ormdb import exceptions
-# from oslo_db._i18n import _, _LI, _LW
-from simpleservice.ormdb import models
 
 # NOTE(ochuprykov): Add references for backwards compatibility
 InvalidSortKey = exceptions.InvalidSortKey
@@ -67,119 +64,6 @@ def sanitize_db_url(url):
 
 
 # copy from glance/db/sqlalchemy/api.py
-def paginate_query(query, model, limit, sort_keys, marker=None,
-                   sort_dir=None, sort_dirs=None):
-    """Returns a query with sorting / pagination criteria added.
-
-    Pagination works by requiring a unique sort_key, specified by sort_keys.
-    (If sort_keys is not unique, then we risk looping through values.)
-    We use the last row in the previous page as the 'marker' for pagination.
-    So we must return values that follow the passed marker in the order.
-    With a single-valued sort_key, this would be easy: sort_key > X.
-    With a compound-values sort_key, (k1, k2, k3) we must do this to repeat
-    the lexicographical ordering:
-    (k1 > X1) or (k1 == X1 && k2 > X2) or (k1 == X1 && k2 == X2 && k3 > X3)
-
-    We also have to cope with different sort_directions.
-
-    Typically, the id of the last row is used as the client-facing pagination
-    marker, then the actual marker object must be fetched from the db and
-    passed in to us as marker.
-
-    :param query: the query object to which we should add paging/sorting
-    :param model: the ORM model class
-    :param limit: maximum number of items to return
-    :param sort_keys: array of attributes by which results should be sorted
-    :param marker: the last item of the previous page; we returns the next
-                    results after this value.
-    :param sort_dir: direction in which results should be sorted (asc, desc)
-                     suffix -nullsfirst, -nullslast can be added to defined
-                     the ordering of null values
-    :param sort_dirs: per-column array of sort_dirs, corresponding to sort_keys
-
-    :rtype: sqlalchemy.orm.query.Query
-    :return: The query with sorting/pagination added.
-    """
-
-    if 'id' not in sort_keys:
-        # TODO(justinsb): If this ever gives a false-positive, check
-        # the actual primary key, rather than assuming its id
-        LOG.warning('Id not in sort_keys; is sort_keys unique?')
-
-    assert(not (sort_dir and sort_dirs))
-
-    # Default the sort direction to ascending
-    if sort_dirs is None and sort_dir is None:
-        sort_dir = 'asc'
-
-    # Ensure a per-column sort direction
-    if sort_dirs is None:
-        sort_dirs = [sort_dir for _sort_key in sort_keys]
-
-    assert(len(sort_dirs) == len(sort_keys))
-
-    # Add sorting
-    for current_sort_key, current_sort_dir in zip(sort_keys, sort_dirs):
-        try:
-            inspect(model).all_orm_descriptors[current_sort_key]
-        except KeyError:
-            raise exceptions.InvalidSortKey(current_sort_key)
-        else:
-            sort_key_attr = getattr(model, current_sort_key)
-
-        try:
-            main_sort_dir, __, null_sort_dir = current_sort_dir.partition("-")
-            sort_dir_func = {
-                'asc': sqlalchemy.asc,
-                'desc': sqlalchemy.desc,
-            }[main_sort_dir]
-
-            null_order_by_stmt = {
-                "": None,
-                "nullsfirst": sort_key_attr.is_(None),
-                "nullslast": sort_key_attr.isnot(None),
-            }[null_sort_dir]
-        except KeyError:
-            raise ValueError("Unknown sort direction, "
-                             "must be one of: %s" %
-                             ", ".join(_VALID_SORT_DIR))
-
-        if null_order_by_stmt is not None:
-            query = query.order_by(sqlalchemy.desc(null_order_by_stmt))
-        query = query.order_by(sort_dir_func(sort_key_attr))
-
-    # Add pagination
-    if marker is not None:
-        marker_values = []
-        for sort_key in sort_keys:
-            v = getattr(marker, sort_key)
-            marker_values.append(v)
-
-        # Build up an array of sort criteria as in the docstring
-        criteria_list = []
-        for i in range(len(sort_keys)):
-            crit_attrs = []
-            for j in range(i):
-                model_attr = getattr(model, sort_keys[j])
-                crit_attrs.append((model_attr == marker_values[j]))
-
-            model_attr = getattr(model, sort_keys[i])
-            if sort_dirs[i].startswith('desc'):
-                crit_attrs.append((model_attr < marker_values[i]))
-            else:
-                crit_attrs.append((model_attr > marker_values[i]))
-
-            criteria = sqlalchemy.sql.and_(*crit_attrs)
-            criteria_list.append(criteria)
-
-        f = sqlalchemy.sql.or_(*criteria_list)
-        query = query.filter(f)
-
-    if limit is not None:
-        query = query.limit(limit)
-
-    return query
-
 
 def to_list(x, default=None):
     if x is None:
@@ -204,131 +88,6 @@ def _read_deleted_filter(query, db_model, deleted):
         query = query.filter(db_model.deleted != default_deleted_value)
     else:
         query = query.filter(db_model.deleted == default_deleted_value)
-    return query
-
-
-def _project_filter(query, db_model, project_id):
-    if 'project_id' not in db_model.__table__.columns:
-        raise ValueError("There is no `project_id` column in `%s` table."
-                         % db_model.__name__)
-
-    if isinstance(project_id, (list, tuple, set)):
-        query = query.filter(db_model.project_id.in_(project_id))
-    else:
-        query = query.filter(db_model.project_id == project_id)
-
-    return query
-
-
-def model_query(model, session, args=None, **kwargs):
-    """Query helper for db.sqlalchemy api methods.
-
-    This accounts for `deleted` and `project_id` fields.
-
-    :param model:        Model to query. Must be a subclass of ModelBase.
-    :type model:         models.ModelBase
-
-    :param session:      The session to use.
-    :type session:       sqlalchemy.orm.session.Session
-
-    :param args:         Arguments to query. If None - model is used.
-    :type args:          tuple
-
-    Keyword arguments:
-
-    :keyword project_id: If present, allows filtering by project_id(s).
-                         Can be either a project_id value, or an iterable of
-                         project_id values, or None. If an iterable is passed,
-                         only rows whose project_id column value is on the
-                         `project_id` list will be returned. If None is passed,
-                         only rows which are not bound to any project, will be
-                         returned.
-    :type project_id:    iterable,
-                         model.__table__.columns.project_id.type,
-                         None type
-
-    :keyword deleted:    If present, allows filtering by deleted field.
-                         If True is passed, only deleted entries will be
-                         returned, if False - only existing entries.
-    :type deleted:       bool
-
-
-    Usage:
-
-    .. code-block:: python
-
-      from oslo_db.sqlalchemy import utils
-
-
-      def get_instance_by_uuid(uuid):
-          session = get_session()
-          with session.begin()
-              return (utils.model_query(models.Instance, session=session)
-                           .filter(models.Instance.uuid == uuid)
-                           .first())
-
-      def get_nodes_stat():
-          data = (Node.id, Node.cpu, Node.ram, Node.hdd)
-
-          session = get_session()
-          with session.begin()
-              return utils.model_query(Node, session=session, args=data).all()
-
-    Also you can create your own helper, based on ``utils.model_query()``.
-    For example, it can be useful if you plan to use ``project_id`` and
-    ``deleted`` parameters from project's ``context``
-
-    .. code-block:: python
-
-      from oslo_db.sqlalchemy import utils
-
-
-      def _model_query(context, model, session=None, args=None,
-                       project_id=None, project_only=False,
-                       read_deleted=None):
-
-          # We suppose, that functions ``_get_project_id()`` and
-          # ``_get_deleted()`` should handle passed parameters and
-          # context object (for example, decide, if we need to restrict a user
-          # to query his own entries by project_id or only allow admin to read
-          # deleted entries). For return values, we expect to get
-          # ``project_id`` and ``deleted``, which are suitable for the
-          # ``model_query()`` signature.
-          kwargs = {}
-          if project_id is not None:
-              kwargs['project_id'] = _get_project_id(context, project_id,
-                                                     project_only)
-          if read_deleted is not None:
-              kwargs['deleted'] = _get_deleted_dict(context, read_deleted)
-          session = session or get_session()
-
-          with session.begin():
-              return utils.model_query(model, session=session,
-                                       args=args, **kwargs)
-
-      def get_instance_by_uuid(context, uuid):
-          return (_model_query(context, models.Instance, read_deleted='yes')
-                        .filter(models.Instance.uuid == uuid)
-                        .first())
-
-      def get_nodes_data(context, project_id, project_only='allow_none'):
-          data = (Node.id, Node.cpu, Node.ram, Node.hdd)
-
-          return (_model_query(context, Node, args=data, project_id=project_id,
-                               project_only=project_only)
-                        .all())
-
-    """
-
-    if not issubclass(model, models.ModelBase):
-        raise TypeError("model should be a subclass of ModelBase")
-
-    query = session.query(model) if not args else session.query(*args)
-    if 'deleted' in kwargs:
-        query = _read_deleted_filter(query, model, kwargs['deleted'])
-    if 'project_id' in kwargs:
-        query = _project_filter(query, model, kwargs['project_id'])
-
     return query
 
 
