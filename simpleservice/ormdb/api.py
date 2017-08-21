@@ -259,24 +259,15 @@ class MysqlDriver(object):
         return self._get_sessionmaker(read)(**kwargs)
 
 
-def model_query(session, model, filter=None, timeout=1.0):
-    """filter_args is can be a dict of model's attribte
-    or a callable function form return the args for query.filter
-    """
-    if not isinstance(session, Session):
-        raise InvalidArgument('First must Session of sqlalchemy')
-    if isinstance(model, (list, tuple, set)):
-        query = session.query(*model)
-    else:
-        query = session.query(model)
-    if timeout:
-        query = query.execution_options(timeout=timeout)
+def filter_query(query, model, filter=None):
     if filter is not None:
         if isinstance(filter, (BooleanClauseList, BinaryExpression)):
             query = query.filter(filter)
         elif isinstance(filter, (list, tuple)):
             query = query.filter(*filter)
         elif isinstance(filter, dict):
+            if isinstance(model, (list, tuple, set)):
+                model = model[0].class_
             try:
                 query = query.filter(*[model.__dict__[key] == filter[key] for key in filter])
             except KeyError as e:
@@ -291,6 +282,19 @@ def model_query(session, model, filter=None, timeout=1.0):
             raise InvalidArgument('filter type %s not match' % type(filter).__name__)
     return query
 
+def model_query(session, model, filter=None, timeout=1.0):
+    """filter_args is can be a dict of model's attribte
+    or a callable function form return the args for query.filter
+    """
+    if not isinstance(session, Session):
+        raise InvalidArgument('First must Session of sqlalchemy')
+    if isinstance(model, (list, tuple, set)):
+        query = session.query(*model)
+    else:
+        query = session.query(model)
+    if timeout:
+        query = query.execution_options(timeout=timeout)
+    return filter_query(query, model, filter)
 
 def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
     """model can be DeclarativeMeta of table
@@ -335,10 +339,9 @@ def model_count_with_key(session, model, filter=None, timeout=0.1):
     or InstrumentedAttribute of table column
     """
     if isinstance(model, DeclarativeMeta):
-        query = session.query(func.count("*")).select_from(model)
+        query = filter_query(session.query(func.count("*")).select_from(model), model, filter)
     elif isinstance(model, InstrumentedAttribute):
-        key = model.key
-        query = model_query(session, func.count(key), filter, timeout)
+        query = model_query(session, func.count(model), filter, timeout)
         # model = model.class_
     else:
         raise InvalidArgument('model type error')
