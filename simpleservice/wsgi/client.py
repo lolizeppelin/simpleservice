@@ -189,7 +189,7 @@ class HttpClientBase(object):
         if data is None:
             return None
         elif isinstance(data, dict):
-            return jsonutils.dump_as_bytes(data)
+            return jsonutils.dumps_as_bytes(data)
         else:
             raise Exception("Unable to serialize object of type = '%s'" % type(data))
 
@@ -199,7 +199,7 @@ class HttpClientBase(object):
         """
         if status_code == 204:
             return data
-        return jsonutils.loads(data)
+        return jsonutils.loads_as_bytes(data)
 
     def delete(self, action, body=None, headers=None, params=None):
         return self.retry_request("DELETE", action, body=body,
