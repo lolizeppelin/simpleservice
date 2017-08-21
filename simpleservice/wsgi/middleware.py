@@ -17,12 +17,12 @@ DEFAULT_CONTENT_TYPE = 'application/json'
 STREAM_CONTENT_TYPE = 'application/octet-stream'
 
 deserializers = {
-    DEFAULT_CONTENT_TYPE: jsonutils.loads,
+    DEFAULT_CONTENT_TYPE: jsonutils.loads_as_bytes,
     STREAM_CONTENT_TYPE: lambda x: x
 }
 
 serializers = {
-    DEFAULT_CONTENT_TYPE: jsonutils.dump_as_bytes,
+    DEFAULT_CONTENT_TYPE: jsonutils.dumps_as_bytes,
     STREAM_CONTENT_TYPE: lambda x: x
 }
 

@@ -165,7 +165,7 @@ class HttpClientBase(object):
         # Create exception with HTTP status code and message
         LOG.debug("Error message: %s", response_body)
         try:
-            json_data = jsonutils.loads(response_body)
+            json_data = jsonutils.loads_as_bytes(response_body)
             resone = json_data.get('msg') if json_data.get('msg') else response_body
         except ValueError:
             resone = response_body

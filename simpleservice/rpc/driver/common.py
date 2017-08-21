@@ -40,7 +40,7 @@ def deserialize_msg(msg):
     if isinstance(msg, dict):
         # See #2 above.
         return msg
-    return jsonutils.loads(msg)
+    return jsonutils.loads_as_bytes(msg)
 
 
 def serialize_remote_exception(failure_info, log_failure=True):
@@ -82,7 +82,7 @@ def serialize_remote_exception(failure_info, log_failure=True):
 
 
 def deserialize_remote_exception(data, allowed_remote_exmods):
-    failure = jsonutils.loads(six.text_type(data))
+    failure = jsonutils.loads_as_bytes(six.text_type(data))
 
     trace = failure.get('tb', [])
     message = failure.get('message', "") + "\n" + "\n".join(trace)
