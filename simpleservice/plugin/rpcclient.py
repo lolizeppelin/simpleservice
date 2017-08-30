@@ -10,9 +10,6 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-DEFAULT_LOG_AFTER = 30
-
-
 class RPCClientBase(object):
 
     def __init__(self, conf):
