@@ -16,9 +16,9 @@ BuildArch:      noarch
 
 BuildRequires:  python-setuptools >= 11.0
 
-Requires:       simpleutil >= 1.0.0
-Requires:       six >= 1.9.0
-Requires:       eventlet >= 0.15.2
+Requires:       python-simpleutil >= 1.0.0
+Requires:       python-six >= 1.9.0
+Requires:       python-eventlet >= 0.15.2
 
 %description
 simpleservice copy from openstack
@@ -35,7 +35,7 @@ simpleservice copy from openstack
 %package wsgi
 Summary:        wsgi framework for simpleservice plugin
 Group:          Development/Libraries
-Requires:       python-%{proj_name} == %{version}
+Requires:       %{name} == %{version}
 Requires:       python-webob >= 1.2.3
 Requires:       python-paste
 Requires:       python-paste-deploy >= 1.5.0
@@ -54,7 +54,7 @@ wsgi server framework
 %package rpc
 Summary:        rpc framework for simpleservice plugin
 Group:          Development/Libraries
-Requires:       python-%{proj_name} == %{version}
+Requires:       %{name} == %{version}
 Requires:       python-kombu >= 3.0.25
 
 %description rpc
@@ -70,7 +70,7 @@ rpc framework for simpleservice plugin
 %package ormdb
 Summary:        orm framework for simpleservice plugin
 Group:          Development/Libraries
-Requires:       python-%{proj_name} == %{version}
+Requires:       %{name} == %{version}
 Requires:       python-sqlalchemy >= 1.0.11
 
 %description ormdb
