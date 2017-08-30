@@ -282,6 +282,7 @@ def filter_query(query, model, filter=None):
             raise InvalidArgument('filter type %s not match' % type(filter).__name__)
     return query
 
+
 def model_query(session, model, filter=None, timeout=1.0):
     """filter_args is can be a dict of model's attribte
     or a callable function form return the args for query.filter
@@ -295,6 +296,7 @@ def model_query(session, model, filter=None, timeout=1.0):
     if timeout:
         query = query.execution_options(timeout=timeout)
     return filter_query(query, model, filter)
+
 
 def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
     """model can be DeclarativeMeta of table
