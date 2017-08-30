@@ -20,6 +20,8 @@ setup(
                       'sqlalchemy>=1.0.11', # orm
                       'kombu>=3.0.25',      # rpc
                       'six>=1.9.0',
+                      'requests >= 2.8.1',
+                      'requests != 2.9.0',
                       'simpleutil>=1.0.0'),
     name='simpleservice',
     version=__version__,
