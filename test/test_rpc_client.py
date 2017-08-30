@@ -1,15 +1,10 @@
 import logging as default_logging
 
-import eventlet
-
+from simpleservice import config
+from simpleservice.plugin.rpcclient import RPCClientBase
+from simpleservice.rpc.target import Target
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
-
-from simpleservice import config
-
-
-from simpleservice.rpc.client import RPCClientBase
-from simpleservice.rpc.target import Target
 
 
 CONF = cfg.CONF
