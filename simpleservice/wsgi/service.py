@@ -215,11 +215,9 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if self.plugin_threadpool:
             self.plugin_threadpool.stop(graceful=True)
 
-
     def wait(self):
         if self._server is not None:
             self._server.wait()
-
 
     def close_exec(self):
         if system.LINUX:
