@@ -19,7 +19,6 @@ CONF = cfg.CONF
 LOG = logging.getLogger(__name__)
 
 
-
 class MessageHandlingService(ServiceBase):
     """ MessageHandlingService"""
     def __init__(self, rpcdriver, dispatcher):
@@ -33,7 +32,7 @@ class MessageHandlingService(ServiceBase):
         self._started = False
         super(MessageHandlingService, self).__init__()
 
-    # @ordered(reset_after='stop')
+    # TODO use automaton @ordered(reset_after='stop')
     def start(self, override_pool_size=None):
         self._started = True
         targets = [self.dispatcher.manager.target, ]
