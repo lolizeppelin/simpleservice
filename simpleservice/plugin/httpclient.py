@@ -8,7 +8,7 @@ from simpleutil.utils import jsonutils
 from simpleutil.log import log as logging
 
 from simpleservice import common
-from simpleservice.wsgi import exceptions
+from simpleservice.plugin import exceptions
 
 
 CONF = cfg.CONF
