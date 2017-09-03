@@ -30,7 +30,7 @@ database_opts = [
                     'is set by the server configuration, '
                     'set this to no value. Example: mysql_sql_mode='),
     cfg.IntOpt('idle_timeout',
-               default=3600,
+               default=600,
                help='Timeout before idle SQL connections are reaped.'),
     cfg.IntOpt('min_pool_size',
                default=1,
@@ -49,7 +49,7 @@ database_opts = [
                default=10,
                help='Interval between retries of opening a SQL connection.'),
     cfg.IntOpt('max_overflow',
-               default=50,
+               default=30,
                help='If set, use this value for max_overflow with '
                     'SQLAlchemy.'),
     cfg.BoolOpt('connection_trace',
