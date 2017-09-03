@@ -36,6 +36,7 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
     except OperationalError as e:
         raise AcceptableError('Get source database info or Reflect source database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
+    init_data = None
     if tables_need_copy or exec_sqls:
 
         def init_data(*args):
@@ -56,9 +57,9 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
                     # build a query in src database
                     query = src_session.query(table)
                     with dst_session.begin():
-                        for data in query:
+                        for row in query:
                             # execute insert sql on dst databases
-                            dst_session.execute(table.insert(data))
+                            dst_session.execute(table.insert(row))
             if exec_sqls:
                 with dst_session.begin():
                     for sql in exec_sqls:
