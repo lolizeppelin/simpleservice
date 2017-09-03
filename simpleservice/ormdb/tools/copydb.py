@@ -36,7 +36,6 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
     except OperationalError as e:
         raise AcceptableError('Get source database info or Reflect source database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
-    init_data = None
     if tables_need_copy or exec_sqls:
 
         def init_data(*args):
