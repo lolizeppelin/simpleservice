@@ -159,7 +159,7 @@ class wrap_db_retry(object):
 
 
 class MysqlDriver(object):
-    def __init__(self, name, conf):
+    def __init__(self, name, conf, **kwargs):
         self._started = False
         self.conf = conf
         self.name = name
@@ -169,6 +169,7 @@ class MysqlDriver(object):
         self._reader_maker = None
         self._session = None
         self._rsession = None
+        self.connection_kwargs = kwargs
 
     @property
     def started(self):
@@ -201,7 +202,8 @@ class MysqlDriver(object):
                                                         pool_timeout=self.conf.pool_timeout,
                                                         mysql_sql_mode=self.conf.mysql_sql_mode,
                                                         max_retries=self.conf.max_retries,
-                                                        retry_interval=self.conf.retry_interval)
+                                                        retry_interval=self.conf.retry_interval,
+                                                        **self.connection_kwargs)
             self._writer_maker = orm.get_maker(engine=self._writer_engine)
             if self.conf.slave_connection:
                 self._reader_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.slave_connection,
@@ -213,7 +215,8 @@ class MysqlDriver(object):
                                                             pool_timeout=self.conf.pool_timeout,
                                                             mysql_sql_mode=self.conf.mysql_sql_mode,
                                                             max_retries=self.conf.max_retries,
-                                                            retry_interval=self.conf.retry_interval)
+                                                            retry_interval=self.conf.retry_interval,
+                                                            **self.connection_kwargs)
                 self._reader_maker = orm.get_maker(engine=self._reader_engine)
             else:
                 self._reader_engine = self._writer_engine

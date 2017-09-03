@@ -121,6 +121,7 @@ def create_engine(sql_connection,
                   max_retries=None,
                   retry_interval=None,
                   poolclass=None,
+                  **kwargs
                   ):
     """Return a new SQLAlchemy engine."""
 
@@ -144,7 +145,7 @@ def create_engine(sql_connection,
     engine_args = {
         "pool_recycle": idle_timeout,
         'convert_unicode': True,
-        'connect_args': {},
+        'connect_args': kwargs,
         'logging_name': logging_name
     }
     if poolclass:
