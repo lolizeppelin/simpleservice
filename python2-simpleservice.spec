@@ -18,18 +18,19 @@ BuildRequires:  python-setuptools >= 11.0
 
 Requires:       python >= 2.6.6
 Requires:       python < 3.0
-Requires:       python-simpleutil >= 1.0.0
 Requires:       python-six >= 1.9.0
 Requires:       python-eventlet >= 0.15.2
 Requires:       python-requests >= 2.8.1
 Requires:       python-requests != 2.9.0
+Requires:       python-simpleutil >= 1.0.0
 
 %description
 simpleservice copy from openstack
 
 %files
 %defattr(-,root,root,-)
-%{python_sitelib}/%{proj_name}/*
+%{python_sitelib}/%{proj_name}/*.py
+%{python_sitelib}/%{proj_name}/*.pyc
 %dir %{python_sitelib}/%{proj_name}/plugin
 %doc README.rst
 %doc doc/*
