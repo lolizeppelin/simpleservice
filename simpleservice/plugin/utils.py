@@ -17,6 +17,7 @@ def init_plugin_database(db_info, *models):
             for i in xrange(1, 2048):
                 row = GkeyMap(sid=i, host=None)
                 session.add(row)
+                session.flush()
         for _models in models:
             if hasattr(_models, 'init_data'):
                 getattr(_models, 'init_data')(session)
