@@ -1,6 +1,7 @@
 import os
 import six
 import time
+import re
 import sqlalchemy
 import sqlalchemy.event
 
@@ -165,6 +166,17 @@ def init_connection_args(url, engine_args, **kw):
             engine_args['connect_args']['use_unicode'] = 0
 
 
+@init_connection_args.dispatch_for("sqlite")
+def _init_connection_args(url, engine_args, **kw):
+    pool_class = url.get_dialect().get_pool_class(url)
+    # singletonthreadpool is used for :memory: connections;
+    # replace it with StaticPool.
+    if issubclass(pool_class, pool.SingletonThreadPool):
+        engine_args["poolclass"] = pool.StaticPool
+        engine_args['connect_args']['check_same_thread'] = False
+
+
+
 @utils.dispatch_for_dialect('*', multiple=True)
 def init_events(engine, thread_checkin=True, connection_trace=False, **kw):
     """Set up event listeners for all database backends."""
@@ -245,6 +257,55 @@ def init_events(engine, **kw):
         if timer:
             timer.cancel()
             delattr(cursor, 'timeout_task')
+
+
+@init_events.dispatch_for("sqlite")
+def _init_events(engine, sqlite_synchronous=True, sqlite_fk=False, **kw):
+    """Set up event listeners for SQLite.
+
+    This includes several settings made on connections as they are
+    created, as well as transactional control extensions.
+
+    """
+
+    def regexp(expr, item):
+        reg = re.compile(expr)
+        return reg.search(six.text_type(item)) is not None
+
+    @sqlalchemy.event.listens_for(engine, "connect")
+    def _sqlite_connect_events(dbapi_con, con_record):
+
+        # Add REGEXP functionality on SQLite connections
+        dbapi_con.create_function('regexp', 2, regexp)
+
+        if not sqlite_synchronous:
+            # Switch sqlite connections to non-synchronous mode
+            dbapi_con.execute("PRAGMA synchronous = OFF")
+
+        # Disable pysqlite's emitting of the BEGIN statement entirely.
+        # Also stops it from emitting COMMIT before any DDL.
+        # below, we emit BEGIN ourselves.
+        # see http://docs.sqlalchemy.org/en/rel_0_9/dialects/\
+        # sqlite.html#serializable-isolation-savepoints-transactional-ddl
+        dbapi_con.isolation_level = None
+
+        if sqlite_fk:
+            # Ensures that the foreign key constraints are enforced in SQLite.
+            dbapi_con.execute('pragma foreign_keys=ON')
+
+    @sqlalchemy.event.listens_for(engine, "begin")
+    def _sqlite_emit_begin(conn):
+        # emit our own BEGIN, checking for existing
+        # transactional state
+        if 'in_transaction' not in conn.info:
+            conn.execute("BEGIN")
+            conn.info['in_transaction'] = True
+
+    @sqlalchemy.event.listens_for(engine, "rollback")
+    @sqlalchemy.event.listens_for(engine, "commit")
+    def _sqlite_end_transaction(conn):
+        # remove transactional marker
+        conn.info.pop('in_transaction', None)
 
 
 connformater = 'mysql+mysqlconnector://%(user)s:%(passwd)s@%(host)s:%(port)s/%(schema)s'
