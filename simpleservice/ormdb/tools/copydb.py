@@ -38,7 +38,7 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
                               (e.orig[0], e.orig[1].replace("'", '')))
     if tables_need_copy or exec_sqls:
 
-        def init_data(*args):
+        def init_data(*args, **kwargs):
             dst_session = orm.get_maker(dst_engine)()
             src_session = orm.get_maker(src_engine)()
             if tables_need_copy:
@@ -63,8 +63,11 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
                 with dst_session.begin():
                     for sql in exec_sqls:
                         dst_session.execute(sql)
-
-    init_database(dst_engine, metadata,
-                  charcter_set=schema_info[1],
-                  collation_type=schema_info[2],
-                  init_data_func=init_data)
+    try:
+        init_database(dst_engine, metadata,
+                      charcter_set=schema_info[1],
+                      collation_type=schema_info[2],
+                      init_data_func=init_data)
+    finally:
+        src_engine.close()
+        dst_engine.close()
