@@ -233,7 +233,8 @@ class MysqlDriver(object):
             except Exception:
                 pass
             try:
-                self._reader_engine.close()
+                if self._reader_engine is not self._writer_engine:
+                    self._reader_engine.close()
             except Exception:
                 pass
             self._writer_engine = None
