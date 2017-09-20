@@ -141,8 +141,9 @@ def init_connection_args(url, engine_args,
 
 @init_connection_args.dispatch_for("mysql")
 def init_connection_args(url, engine_args, **kw):
-    if 'charset' not in url.query:
-        engine_args['connect_args']['charset'] = 'utf8'
+    if not engine_args['connect_args'].get('charset'):
+        if 'charset' not in url.query:
+            engine_args['connect_args']['charset'] = 'utf8'
 
 
 @init_connection_args.dispatch_for("mysql+mysqlconnector")
@@ -151,7 +152,7 @@ def init_connection_args(url, engine_args, **kw):
     # raise_on_warnings=True
     #  https://bitbucket.org/zzzeek/sqlalchemy/issue/2515
     if 'raise_on_warnings' not in url.query:
-        engine_args['connect_args']['raise_on_warnings'] = False
+        engine_args['connect_args']['raise_on_warnings'] = True
 
 
 @init_connection_args.dispatch_for("mysql+mysqldb")
