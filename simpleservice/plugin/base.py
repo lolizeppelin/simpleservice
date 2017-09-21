@@ -1,5 +1,9 @@
 class Deliverinterface(object):
 
+    def __init__(self, target):
+        self.target = target
+        self.namespace = target.namespace
+
     def pre_start(self, external_objects):
         """before external_objects start"""
 
@@ -14,12 +18,17 @@ class Deliverinterface(object):
 
 
 class ManagerBase(Deliverinterface):
+    """Manager Base class"""
 
     agent_type = None
 
     def __init__(self, target):
-        self.target = target
-        self.namespace = target.namespace
+        super(ManagerBase, self).__init__(target)
+        self._endpoints = set()
+
+    @property
+    def endpoints(self):
+        return self._endpoints
 
     def periodic_tasks(self):
         return []
@@ -29,21 +38,17 @@ class ManagerBase(Deliverinterface):
 
     def call_endpoint(self, endpoint, method, ctxt, **kwargs):
         """Check before call endpoint method, cover it"""
-        func = getattr(endpoint, method)
-        return func(ctxt, **kwargs)
+        raise NotImplementedError('Can not call endpoint on this manager')
 
     def full(self):
         """If agent is full load"""
-        raise NotImplemented
+        raise NotImplementedError('Manager is full now')
 
 
 class EndpointBase(Deliverinterface):
-    """"""
-
-    def _entitys(self):
-        raise NotImplementedError
+    """Endpoint base class"""
 
     @property
     def entitys(self):
         """return count of entitys"""
-        return  self._entitys()
+        raise NotImplementedError('Entitys unkonwn')
