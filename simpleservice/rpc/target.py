@@ -6,7 +6,7 @@ class Target(object):
         # self.topic = '%s.%s' % (topic, namespace)
         self.topic = topic
         self.version = version
-        # rpc listener must have server
+        # rpc topic listener must have server
         self.server = server
         self.fanout = fanout
 
