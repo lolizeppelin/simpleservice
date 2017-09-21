@@ -13,7 +13,7 @@ rpc_client_opts = [
                help="Rabbit message default send retry times"),
 ]
 
-rpc_server_opts = [
+rpc_service_opts = [
     cfg.IntOpt('rpc_process',
                default=5,
                min=1,
