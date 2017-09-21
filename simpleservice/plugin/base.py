@@ -40,10 +40,10 @@ class ManagerBase(Deliverinterface):
 class EndpointBase(Deliverinterface):
     """"""
 
-    def _entiys(self):
+    def _entitys(self):
         raise NotImplementedError
 
     @property
-    def entiys(self):
-        """return count of entiy"""
-        return  self._entiys()
+    def entitys(self):
+        """return count of entitys"""
+        return  self._entitys()
