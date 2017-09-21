@@ -50,7 +50,7 @@ class HttpClientBase(object):
     CONTENT_TYPE = 'application/json'
     FORMAT = 'json'
 
-    def __init__(self, host, local_ip, agent_type,
+    def __init__(self, host, local_ip,
                  wsgi_url, wsgi_port, **kwargs):
         """Initialize a new client for the http request."""
         super(HttpClientBase, self).__init__()
@@ -59,7 +59,6 @@ class HttpClientBase(object):
         self.wsgi_url = 'http://%s' % wsgi_url
         if wsgi_port != 80:
             self.wsgi_url = self.wsgi_url + ':%d' % wsgi_port
-        self.agent_type = agent_type
         self.local_ip = local_ip
         self.host = host
         self.agent_id = None
