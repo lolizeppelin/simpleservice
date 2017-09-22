@@ -63,11 +63,13 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
                 with dst_session.begin():
                     for sql in exec_sqls:
                         dst_session.execute(sql)
+            src_session.close()
+            dst_session.close()
     try:
         init_database(dst_engine, metadata,
                       charcter_set=schema_info[1],
                       collation_type=schema_info[2],
                       init_data_func=init_data)
     finally:
-        src_engine.close()
-        dst_engine.close()
+        del src_engine
+        del dst_engine

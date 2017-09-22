@@ -228,15 +228,6 @@ class MysqlDriver(object):
             self.session.close()
             if self.rsession is not self.session:
                 self.rsession.close()
-            try:
-                self._writer_engine.close()
-            except Exception:
-                pass
-            try:
-                if self._reader_engine is not self._writer_engine:
-                    self._reader_engine.close()
-            except Exception:
-                pass
             self._writer_engine = None
             self._reader_engine = None
             self._writer_maker = None
