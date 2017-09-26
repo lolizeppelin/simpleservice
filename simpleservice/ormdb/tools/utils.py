@@ -56,8 +56,17 @@ def drop_schema(engine):
         engine.execute(sql)
 
 
+def re_create_schema(engine):
+    schema_info = get_schema_info(engine)
+    if not schema_info:
+        raise exceptions.DBNotExist(engine.url.database)
+    drop_schema(engine)
+    create_schema(engine, schema_info[1], schema_info[2])
+
+
 create_databse = create_schema
 drop_databse = drop_schema
+re_create_database = re_create_schema
 
 
 def init_database(db_info, metadata,
