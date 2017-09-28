@@ -54,7 +54,7 @@ class HttpClientBase(object):
         """Initialize a new client for the http request."""
         super(HttpClientBase, self).__init__()
         if wsgi_url is None:
-            raise RuntimeError('wsgi_urlip address is None')
+            raise RuntimeError('wsgi_url ip address is None')
         self.wsgi_url = 'http://%s' % wsgi_url
         if wsgi_port != 80:
             self.wsgi_url = self.wsgi_url + ':%d' % wsgi_port
