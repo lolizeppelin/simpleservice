@@ -50,14 +50,16 @@ class HttpClientBase(object):
     CONTENT_TYPE = 'application/json'
     FORMAT = 'json'
 
-    def __init__(self, wsgi_url, wsgi_port, **kwargs):
+    def __init__(self, url, port=80, **kwargs):
         """Initialize a new client for the http request."""
         super(HttpClientBase, self).__init__()
-        if wsgi_url is None:
-            raise RuntimeError('wsgi_url ip address is None')
-        self.wsgi_url = 'http://%s' % wsgi_url
-        if wsgi_port != 80:
-            self.wsgi_url = self.wsgi_url + ':%d' % wsgi_port
+        url = url.lower()
+        if not url.startswith('http://'):
+            self.url = 'http://%s' % url
+        else:
+            self.url = url
+        if port != 80:
+            self.url = self.url + ':%d' % port
         self.agent_id = None
         self.session = kwargs.pop('session', None)
         self.version = kwargs.pop('version', '1.0')
@@ -69,7 +71,7 @@ class HttpClientBase(object):
         self.retry_interval = 1
 
     def _do_request(self, action, method, headers, body, timeout):
-        request_url = self.wsgi_url + action
+        request_url = self.url + action
         if len(request_url) > common.MAX_URI_LEN:
             raise exceptions.BeforeRequestError('Error url, url len over then %d' % common.MAX_URI_LEN)
         if self.session:
