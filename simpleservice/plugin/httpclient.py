@@ -60,6 +60,8 @@ class HttpClientBase(object):
             self.url = url
         if port != 80:
             self.url = self.url + ':%d' % port
+        if self.url.endswith('/'):
+            self.url = self.url[:-1]
         self.agent_id = None
         self.session = kwargs.pop('session', None)
         self.version = kwargs.pop('version', '1.0')
@@ -67,7 +69,7 @@ class HttpClientBase(object):
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
-        self.action_prefix = "/v%s" % self.version
+        self.action_prefix = "/v%s" % self.version if self.version else "/"
         self.retry_interval = 1
 
     def _do_request(self, action, method, headers, body, timeout):
