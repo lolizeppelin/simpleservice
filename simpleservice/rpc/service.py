@@ -118,7 +118,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
 
         self.messageservice.start()
 
-        for task in self.manager.periodic_tasks():
+        for task in self.manager.periodic_tasks:
             periodic = loopingcall.FixedIntervalLoopingCall(task)
             periodic.start(interval=task.periodic_interval,
                            initial_delay=task.initial_delay,

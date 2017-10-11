@@ -25,16 +25,18 @@ class ManagerBase(Deliverinterface):
     def __init__(self, target):
         super(ManagerBase, self).__init__(target)
         self._endpoints = set()
+        self._periodic_tasks = []
 
     @property
     def endpoints(self):
         return self._endpoints
 
+    @property
     def periodic_tasks(self):
-        return []
+        return self._periodic_tasks
 
     def add_periodic_task(self, task):
-        self.periodic_tasks().append(task)
+        self.periodic_tasks.append(task)
 
     def call_endpoint(self, endpoint, method, ctxt, **kwargs):
         """Check before call endpoint method, cover it"""
