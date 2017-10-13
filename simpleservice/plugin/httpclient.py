@@ -69,7 +69,7 @@ class HttpClientBase(object):
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
-        self.action_prefix = "/v%s" % self.version if self.version else "/"
+        self.action_prefix = "/v%s" % self.version if self.version else ""
         self.retry_interval = 1
 
     def _do_request(self, action, method, headers, body, timeout):
@@ -106,7 +106,7 @@ class HttpClientBase(object):
         try:
             resp, replybody = self._do_request(action, method, headers, body=body, timeout=timeout)
         except Exception as e:
-            LOG.warning('Send %s to %s fail, %s' % (method, action, e.__class__.__name__))
+            LOG.warning('%s %s%s fail, %s' % (method, self.url, action, e.__class__.__name__))
             raise exceptions.ConnectionFailed('Send request catch error')
         # 200: ('ok', 'okay', 'all_ok', 'all_okay', 'all_good',
         # 201: ('created',),
