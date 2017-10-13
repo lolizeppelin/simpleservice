@@ -36,7 +36,7 @@ def controller_return_response(controller, faults=None, action_status=None):
     action_status = action_status or dict(create=201, delete=204)
     faults = faults or {}
     # 已知错误
-    konwn_exceptions = tuple(faults.keys() if faults else NoFaultsKonwnExcpetion)
+    konwn_exceptions = tuple(faults.keys() if faults else NoFaultsKonwnExcpetion) if faults else tuple()
 
     @webob.dec.wsgify()
     def resource(req):
