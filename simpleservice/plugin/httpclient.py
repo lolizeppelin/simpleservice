@@ -68,6 +68,7 @@ class HttpClientBase(object):
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
+        self.validator = kwargs.pop('validator', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
         self.action_prefix = "/v%s" % self.version if self.version else ""
         self.retry_interval = 1
@@ -197,6 +198,8 @@ class HttpClientBase(object):
         """Deserializes a JSON string into a dictionary.
         return: type dict, data make by function `results` above this class
         """
+        if self.validator and not self.validator(data):
+            raise exceptions.DataValidatorError('Call validator return False')
         if status_code == 204:
             return data
         return jsonutils.loads_as_bytes(data)

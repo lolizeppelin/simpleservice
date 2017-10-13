@@ -50,6 +50,12 @@ class DeserializeRequestError(AfterRequestError):
         super(DeserializeRequestError, self).__init__(message, code, resone)
 
 
+class DataValidatorError(AfterRequestError):
+    def __init__(self, message='Validator server respone data error',
+                 code=common.RESULT_UNKNOWN, resone='validator fail'):
+        super(DataValidatorError, self).__init__(message, code, resone)
+
+
 class ServerExecuteRequestError(AfterRequestError):
     """Request send success, action execute fail"""
     def __init__(self, message='Server execute request fail',
