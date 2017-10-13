@@ -68,10 +68,12 @@ class HttpClientBase(object):
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
-        self.validator = kwargs.pop('validator', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
         self.action_prefix = "/v%s" % self.version if self.version else ""
         self.retry_interval = 1
+        self.validator = kwargs.pop('validator', None)
+        if self.validator and not callable(self.validator):
+            self.validator = lambda x: jsonutils.schema_validate(x, self.validator)
 
     def _do_request(self, action, method, headers, body, timeout):
         request_url = self.url + action
@@ -124,6 +126,8 @@ class HttpClientBase(object):
                            requests.codes.accepted,
                            requests.codes.no_content):
             data = self.deserialize(replybody, status_code)
+            if self.validator:
+                self.validator(data)
             return resp, data
         else:
             if not replybody:
@@ -198,8 +202,6 @@ class HttpClientBase(object):
         """Deserializes a JSON string into a dictionary.
         return: type dict, data make by function `results` above this class
         """
-        if self.validator and not self.validator(data):
-            raise exceptions.DataValidatorError('Call validator return False')
         if status_code == 204:
             return data
         return jsonutils.loads_as_bytes(data)
