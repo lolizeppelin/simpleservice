@@ -9,7 +9,7 @@ from simpleutil.log import log as logging
 
 from simpleservice import config as base_config
 from simpleservice.wsgi.config import wsgi_options
-from simpleservice.server import ServerWrapper
+from simpleservice.server import LaunchWrapper
 from simpleservice.server import launch
 from simpleservice.wsgi.factory import app_factory
 from simpleservice.wsgi.service import load_paste_app
@@ -53,7 +53,7 @@ def run(topdir):
     wsgi_server = LauncheWsgiServiceBase(center_group.name, app,
                                          CONF[center_group.name].bind_ip,
                                          CONF[center_group.name].bind_port)
-    wsgi_wrapper = ServerWrapper(wsgi_server, CONF[center_group.name].wsgi_process)
+    wsgi_wrapper = LaunchWrapper(wsgi_server, CONF[center_group.name].wsgi_process)
     servers.append(wsgi_wrapper)
     launch(servers, CONF.user, CONF.group)
 

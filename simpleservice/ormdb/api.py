@@ -288,8 +288,9 @@ def model_query(session, model, filter=None, timeout=1.0):
         query = session.query(*model)
     else:
         query = session.query(model)
-    if timeout:
-        query = query.execution_options(timeout=timeout)
+    # TODO timeout for mysql query
+    # if timeout:
+    #     query = query.execution_options(timeout=timeout)
     return filter_query(query, model, filter)
 
 
