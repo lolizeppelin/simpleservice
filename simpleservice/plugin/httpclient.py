@@ -73,7 +73,8 @@ class HttpClientBase(object):
         self.retry_interval = 1
         self.validator = kwargs.pop('validator', None)
         if self.validator and not callable(self.validator):
-            self.validator = lambda x: jsonutils.schema_validate(x, self.validator)
+            schema = self.validator
+            self.validator = lambda x: jsonutils.schema_validate(x, schema)
 
     def _do_request(self, action, method, headers, body, timeout):
         request_url = self.url + action
