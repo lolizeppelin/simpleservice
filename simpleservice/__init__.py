@@ -19,10 +19,12 @@ if system.WINDOWS:
     # Remove TCP_MAXSEG, Avoid koumbu raise socket error on windows
     opt_name = 'TCP_MAXSEG'
     opt_id = getattr(socket, 'TCP_MAXSEG')
-    amqp.transport.TCP_OPTS.remove(opt_id)
-    amqp.transport.KNOWN_TCP_OPTS = list(amqp.transport.KNOWN_TCP_OPTS)
-    amqp.transport.KNOWN_TCP_OPTS.remove(opt_name)
-    amqp.transport.KNOWN_TCP_OPTS = tuple(amqp.transport.KNOWN_TCP_OPTS)
+    if opt_id and opt_id in amqp.transport.TCP_OPTS:
+        amqp.transport.TCP_OPTS.remove(opt_id)
+    if opt_name in amqp.transport.KNOWN_TCP_OPTS:
+        amqp.transport.KNOWN_TCP_OPTS = list(amqp.transport.KNOWN_TCP_OPTS)
+        amqp.transport.KNOWN_TCP_OPTS.remove(opt_name)
+        amqp.transport.KNOWN_TCP_OPTS = tuple(amqp.transport.KNOWN_TCP_OPTS)
     # import eventlet.debug
     # eventlet.debug.hub_prevent_multiple_readers(False)
 else:
