@@ -118,7 +118,7 @@ class RoutersBase(object):
            neutron里使用这种方式
         2、将生成的路由(继承自ComposableRouter)添加到routers(参数)这个列表中,
            外部会一次性用ComposingRouter组装routers列表中的所有路由
-           这个方式一般是让路由延后加载,keystone有部分路由使用这个方式
+           这个方式一般是让部分路由延后加载,keystone有部分路由使用这个方式
         3、调用下面的_add_resource生成路由(里面封装了mapper.connect)
            这个方式keystone里用得比较多
         """
