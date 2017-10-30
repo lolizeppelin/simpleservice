@@ -59,10 +59,9 @@ class HttpClientBase(object):
         else:
             self.url = url
         if port != 80:
-            self.url = self.url + ':%d' % port
+            self.url += ':%d' % port
         if self.url.endswith('/'):
             self.url = self.url[:-1]
-        self.agent_id = None
         self.session = kwargs.pop('session', None)
         self.version = kwargs.pop('version', '1.0')
         self.retries = kwargs.pop('retries', 1)
@@ -71,10 +70,6 @@ class HttpClientBase(object):
         self.raise_errors = kwargs.pop('raise_errors', True)
         self.action_prefix = "/v%s" % self.version if self.version else ""
         self.retry_interval = 1
-        self.validator = kwargs.pop('validator', None)
-        if self.validator and not callable(self.validator):
-            schema = self.validator
-            self.validator = lambda x: jsonutils.schema_validate(x, schema)
 
     def _do_request(self, action, method, headers, body, timeout):
         request_url = self.url + action
@@ -127,8 +122,6 @@ class HttpClientBase(object):
                            requests.codes.accepted,
                            requests.codes.no_content):
             data = self.deserialize(replybody, status_code)
-            if self.validator:
-                self.validator(data)
             return resp, data
         else:
             if not replybody:
