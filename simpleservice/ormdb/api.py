@@ -306,8 +306,7 @@ def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         raise InvalidArgument('%s column type error, not allow autoincrement' % str(column))
-    # query = session.query(func.max(attribute)).select_from(model)
-    return model_query(session, func.max(modelkey), filter, timeout).scalar()
+    return model_query(session, func.max(modelkey), filter, timeout).scalar() or 0
 
 
 def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
