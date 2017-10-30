@@ -126,8 +126,8 @@ def controller_return_response(controller, faults=None, action_status=None):
         status = action_status.get(action, 200)
         body = serializer(result)
         # NOTE(jkoelker) Comply with RFC2616 section 9.7
-        if status == 204:
-            body = None
+        # if status == 204:
+        #     body = None
         # 返回对象是Response实例
         # response的时候直接调用这个Response实例的__call__方法
         # environ是req.environ
