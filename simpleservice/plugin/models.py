@@ -4,7 +4,7 @@ from sqlalchemy.ext import declarative
 
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.dialects.mysql import CHAR
-from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.dialects.mysql import SMALLINT
 from sqlalchemy.dialects.mysql import BIGINT
 from sqlalchemy.dialects.mysql import LONGBLOB
 
@@ -18,14 +18,14 @@ PluginTableBase = declarative.declarative_base(cls=TableBase)
 
 class GkeyMap(PluginTableBase):
     """Distribute a sid for host"""
-    sid = sa.Column(INTEGER(unsigned=True), nullable=False,
+    sid = sa.Column(SMALLINT(unsigned=True), nullable=False,
                     default=1,
                     primary_key=True)
     # Max host size is 253
     host = sa.Column(VARCHAR(253), server_default=None,
                      nullable=True)
     __table_args__ = (
-            sa.UniqueConstraint('host'),
+            sa.UniqueConstraint('host', name='unique_host'),
             InnoDBTableBase.__table_args__
     )
 
