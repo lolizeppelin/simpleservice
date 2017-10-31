@@ -167,28 +167,13 @@ class MysqlDriver(object):
         self._reader_engine = None
         self._writer_maker = None
         self._reader_maker = None
-        self._session = None
-        self._rsession = None
+        # self._session = None
+        # self._rsession = None
         self.connection_kwargs = kwargs
 
     @property
     def started(self):
         return self._started
-
-    @property
-    def session(self):
-        if not self._session:
-            self._session = self._get_session(read=False)
-        return self._session
-
-    @property
-    def rsession(self):
-        if not self._rsession:
-            if self.conf.slave_connection:
-                self._rsession = self._get_session(read=True)
-            else:
-                self._rsession = self.session
-        return self._rsession
 
     def start(self):
         if not self.started:
@@ -225,9 +210,6 @@ class MysqlDriver(object):
 
     def stop(self):
         if self.started:
-            self.session.close()
-            if self.rsession is not self.session:
-                self.rsession.close()
             self._writer_engine = None
             self._reader_engine = None
             self._writer_maker = None
@@ -248,7 +230,7 @@ class MysqlDriver(object):
         else:
             return self._writer_maker
 
-    def _get_session(self, read=False, **kwargs):
+    def get_session(self, read=False, **kwargs):
         if not self.started:
             self.start()
         return self._get_sessionmaker(read)(**kwargs)
@@ -306,7 +288,9 @@ def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         raise InvalidArgument('%s column type error, not allow autoincrement' % str(column))
-    return model_query(session, func.max(modelkey), filter, timeout).scalar() or 0
+    result = model_query(session, func.max(modelkey), filter, timeout).scalar()
+    session.commit()
+    return result or 0
 
 
 def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
@@ -343,8 +327,6 @@ def model_count_with_key(session, model, filter=None, timeout=0.1):
     else:
         raise InvalidArgument('model type error')
     # query = session.query(func.count(key)).select_from(model)
-
-    try:
-        return query.scalar()
-    except orm_exc.NoResultFound:
-        return 0
+    result = query.scalar()
+    session.commit()
+    return result
