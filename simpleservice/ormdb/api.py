@@ -288,9 +288,7 @@ def model_max_with_key(session, modelkey, filter=None, timeout=0.1):
     column_type = column.type
     if not isinstance(column_type, base._IntegerType):
         raise InvalidArgument('%s column type error, not allow autoincrement' % str(column))
-    result = model_query(session, func.max(modelkey), filter, timeout).scalar()
-    session.commit()
-    return result or 0
+    return model_query(session, func.max(modelkey), filter, timeout).scalar() or 0
 
 
 def model_autoincrement_id(session, modelkey, filter=None, timeout=0.1):
@@ -327,6 +325,4 @@ def model_count_with_key(session, model, filter=None, timeout=0.1):
     else:
         raise InvalidArgument('model type error')
     # query = session.query(func.count(key)).select_from(model)
-    result = query.scalar()
-    session.commit()
-    return result
+    return query.scalar() or 0
