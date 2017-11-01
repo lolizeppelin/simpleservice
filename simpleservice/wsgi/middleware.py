@@ -29,10 +29,20 @@ serializers = {
 default_serializer = serializers[DEFAULT_CONTENT_TYPE]
 
 
+class MiddlewareContorller(object):
+
+    @property
+    def absname(self):
+        return '%s.%s' % (self.__module__, self.__class__.__name__)
+
+
 def controller_return_response(controller, faults=None, action_status=None):
     """Represents an API entity resource and the associated serialization and
     deserialization logic
     """
+    if not isinstance(controller, MiddlewareContorller):
+        raise TypeError('Controller type not MiddlewareContorller')
+    ctrl_name = controller.absname
     # action_status = action_status or dict(create=201, delete=204)
     action_status = action_status or dict()
     faults = faults or {}
@@ -66,6 +76,7 @@ def controller_return_response(controller, faults=None, action_status=None):
                 body = default_serializer({'msg': 'HTTPClientError, body cannot be deserializer'})
                 kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
                 raise webob.exc.HTTPClientError(**kwargs)
+        LOG.debug('Middleware Route destination %s:%s' % (ctrl_name, action), resource=None)
         try:
             # controller是自由变量
             # 这个controller是外部传入的controller
