@@ -38,9 +38,6 @@ class ManagerBase(Deliverinterface):
     def add_periodic_task(self, task):
         self.periodic_tasks.append(task)
 
-    def initialize_service_hook(self):
-        raise NotImplementedError('Can not initialize_service_hook')
-
     def call_endpoint(self, endpoint, method, ctxt, **kwargs):
         """Check before call endpoint method, cover it"""
         raise NotImplementedError('Can not call endpoint on this manager')
