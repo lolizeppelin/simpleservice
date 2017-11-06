@@ -144,29 +144,29 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             # This function will call by Launcher from outside
             try:
                 self.messageservice.stop()
-                self.messageservice.wait()
                 LOG.info('Launche messageservice stoped')
                 # self.manager.post_stop()
             except Exception:
                 pass
         for x in self.timers:
-            try:
-                x.stop()
-            except Exception:
-                LOG.exception("Exception occurs when launche rpc service timer stops")
+            x.stop()
         self.manager.post_stop()
-        self.messageservice = None
+        # self.messageservice = None
         if self.plugin_threadpool:
             LOG.info('Launche rpc service call plugin threadpool stop')
             self.plugin_threadpool.stop(graceful=True)
         LOG.info('Launche rpc service base stoped')
 
     def wait(self):
+        try:
+            self.messageservice.wait()
+        except Exception:
+            pass
         for x in self.timers:
             try:
                 x.wait()
             except Exception:
-                LOG.exception("Exception occurs when waiting for timer")
+                LOG.exception("Exception occurs when waiting forlaunche rpc service timer")
         # del self.timers[:]
         # del self.endpoints[:]
 
