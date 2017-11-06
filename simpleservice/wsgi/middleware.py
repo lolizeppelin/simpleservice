@@ -33,6 +33,7 @@ class MiddlewareContorller(object):
 
     @property
     def absname(self):
+        # 类具体位置和名称,用于记录错误模块
         return '%s.%s' % (self.__module__, self.__class__.__name__)
 
 
