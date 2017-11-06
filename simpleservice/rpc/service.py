@@ -153,7 +153,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             try:
                 x.stop()
             except Exception:
-                LOG.exception("Exception occurs when timer stops")
+                LOG.exception("Exception occurs when launche rpc service timer stops")
         self.manager.post_stop()
         self.messageservice = None
         if self.plugin_threadpool:
