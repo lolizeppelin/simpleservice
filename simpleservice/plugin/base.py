@@ -24,8 +24,13 @@ class ManagerBase(Deliverinterface):
 
     def __init__(self, target):
         super(ManagerBase, self).__init__(target)
+        self._timers = set()
         self._endpoints = set()
         self._periodic_tasks = []
+
+    @property
+    def timers(self):
+        return self._timers
 
     @property
     def endpoints(self):

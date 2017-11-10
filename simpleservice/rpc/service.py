@@ -97,10 +97,13 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             self.manager = manager
         if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
-        self.timers = []
         super(LauncheRpcServiceBase, self).__init__(self.manager.__class__.__name__.lower(),
                                                     plugin_threadpool)
         self.messageservice = None
+
+    @property
+    def timers(self):
+        return self.manager.timers
 
     def start(self):
         self.manager.pre_start(self)
