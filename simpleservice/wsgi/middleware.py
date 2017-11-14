@@ -42,7 +42,8 @@ def controller_return_response(controller, faults=None, action_status=None):
     deserialization logic
     """
     if not isinstance(controller, MiddlewareContorller):
-        raise TypeError('Controller type not MiddlewareContorller')
+        raise TypeError('%s.%s is not base from MiddlewareContorller' % (controller.__module__,
+                                                                         controller.__class__.__name__))
     ctrl_name = controller.absname
     # action_status = action_status or dict(create=201, delete=204)
     action_status = action_status or dict()
