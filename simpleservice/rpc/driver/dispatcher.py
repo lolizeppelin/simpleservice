@@ -47,12 +47,12 @@ class RPCDispatcher(object):
         ctxt = incoming.ctxt
         message = incoming.message
         try:
-            method = message.get('method')
+            method = message.pop('method')
         except KeyError:
             raise exceptions.NoSuchMethod('Method is None')
         if not method.startswith('rpc_'):
             method = 'rpc_%(method)s' % {'method': method}
-        args = message.get('args', {})
+        args = message.pop('args', {})
         namespace = ctxt.pop('namespace', None)
         try:
             if namespace == self.manager.namespace:
