@@ -2,14 +2,14 @@
 import os
 import socket
 
-from simpleutil import system
+from simpleutil.utils import systemutils
 from simpleutil.log import log as logging
 from simpleutil.config import cfg
 
 from simpleservice.config import ntp_opts
 from simpleservice.base import ProcessLauncher
 from simpleservice.base import ServiceLauncher
-from simpleutil.posix import systemd
+from simpleutil.utils.systemutils.posix import systemd
 
 CONF = cfg.CONF
 
@@ -39,7 +39,7 @@ def launch(wrappers, user='root', group='root'):
         if abs(ntptime(CONF.ntp_server, CONF.ntp_versio, CONF.ntp_port, CONF.ntp_timeout).offset) >= 1.0:
             raise RuntimeError('Ntp offset more then 1 second, Please sync time first before launch')
     if max([wrapper.workers for wrapper in wrappers]) > 1:
-        if not system.POSIX:
+        if not systemutils.POSIX:
             raise RuntimeError('ProcessLauncher just for posix system')
         launcher = ProcessLauncher(CONF)
     else:

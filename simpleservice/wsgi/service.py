@@ -6,7 +6,7 @@ import eventlet.wsgi
 
 from paste import deploy
 
-from simpleutil import system
+from simpleutil.utils import systemutils
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.common.exceptions import InvalidInput
@@ -220,8 +220,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             self._server.wait()
 
     def close_exec(self):
-        if system.LINUX:
-            from simpleutil.posix.linux import set_cloexec_flag
+        if systemutils.LINUX:
+            from simpleutil.utils.systemutils.posix.linux import set_cloexec_flag
             if self.dup_socket:
                 set_cloexec_flag(self.dup_socket.fileno())
             set_cloexec_flag(self.socket.fileno())

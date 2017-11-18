@@ -1,10 +1,10 @@
 import eventlet
 import sys
 reload(sys)
-from simpleutil import system
+from simpleutil.utils import systemutils
 
 
-if system.WINDOWS:
+if systemutils.WINDOWS:
     # eventlet monkey patching the os and thread modules causes
     # subprocess.Popen to fail on Windows when using pipes due
     # to missing non-blocking IO support.

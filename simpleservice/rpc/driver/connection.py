@@ -31,7 +31,7 @@ import kombu.connection
 import kombu.entity
 import kombu.messaging
 
-from simpleutil import system
+from simpleutil.utils import systemutils
 from simpleutil.utils.timeutils import monotonic
 from simpleutil.utils.lockutils import DummyLock
 from simpleutil.utils.lockutils import PriorityLock
@@ -525,7 +525,7 @@ class Connection(object):
             LOG.debug('Failed to get socket attribute: %s' % str(e))
         else:
             sock.settimeout(timeout)
-            if system.POSIX:
+            if systemutils.POSIX:
             # if sys.platform != 'win32':
                 sock.setsockopt(socket.IPPROTO_TCP,
                                 TCP_USER_TIMEOUT,
