@@ -9,7 +9,8 @@ from simpleutil.config import cfg
 from simpleservice.config import ntp_opts
 from simpleservice.base import ProcessLauncher
 from simpleservice.base import ServiceLauncher
-from simpleutil.utils.systemutils.posix import systemd
+from simpleutil.utils import systemdutils
+from simpleutil.utils import daemonutils
 
 CONF = cfg.CONF
 
@@ -45,7 +46,7 @@ def launch(wrappers, user='root', group='root'):
     else:
         launcher = ServiceLauncher(CONF)
     # 根据情况启动守护进程
-    systemd.daemon(pidfile=os.path.join(CONF.state_path, '%s.lock' % wrappers[0].service.name),
+    daemonutils.daemon(pidfile=os.path.join(CONF.state_path, '%s.lock' % wrappers[0].service.name),
                    user=user, group=group)
     for wrapper in wrappers:
         try:
@@ -55,7 +56,7 @@ def launch(wrappers, user='root', group='root'):
                 'name': wrapper.service.name})
             raise
     # notify calling process we are ready to serve
-    systemd.notify_once()
+    systemdutils.notify_once()
     launcher.wait()
     for wrapper in wrappers:
         LOG.info('Stoped %(name)s server' % {'name': wrapper.service.name})

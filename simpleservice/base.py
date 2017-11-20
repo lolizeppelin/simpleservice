@@ -21,7 +21,7 @@ from simpleutil.utils import singleton
 from simpleutil.utils import threadgroup
 from simpleutil.utils import uuidutils
 from simpleutil.utils import systemutils
-from simpleutil.utils.systemutils.posix import systemd
+from simpleutil.utils import systemdutils
 
 from simpleservice.config import service_opts
 
@@ -379,7 +379,7 @@ class ServiceLauncher(Launcher):
 
         :returns: termination status
         """
-        systemd.notify_once()
+        systemdutils.notify_once()
         self.signal_handler.clear()
         while True:
             self.handle_signal()
@@ -612,7 +612,7 @@ class ProcessLauncher(object):
     def wait(self):
         """Loop waiting on children to die and respawning as necessary."""
 
-        systemd.notify_once()
+        systemdutils.notify_once()
         if self.conf.log_options:
             LOG.debug('Full set of CONF:')
             self.conf.log_opt_values(LOG, logging.DEBUG)
