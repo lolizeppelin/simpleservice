@@ -126,7 +126,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             periodic.start(interval=task.periodic_interval,
                            initial_delay=task.initial_delay,
                            stop_on_exception=task.stop_on_exception)
-            self.timers.append(periodic)
+            self.timers.add(periodic)
 
         self.manager.post_start()
 
