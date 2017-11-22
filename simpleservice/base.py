@@ -387,7 +387,6 @@ class ServiceLauncher(Launcher):
             if not _is_sighup_and_daemon(signo):
                 break
             self.restart()
-        super(ServiceLauncher, self).wait()
         return status
 
 
