@@ -56,6 +56,7 @@ class MessageHandlingService(ServiceBase):
             incoming = self.listener.poll()
             if incoming:
                 self._submit_work(self.dispatcher(incoming))
+        LOG.debug('MessageHandlingService try stop')
         while True:
             incoming = self.listener.poll()
             if incoming:
@@ -67,10 +68,13 @@ class MessageHandlingService(ServiceBase):
     def wait(self):
         # wait all self.runner thread finish
         self._ioloop.wait()
+        LOG.debug('MessageHandlingService io loop stoped')
         self._work_pool.wait()
+        LOG.debug('MessageHandlingService work pool stoped')
         self.listener.cleanup()
         self.dispatcher = None
         self.rpcdriver = None
+        LOG.debug('MessageHandlingService has been stoped')
 
     def _submit_work(self, callback):
         if callback:
@@ -147,7 +151,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
             # This function will call by Launcher from outside
             try:
                 self.messageservice.stop()
-                LOG.info('Launche messageservice stoped')
+                LOG.debug('Launche messageservice stoped')
                 # self.manager.post_stop()
             except Exception:
                 pass
@@ -156,7 +160,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         self.manager.post_stop()
         # self.messageservice = None
         if self.plugin_threadpool:
-            LOG.info('Launche rpc service call plugin threadpool stop')
+            LOG.debug('Launche rpc service call plugin threadpool stop')
             self.plugin_threadpool.stop(graceful=True)
         LOG.info('Launche rpc service base stoped')
 
