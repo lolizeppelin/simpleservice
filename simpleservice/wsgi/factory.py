@@ -36,5 +36,8 @@ def app_factory(project_routers=None):
             all_api_routers = set(project_routers)
             for api_routers in all_api_routers:
                 api_routers.Routers().append_routers(mapper, sub_routers)
+        for r in mapper.matchlist:
+            LOG.debug('name:[%s], path:[%s], method:[%s]' %
+                      (r.name, r.regpath, r.conditions.get('method')))
         return router.ComposingRouter(mapper, sub_routers)
     return wrapper_factory
