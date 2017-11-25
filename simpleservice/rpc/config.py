@@ -35,9 +35,8 @@ rpc_server_opts = [
            default='root',
            help='Rpc Server run group'),
     cfg.IntOpt('rpc_process',
-               default=5,
+               default=1,
                min=1,
                max=cpucount*2,
-               help='The number of worker processes to serve the '
-                    'rpc process'),
+               help='The number of worker processes to serve the rpc process')
 ]
