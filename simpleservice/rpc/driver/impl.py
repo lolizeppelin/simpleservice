@@ -296,12 +296,15 @@ class RabbitDriver(object):
                 conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
                                             topic=target.topic,
                                             callback=listener)
+                LOG.info('Listen on topic %s' % target.topic)
                 conn.declare_topic_consumer(exchange_name=self._get_exchange(target),
                                             topic='%s.%s' % (target.topic,
                                                              target.server),
                                             callback=listener)
+                LOG.info('Listen on topic %s.%s' % (target.topic, target.server))
             if target.fanout:
                 conn.declare_fanout_consumer(target.fanout, listener)
+                LOG.info('Listen on fanout %s.%s' % target.fanout)
         # self._init_waiter()
         return listener
 

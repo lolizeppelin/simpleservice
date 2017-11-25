@@ -34,7 +34,7 @@ class RPCDispatcher(object):
 
     def __call__(self, incoming):
         if self.manager.full():
-            eventlet.sleep(0.005)
+            eventlet.sleep(0.01)
             incoming.requeue()
             LOG.info('RPCDispatcher find manager is full, requeue')
             return None
