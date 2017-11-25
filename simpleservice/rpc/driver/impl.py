@@ -255,7 +255,7 @@ class RabbitDriver(object):
                     log_msg += "FANOUT topic '%(topic)s'" % {
                         'topic': target.topic}
                     LOG.debug(log_msg)
-                    conn.fanout_send(target.topic, msg, retry=retry)
+                    conn.fanout_send(target.fanout, msg, retry=retry)
                 else:
                     topic = target.topic
                     exchange = self._get_exchange(target)
@@ -304,7 +304,7 @@ class RabbitDriver(object):
                 LOG.info('Listen on topic %s.%s' % (target.topic, target.server))
             if target.fanout:
                 conn.declare_fanout_consumer(target.fanout, listener)
-                LOG.info('Listen on fanout %s.%s' % target.fanout)
+                LOG.info('Listen on fanout %s' % target.fanout)
         # self._init_waiter()
         return listener
 
