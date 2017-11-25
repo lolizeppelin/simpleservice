@@ -1,7 +1,6 @@
 import sys
 import eventlet
 
-from simpleservice.rpc.result import BaseRpcResult
 from simpleservice.rpc.driver import exceptions
 from simpleutil.log import log as logging
 
@@ -28,8 +27,6 @@ class RPCDispatcher(object):
         else:
             func = getattr(self.manager, method)
             ret = func(ctxt, **args)
-        if isinstance(ret, BaseRpcResult):
-            ret = ret.to_dict()
         return ret
 
     def __call__(self, incoming):
