@@ -27,6 +27,8 @@ class RPCDispatcher(object):
         else:
             func = getattr(self.manager, method)
             ret = func(ctxt, **args)
+            if hasattr(ret, 'to_dict'):
+                return ret.to_dict()
         return ret
 
     def __call__(self, incoming):
