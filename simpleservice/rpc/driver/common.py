@@ -152,7 +152,6 @@ def unpack_context(msg):
             context_dict[key[9:]] = value
     context_dict['msg_id'] = msg.pop('_msg_id', None)
     context_dict['reply_q'] = msg.pop('_reply_q', None)
-    context_dict['request_id'] = msg.pop('_request_id', None)
     return RpcContext.from_dict(context_dict)
 
 
@@ -161,7 +160,6 @@ class RpcContext(object):
     def __init__(self, **kwargs):
         self.msg_id = kwargs.pop('msg_id', None)
         self.reply_q = kwargs.pop('reply_q', None)
-        self.request_id = kwargs.pop('request_id', None)
         self.values = kwargs
 
     def __getattr__(self, key):
@@ -181,7 +179,6 @@ class RpcContext(object):
         values = self.to_dict()
         values['msg_id'] = self.msg_id
         values['reply_q'] = self.reply_q
-        values['request_id'] = self.request_id
         return self.__class__(**values)
 
 
