@@ -84,7 +84,7 @@ class RPCDispatcher(object):
         except Exception as e:
             exc_info = sys.exc_info()
             try:
-                LOG.error('Exception during message handling: %s' % e)
+                LOG.error('Exception during message handling: %s %s' % (e.__class__.__name__, e))
                 incoming.reply(failure=exc_info)
             finally:
                 # NOTE(dhellmann): Remove circular object reference
