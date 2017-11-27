@@ -22,6 +22,7 @@ class RPCDispatcher(object):
         """NOTE: Return dict just fine
         The Max deep is jsonutils.MAX_DEEP - 1
         """
+        LOG.debug('Dispatch packge to %s:%s' % (endpoint.namespace if endpoint else 'manager', method))
         if endpoint:
             ret = self.manager.call_endpoint(endpoint, method, ctxt, **args)
         else:
