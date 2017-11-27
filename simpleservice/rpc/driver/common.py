@@ -54,7 +54,7 @@ def serialize_remote_exception(failure_info, log_failure=True):
     if log_failure:
         LOG.error("Returning exception %s to caller",
                   six.text_type(failure))
-        LOG.error(tb)
+        LOG.debug(tb)
 
     kwargs = {}
     if hasattr(failure, 'kwargs'):

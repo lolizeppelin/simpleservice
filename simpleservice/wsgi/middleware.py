@@ -129,7 +129,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             raise webob.exc.HTTPInternalServerError(**kwargs)
         except Exception as e:
             # NOTE(jkoelker) Everything else is 500
-            LOG.exception('%s failed', action)
+            LOG.error('%s failed', action)
             # Do not expose details of 500 error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'processing your request. %(class)s, %(message)s' % \
