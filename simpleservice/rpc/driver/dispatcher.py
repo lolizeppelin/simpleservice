@@ -27,8 +27,8 @@ class RPCDispatcher(object):
         else:
             func = getattr(self.manager, method)
             ret = func(ctxt, **args)
-            if hasattr(ret, 'to_dict'):
-                return ret.to_dict()
+        if hasattr(ret, 'to_dict'):
+            return ret.to_dict()
         return ret
 
     def __call__(self, incoming):
@@ -81,9 +81,9 @@ class RPCDispatcher(object):
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
             incoming.reply(failure=e.exc_info, log_failure=False)
         except Exception as e:
+            LOG.exception('Exception during message handling: %s %s' % (e.__class__.__name__, e))
             exc_info = sys.exc_info()
             try:
-                LOG.error('Exception during message handling: %s %s' % (e.__class__.__name__, e))
                 incoming.reply(failure=exc_info)
             finally:
                 # NOTE(dhellmann): Remove circular object reference
