@@ -529,8 +529,8 @@ class ProcessLauncher(object):
         if pid == 0:
             # set cloexec to readpipe
             if systemutils.LINUX:
-                from simpleutil.utils.systemutils.posix import linux
-                linux.set_cloexec_flag(self.readpipe.fileno())
+                from simpleutil.utils.systemutils import posix
+                posix.set_cloexec_flag(self.readpipe.fileno())
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:
