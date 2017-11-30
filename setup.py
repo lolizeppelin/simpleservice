@@ -38,7 +38,7 @@ setup(
     maintainer_email='lolizeppelin@gmail.com',
     keywords=['simpleservice'],
     license='MIT',
-    packages=find_packages('simpleservice'),
+    packages=find_packages(exclude=['test', 'doc', 'bin', 'etc']),
     # tests_require=['pytest>=2.5.0'],
     # cmdclass={'test': PyTest},
     classifiers=[
