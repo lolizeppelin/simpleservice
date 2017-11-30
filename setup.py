@@ -5,7 +5,7 @@ import os
 from simpleservice import __version__
 
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
@@ -38,7 +38,7 @@ setup(
     maintainer_email='lolizeppelin@gmail.com',
     keywords=['simpleservice'],
     license='MIT',
-    packages=['simpleservice'],
+    packages=find_packages('simpleservice'),
     # tests_require=['pytest>=2.5.0'],
     # cmdclass={'test': PyTest},
     classifiers=[
