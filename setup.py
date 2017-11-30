@@ -17,13 +17,13 @@ f.close()
 setup(
     install_requires=('eventlet>=0.15.2',
                       'WebOb'>='1.2.3', 'Paste>=1.7.4', 'PasteDeploy>=1.5.0','routes>=1.12.3'  'routes<2.0',   # wsgi
-                      'sqlalchemy>=1.0.11', # orm
-                      'kombu>=3.0.25',      # rpc
+                      'sqlalchemy>=1.0.11',     # orm
+                      'kombu>=3.0.25',          # rpc
                       'six>=1.9.0',
                       'requests >= 2.6.0',
                       'requests < 2.9.0',
-                      'simpleutil>=1.0'
-                      'simpleutil<1.1'
+                      'simpleutil>=1.0',
+                      'simpleutil<1.1',
                       ),
     name='simpleservice',
     version=__version__,
