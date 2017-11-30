@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 import os
 
-from simpleutil import __version__
+from simpleservice import __version__
 
 try:
     from setuptools import setup
