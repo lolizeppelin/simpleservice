@@ -63,3 +63,6 @@ def configure(conf=None):
     if conf is None:
         conf = CONF
     conf.register_opts(default_opts)
+
+def list_opts():
+    return default_opts + service_opts + ntp_opts

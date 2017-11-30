@@ -78,3 +78,7 @@ def find_paste_abs(conf):
     if not paste_path:
         raise TypeError('Paste config is None')
     return paste_path
+
+
+def list_opts():
+    return wsgi_server_options

@@ -142,3 +142,7 @@ rpc_base_opts = [
                default=30,
                help='Size of rabbit RPC connection pool for send rpc request.'),
 ]
+
+
+def list_rabbit_opts():
+    return rabbit_opts  + amqp_opts + rpc_base_opts
