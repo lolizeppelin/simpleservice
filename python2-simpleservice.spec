@@ -3,9 +3,11 @@
 
 %define proj_name simpleservice
 
+%define _release RELEASEVERSION
+
 Name:           python-%{proj_name}
-Version:        1.0.0
-Release:        0%{?dist}
+Version:        RPMVERSION
+Release:        %{_release}%{?dist}
 Summary:        simpleservice copy from openstack
 Group:          Development/Libraries
 License:        MPLv1.1 or GPLv2
@@ -20,8 +22,8 @@ Requires:       python >= 2.6.6
 Requires:       python < 3.0
 Requires:       python-six >= 1.9.0
 Requires:       python-eventlet >= 0.15.2
-Requires:       python-requests >= 2.8.1
-Requires:       python-requests != 2.9.0
+Requires:       python-requests >= 2.6.0
+Requires:       python-requests < 2.9.0
 Requires:       python-simpleutil >= 1.0.0
 
 %description
@@ -65,10 +67,9 @@ Requires:       python-kombu >= 3.0.25
 %description rpc
 rpc framework for simpleservice plugin
 
-%files ormdb
+%files rpc
 %defattr(-,root,root,-)
 %dir %{python_sitelib}/%{proj_name}/rpc
-
 
 
 
