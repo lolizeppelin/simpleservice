@@ -34,7 +34,11 @@ simpleservice copy from openstack
 %defattr(-,root,root,-)
 %{python_sitelib}/%{proj_name}/*.py
 %{python_sitelib}/%{proj_name}/*.pyc
+%{python_sitelib}/%{proj_name}/*.pyo
+%{python_sitelib}/%{proj_name}/plugin/*
 %dir %{python_sitelib}/%{proj_name}/plugin
+%{python_sitelib}/%{proj_name}-%{version}-*.egg-info/*
+%dir %{python_sitelib}/%{proj_name}-%{version}-*.egg-info/
 %doc README.rst
 %doc doc/*
 
@@ -55,6 +59,7 @@ wsgi server framework
 
 %files wsgi
 %defattr(-,root,root,-)
+%{python_sitelib}/%{proj_name}/wsgi/*
 %dir %{python_sitelib}/%{proj_name}/wsgi
 
 
@@ -70,6 +75,7 @@ rpc framework for simpleservice plugin
 
 %files rpc
 %defattr(-,root,root,-)
+%{python_sitelib}/%{proj_name}/rpc/*
 %dir %{python_sitelib}/%{proj_name}/rpc
 
 
@@ -85,6 +91,7 @@ orm framework for simpleservice plugin
 
 %files ormdb
 %defattr(-,root,root,-)
+%{python_sitelib}/%{proj_name}/ormdb/*
 %dir %{python_sitelib}/%{proj_name}/ormdb
 
 
