@@ -85,6 +85,7 @@ Summary:        orm framework for simpleservice plugin
 Group:          Development/Libraries
 Requires:       %{name} == %{version}
 Requires:       python-sqlalchemy >= 1.0.11
+Requires:       mysql-connector-python >= 2.1.6
 
 %description ormdb
 orm framework for simpleservice plugin
