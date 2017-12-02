@@ -15,8 +15,7 @@ long_description = f.read()
 f.close()
 
 setup(
-    install_requires=('eventlet>=0.15.2',
-                      'WebOb>=1.2.3',
+    install_requires=('WebOb>=1.2.3',
                       'Paste>=1.7.4', 'PasteDeploy>=1.5.0',
                       'routes>=1.12.3', 'routes<2.0',
                       'sqlalchemy>=1.0.11',

@@ -21,7 +21,6 @@ BuildRequires:  python-setuptools >= 11.0
 Requires:       python >= 2.6.6
 Requires:       python < 3.0
 Requires:       python-six >= 1.9.0
-Requires:       python-eventlet >= 0.15.2
 Requires:       python-requests >= 2.6.0
 Requires:       python-requests < 2.9.0
 Requires:       python-simpleutil >= 1.0
