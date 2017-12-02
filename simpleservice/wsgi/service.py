@@ -135,8 +135,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                       {'host': host, 'port': port})
             raise
         sock = self._set_socket_opts(sock)
-        LOG.info("%(name)s listening on %(host)s:%(port)s",
-                 {'name': self.name, 'host': host, 'port': port})
+        LOG.debug("%(name)s listening on %(host)s:%(port)s",
+                  {'name': self.name, 'host': host, 'port': port})
         return sock
 
     def _get_unix_socket(self, socket_file, socket_mode, backlog):
