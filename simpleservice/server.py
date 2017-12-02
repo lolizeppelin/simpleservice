@@ -10,7 +10,6 @@ from simpleservice.config import ntp_opts
 from simpleservice.base import ProcessLauncher
 from simpleservice.base import ServiceLauncher
 from simpleutil.utils import systemdutils
-from simpleutil.utils import daemonutils
 
 CONF = cfg.CONF
 
@@ -33,7 +32,7 @@ class LaunchWrapper(object):
             launcher.launch_service(self.service)
 
 
-def launch(wrappers, user='root', group='root'):
+def launch(wrappers, procname):
     CONF.register_opts(ntp_opts)
     if CONF.ntp_server:
         from simpleutil.utils.timeutils import ntptime
@@ -45,9 +44,9 @@ def launch(wrappers, user='root', group='root'):
         launcher = ProcessLauncher(CONF)
     else:
         launcher = ServiceLauncher(CONF)
-    # 根据情况启动守护进程
-    daemonutils.daemon(pidfile=os.path.join(CONF.state_path, '%s.lock' % wrappers[0].service.name),
-                   user=user, group=group)
+    # 启动守护进程
+    systemdutils.daemon(pidfile=os.path.join(CONF.state_path, '%s.pid' % procname),
+                        procname=procname)
     for wrapper in wrappers:
         try:
             wrapper.launch_with(launcher)

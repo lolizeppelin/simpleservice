@@ -1,22 +1,19 @@
 import os
-import psutil
 from simpleutil.config import cfg
 
 CONF = cfg.CONF
 
-cpucount = psutil.cpu_count(logical=False)
 
 wsgi_server_options = [
-        cfg.StrOpt('user',
-               default='nginx',
-               help='Wsgi Server run user'),
-        cfg.StrOpt('group',
-               default='nginx',
-               help='Wsgi Server run group'),
+        cfg.StrOpt('wsgi_user',
+                   default='nginx',
+                   help='Wsgi Server run user'),
+        cfg.StrOpt('wsgi_group',
+                   default='nginx',
+                   help='Wsgi Server run group'),
         cfg.IntOpt('wsgi_process',
                    default=1,
                    min=1,
-                   max=cpucount*2,
                    help='The number of worker processes to serve the '
                         'wsgi application'),
         cfg.IPOpt('bind_ip',

@@ -104,8 +104,11 @@ class ServiceBase(object):
 class LauncheServiceBase(ServiceBase):
     """ServiceBase for Launche"""
 
-    def __init__(self, name, plugin_threadpool=None):
+    def __init__(self, name, user='root', group='root',
+                 plugin_threadpool=None):
         self.name = name
+        self.user = user
+        self.group = group
         self.plugin_threadpool = plugin_threadpool
 
     def close_exec(self):
@@ -355,7 +358,6 @@ class ServiceLauncher(Launcher):
     def _wait_for_exit_or_signal(self):
         status = None
         signo = 0
-
         if self.conf.log_options:
             LOG.debug('Full set of CONF:')
             self.conf.log_opt_values(LOG, logging.DEBUG)
@@ -530,7 +532,9 @@ class ProcessLauncher(object):
             # set cloexec to readpipe
             if systemutils.LINUX:
                 from simpleutil.utils.systemutils import posix
+                from simpleutil.utils.systemutils.posix import linux
                 posix.set_cloexec_flag(self.readpipe.fileno())
+                linux.drop_privileges(user=wrap.service.user, group=wrap.service.group)
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:

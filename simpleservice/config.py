@@ -12,11 +12,7 @@ default_opts = [
                     help="Hostname to be used by the server, agents and "
                          "services running on this machine. All the agents and "
                          "services running on this machine must use the same "
-                         "host value."),
-    cfg.StrOpt('state_path',
-               default='/var/run/simpleservice',
-               help="Where to store simpleservice state files. "
-                    "This directory must be writable by the agent. "),
+                         "host value.")
 ]
 
 
@@ -55,6 +51,15 @@ ntp_opts = [
 ]
 
 
+server_cli_opts = [
+    cfg.StrOpt('state-path',
+               default='/var/run/simpleservice',
+               help="Where to store simpleservice state files. "
+                    "This directory must be writable by the agent. ")
+]
+
+CONF.register_cli_opts(server_cli_opts)
+
 def set_default_for_default_log_levels(extra_log_level_defaults):
     log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
 
@@ -64,5 +69,6 @@ def configure(conf=None):
         conf = CONF
     conf.register_opts(default_opts)
 
+
 def list_opts():
-    return default_opts + service_opts + ntp_opts
+    return server_cli_opts + default_opts + service_opts + ntp_opts

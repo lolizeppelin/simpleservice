@@ -93,7 +93,9 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     on topic. It also periodically runs tasks on the manager.
     """
 
-    def __init__(self, manager, **kwargs):
+    def __init__(self, manager,
+                 user='root', gourp='root',
+                 **kwargs):
         plugin_threadpool = kwargs.pop('plugin_threadpool', None)
         if isinstance(manager, basestring):
             self.manager = importutils.import_class(manager)(**kwargs)
@@ -102,7 +104,8 @@ class LauncheRpcServiceBase(LauncheServiceBase):
         if not isinstance(manager, ManagerBase):
             raise RuntimeError('Manager type error')
         super(LauncheRpcServiceBase, self).__init__(self.manager.__class__.__name__.lower(),
-                                                    plugin_threadpool)
+                                                    user=user, group=gourp,
+                                                    plugin_threadpool=plugin_threadpool)
         self.messageservice = None
 
     @property

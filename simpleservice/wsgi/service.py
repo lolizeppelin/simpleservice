@@ -112,7 +112,10 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
 
         (self.host, self.port) = self.socket.getsockname()[0:2]
         plugin_threadpool = kwargs.pop('plugin_threadpool', None)
-        super(LauncheWsgiServiceBase, self).__init__(name, plugin_threadpool)
+        super(LauncheWsgiServiceBase, self).__init__(name,
+                                                     user=self.conf.wsgi_user,
+                                                     group=self.conf.wsgi_group,
+                                                     plugin_threadpool=plugin_threadpool)
 
     def _get_socket(self, host, port, backlog):
         bind_addr = (host, port)
