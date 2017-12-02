@@ -135,8 +135,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                       {'host': host, 'port': port})
             raise
         sock = self._set_socket_opts(sock)
-        LOG.debug("%(name)s listening on %(host)s:%(port)s",
-                  {'name': self.name, 'host': host, 'port': port})
+        # LOG.debug("%(name)s listening on %(host)s:%(port)s", {'name': self.name, 'host': host, 'port': port})
         return sock
 
     def _get_unix_socket(self, socket_file, socket_mode, backlog):
@@ -144,8 +143,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
                                backlog=backlog)
         if socket_mode is not None:
             os.chmod(socket_file, socket_mode)
-        LOG.info("%(name)s listening on %(socket_file)s:",
-                 {'name': self.name, 'socket_file': socket_file})
+        # LOG.debug("%(name)s listening on %(socket_file)s:", {'name': self.name, 'socket_file': socket_file})
         return sock
 
     def start(self):
