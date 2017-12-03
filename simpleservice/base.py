@@ -541,6 +541,7 @@ class ProcessLauncher(object):
             # set cloexec to readpipe
             if systemutils.LINUX:
                 posix.set_cloexec_flag(self.readpipe.fileno())
+            self.children.clear()
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:
@@ -669,7 +670,7 @@ class ProcessLauncher(object):
                 [wrap.service for wrap in self.children.values()]):
             service.stop()
 
-        LOG.debug("Killing children.")
+        LOG.debug("Killing children. pid:%d" % os.getpid())
         for pid in self.children:
             try:
                 os.kill(pid, signal.SIGTERM)

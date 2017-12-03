@@ -204,7 +204,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         :returns: None
 
         """
-        LOG.info("Stopping WSGI server.")
+        LOG.info("Stopping WSGI server.pid:%d" % os.getpid())
 
         if self._server is not None:
             num = self._pool.running()
