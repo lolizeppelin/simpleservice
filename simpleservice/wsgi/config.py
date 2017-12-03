@@ -14,6 +14,7 @@ wsgi_server_options = [
         cfg.IntOpt('wsgi_process',
                    default=1,
                    min=1,
+                   max=255,     # snowflake id limit process max number
                    help='The number of worker processes to serve the '
                         'wsgi application'),
         cfg.IPOpt('bind_ip',

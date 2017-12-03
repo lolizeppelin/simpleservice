@@ -22,12 +22,16 @@ from simpleutil.utils import threadgroup
 from simpleutil.utils import uuidutils
 from simpleutil.utils import systemutils
 from simpleutil.utils import systemdutils
-
 from simpleservice.config import service_opts
+if systemutils.LINUX:
+    from simpleutil.utils.systemutils import posix
+    from simpleutil.utils.systemutils.posix import linux
+
 
 LOG = logging.getLogger(__name__)
 
 SnowflakeId = 0
+
 
 def _check_service_base(service):
     if not isinstance(service, ServiceBase):
@@ -39,6 +43,9 @@ def _check_launch_service_base(service):
     if not isinstance(service, LauncheServiceBase):
         raise TypeError("Service %(service)s must an instance of %(base)s!"
                         % {'service': service, 'base': LauncheServiceBase})
+    if systemutils.LINUX:
+        if not linux.user_exist(service.user) or not linux.group_exist(service.group):
+            raise RuntimeError('Run user or group not exist')
 
 
 def _is_daemon():
@@ -290,6 +297,8 @@ class Launcher(object):
 
         """
         _check_launch_service_base(service)
+        if systemutils.LINUX:
+            linux.drop_privileges(user=service.user, group=service.group)
         self.services.add(service)
 
     def stop(self):
@@ -531,10 +540,7 @@ class ProcessLauncher(object):
         if pid == 0:
             # set cloexec to readpipe
             if systemutils.LINUX:
-                from simpleutil.utils.systemutils import posix
-                from simpleutil.utils.systemutils.posix import linux
                 posix.set_cloexec_flag(self.readpipe.fileno())
-                linux.drop_privileges(user=wrap.service.user, group=wrap.service.group)
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:

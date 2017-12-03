@@ -10,6 +10,7 @@ rpc_server_opts = [
     cfg.IntOpt('rpc_process',
                default=1,
                min=1,
+               max=255,     # snowflake id limit process max number
                help='The number of worker processes to serve the rpc process')
 ]
 
