@@ -179,7 +179,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
                 x.wait()
             except Exception:
                 LOG.exception("Exception occurs when waiting for launche rpc service timer")
-        del self.timers[:]
+        self.timer.clear()
         # del self.endpoints[:]
 
     def reset(self):
