@@ -219,6 +219,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
     def wait(self):
         if self._server is not None:
             self._server.wait()
+        self._server = None
 
     def close_exec(self):
         if systemutils.POSIX:

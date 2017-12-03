@@ -468,6 +468,7 @@ class ProcessLauncher(object):
 
         def _sigterm(*args):
             self.signal_handler.clear()
+            LOG.info('Get sigterm, pid:%d' % os.getpid())
             self.launcher.stop()
 
         def _sighup(*args):
@@ -541,7 +542,6 @@ class ProcessLauncher(object):
             # set cloexec to readpipe
             if systemutils.LINUX:
                 posix.set_cloexec_flag(self.readpipe.fileno())
-            self.children.clear()
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             while True:
@@ -549,7 +549,6 @@ class ProcessLauncher(object):
                 status, signo = self._child_wait_for_exit_or_signal(
                     self.launcher)
                 if not _is_sighup_and_daemon(signo):
-                    self.launcher.wait()
                     break
                 self.launcher.restart()
 
@@ -618,6 +617,7 @@ class ProcessLauncher(object):
                 continue
             while self.running and len(wrap.children) < wrap.workers:
                 self._start_child(wrap)
+        LOG.debug('Spawn children thread stop')
 
     def wait(self):
         """Loop waiting on children to die and respawning as necessary."""
@@ -676,6 +676,7 @@ class ProcessLauncher(object):
                 os.kill(pid, signal.SIGTERM)
             except OSError as exc:
                 if exc.errno != errno.ESRCH:
+                    LOG.error('Killing catch unexpecte errno: %d' % exc.errno)
                     raise
 
         # Wait for children to die
