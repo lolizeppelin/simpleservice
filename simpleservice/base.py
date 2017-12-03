@@ -382,6 +382,7 @@ class ServiceLauncher(Launcher):
             self.stop()
             status = exc.code
         except Exception:
+            LOG.exception('wait service launcher error')
             self.stop()
         return status, signo
 
