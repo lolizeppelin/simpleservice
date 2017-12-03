@@ -551,6 +551,7 @@ class ProcessLauncher(object):
             #     if not _is_sighup_and_daemon(signo):
             #         break
             #     self.launcher.restart()
+            self._child_process_handle_signal()
             status, signo = self._child_wait_for_exit_or_signal(self.launcher)
             os._exit(status)
 
