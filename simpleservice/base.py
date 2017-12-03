@@ -544,15 +544,16 @@ class ProcessLauncher(object):
                 posix.set_cloexec_flag(self.readpipe.fileno())
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
-            while True:
-                self._child_process_handle_signal()
-                status, signo = self._child_wait_for_exit_or_signal(
-                    self.launcher)
-                if not _is_sighup_and_daemon(signo):
-                    break
-                self.launcher.restart()
-
+            # while True:
+            #     self._child_process_handle_signal()
+            #     status, signo = self._child_wait_for_exit_or_signal(
+            #         self.launcher)
+            #     if not _is_sighup_and_daemon(signo):
+            #         break
+            #     self.launcher.restart()
+            status, signo = self._child_wait_for_exit_or_signal(self.launcher)
             os._exit(status)
+
         LOG.debug('Started child %d', pid)
 
         wrap.post_set_snowflake_pid(pid)
