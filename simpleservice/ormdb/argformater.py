@@ -19,8 +19,6 @@ from simpleservice.ormdb import exceptions
 from simpleservice.ormdb.config import database_opts
 
 
-hub = hubs.get_hub()
-
 LOG = logging.getLogger(__name__)
 
 
@@ -234,6 +232,7 @@ def init_events(engine, **kw):
         timer = None
         timeout = context.execution_options.get('timeout', None)
         if timeout and timeout > 0.0:
+            hub = hubs.get_hub()
             timer = hub.schedule_call_global(timeout, cancel_execute, eventlet.getcurrent())
         setattr(cursor, 'timeout_task', timer)
 

@@ -11,7 +11,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import sys
 import os
 import six
 import uuid
@@ -23,7 +22,6 @@ import socket
 import functools
 
 import eventlet
-import eventlet.hubs
 import eventlet.semaphore
 
 import kombu
@@ -45,7 +43,6 @@ LOG = logging.getLogger(__name__)
 
 TCP_USER_TIMEOUT = 18
 
-hub = eventlet.hubs.get_hub()
 
 def _get_queue_arguments(rabbit_ha_queues, rabbit_queue_ttl):
     args = {}

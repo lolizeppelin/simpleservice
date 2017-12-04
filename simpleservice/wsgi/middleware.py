@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from simpleutil.log import log as logging
 from simpleutil.utils import jsonutils
+from simpleutil.utils import systemutils
 
 from simpleservice.ormdb.exceptions import DBError
 from simpleservice.wsgi.exceptions import NoFaultsKonwnExcpetion
@@ -78,7 +79,8 @@ def controller_return_response(controller, faults=None, action_status=None):
                 body = default_serializer({'msg': 'HTTPClientError, body cannot be deserializer'})
                 kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
                 raise webob.exc.HTTPClientError(**kwargs)
-        LOG.debug('Middleware Route destination %s:%s' % (ctrl_name, action), resource=None)
+        LOG.debug('PID:%d Middleware Route destination %s:%s' %
+                  (systemutils.PID, ctrl_name, action), resource=None)
         try:
             # controller是自由变量
             # 这个controller是外部传入的controller

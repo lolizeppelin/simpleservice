@@ -299,6 +299,7 @@ class Launcher(object):
         _check_launch_service_base(service)
         if systemutils.LINUX:
             linux.drop_privileges(user=service.user, group=service.group)
+            systemutils.PID = os.getpid()
         self.services.add(service)
 
     def stop(self):
