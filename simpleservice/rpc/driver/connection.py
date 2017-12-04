@@ -200,7 +200,7 @@ class Connection(object):
 
         self._url = "amqp://%(username)s:%(password)s" \
                     "@%(host)s:%(port)s/%(vhost)s" % \
-                    {'username': self.rabbit_userid, 'password':self.rabbit_password,
+                    {'username': self.rabbit_userid, 'password': self.rabbit_password,
                      'host':self.rabbit_host, 'port':self.rabbit_port,
                      'vhost':self.virtual_host}
 
@@ -240,8 +240,7 @@ class Connection(object):
             },
         )
 
-        LOG.debug('Connecting to AMQP server on %(hostname)s:%(port)s',
-                  self.connection.info())
+        LOG.debug('Connecting to AMQP server on %(hostname)s:%(port)s' % self.connection.info())
 
         self._heartbeat_wait_timeout = (
             float(self.heartbeat_timeout_threshold) /
@@ -258,9 +257,11 @@ class Connection(object):
         if purpose == rpc_common.PURPOSE_SEND:
             self._heartbeat_start()
 
+        info  = self.connection.info()
+        if isinstance(info, tuple):
+            info = info[0]
         LOG.debug('Connected to AMQP server on %(hostname)s:%(port)s '
-                  'via [%(transport)s] client',
-                  self.connection.info())
+                  'via [%(transport)s] client' % info)
         # NOTE(sileht): value chosen according the best practice from kombu
         # http://kombu.readthedocs.org/en/latest/reference/kombu.common.html#kombu.common.eventloop
         # For heatbeat, we can set a bigger timeout, and check we receive the
