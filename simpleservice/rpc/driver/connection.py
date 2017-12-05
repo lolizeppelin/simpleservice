@@ -93,7 +93,7 @@ class Consumer(object):
             queue_arguments=self.queue_arguments)
         try:
             LOG.trace('ConsumerBase.declare: '
-                      'queue %s', self.queue_name)
+                      'queue %s' % self.queue_name)
             self.queue.declare()
         except conn.connection.channel_errors as exc:
             # NOTE(jrosenboom): This exception may be triggered by a race
@@ -117,7 +117,7 @@ class Consumer(object):
                            nowait=self.nowait)
 
     def cancel(self, tag):
-        LOG.trace('ConsumerBase.cancel: canceling %s', tag)
+        LOG.trace('ConsumerBase.cancel: canceling %s' % tag)
         self.queue.cancel(six.text_type(tag))
 
     def _callback(self, message):

@@ -72,7 +72,7 @@ class AMQPListener(object):
         # simpleservice.rpc.driver.connection.RabbitMessage
         ctxt = rpc_common.unpack_context(message)
         unique_id = self.msg_id_cache.check_duplicate_message(message)
-        LOG.debug("received message msg_id: %(msg_id)s reply to %(queue)s", {
+        LOG.debug("received message msg_id: %(msg_id)s reply to %(queue)s" % {
             'queue': ctxt.reply_q, 'msg_id': ctxt.msg_id})
         self.incoming.append(AMQPIncomingMessage(self,
                                                  ctxt.to_dict(),

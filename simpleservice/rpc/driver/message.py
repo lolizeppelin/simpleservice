@@ -16,15 +16,15 @@ class RabbitMessage(dict):
         # raw_message is kombu.transport.pyamqp.Message
         super(RabbitMessage, self).__init__(
             rpc_common.deserialize_msg(raw_message.payload))
-        LOG.trace('RabbitMessage.Init: message %s', self)
+        LOG.trace('RabbitMessage.Init: message %s' % self)
         self._raw_message = raw_message
 
     def acknowledge(self):
-        LOG.trace('RabbitMessage.acknowledge: message %s', self)
+        LOG.trace('RabbitMessage.acknowledge: message %s'% self)
         self._raw_message.ack()
 
     def requeue(self):
-        LOG.trace('RabbitMessage.requeue: message %s', self)
+        LOG.trace('RabbitMessage.requeue: message %s'% self)
         self._raw_message.requeue()
 
 
