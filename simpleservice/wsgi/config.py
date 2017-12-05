@@ -40,7 +40,7 @@ wsgi_server_options = [
                         'formatted into it: client_ip, date_time, request_line, '
                         'status_code, body_length, wall_seconds.'),
         cfg.IntOpt('tcp_keepidle',
-                   default=600,
+                   default=60,
                    help="Sets the value of TCP_KEEPIDLE in seconds for each "
                         "server socket. Not supported on OS X."),
         cfg.IntOpt('wsgi_default_pool_size',
@@ -57,7 +57,7 @@ wsgi_server_options = [
                     default=True,
                     help="If False, closes the client socket connection "
                          "explicitly."),
-        cfg.IntOpt('client_socket_timeout', default=900,
+        cfg.IntOpt('client_socket_timeout', default=30,
                    help="Timeout for client connections' socket operations. "
                         "If an incoming connection is idle for this number of "
                         "seconds it will be closed. A value of '0' means "
