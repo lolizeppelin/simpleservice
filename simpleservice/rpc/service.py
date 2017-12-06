@@ -148,7 +148,7 @@ class LauncheRpcServiceBase(LauncheServiceBase):
     def stop(self):
         LOG.info('Launche rpc service base trying stop')
         if self.messageservice is not None:
-            LOG.warning('Message service started, try stop it')
+            LOG.debug('Message service started, try stop it')
             # Try to shut the connection down, but if we get any sort of
             # errors, go ahead and ignore them.. as we're shutting down anyway
             # This function will call by Launcher from outside
