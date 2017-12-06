@@ -17,7 +17,7 @@ f.close()
 setup(
     install_requires=('WebOb>=1.2.3',
                       'Paste>=1.7.4', 'PasteDeploy>=1.5.0',
-                      'routes>=1.12.3', 'routes<2.0',
+                      'Routes>2.3.1',
                       'sqlalchemy>=1.0.11',
                       'kombu>=3.0.25',
                       'six>=1.9.0',

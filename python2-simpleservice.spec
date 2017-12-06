@@ -50,8 +50,7 @@ Requires:       %{name} == %{version}
 Requires:       python-webob >= 1.2.3
 Requires:       python-paste
 Requires:       python-paste-deploy >= 1.5.0
-Requires:       python-routes >= 1.12.3
-Requires:       python-routes < 2.0
+Requires:       python-routes >= 2.3.1
 
 %description wsgi
 wsgi server framework
