@@ -82,7 +82,8 @@ class RPCDispatcher(object):
             LOG.debug('Expected exception during message handling (%s)' % str(e.exc_info[1]))
             incoming.reply(failure=e.exc_info, log_failure=False)
         except Exception as e:
-            LOG.exception('Exception during message handling: %s %s' % (e.__class__.__name__, e))
+            if LOG.isEnabledFor(logging.DEBUG):
+                LOG.exception('Exception during message handling: %s %s' % (e.__class__.__name__, e))
             exc_info = sys.exc_info()
             try:
                 incoming.reply(failure=exc_info)
