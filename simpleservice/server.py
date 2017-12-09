@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
+import eventlet
 import socket
 
 from simpleutil.utils import systemutils
@@ -59,3 +60,4 @@ def launch(wrappers, procname):
     launcher.wait()
     for wrapper in wrappers:
         LOG.info('Stoped %(name)s server' % {'name': wrapper.service.name})
+    eventlet.sleep(0.5)
