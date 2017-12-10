@@ -57,7 +57,7 @@ wsgi_server_options = [
                     default=True,
                     help="If False, closes the client socket connection "
                          "explicitly."),
-        cfg.IntOpt('client_socket_timeout', default=30,
+        cfg.IntOpt('client_socket_timeout', default=60,
                    help="Timeout for client connections' socket operations. "
                         "If an incoming connection is idle for this number of "
                         "seconds it will be closed. A value of '0' means "

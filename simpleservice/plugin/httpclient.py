@@ -2,6 +2,8 @@ import eventlet
 import requests
 import six.moves.urllib.parse as urlparse
 
+from requests.exceptions import ReadTimeout
+
 from simpleutil.config import cfg
 from simpleutil.utils import encodeutils
 from simpleutil.utils import jsonutils
@@ -104,6 +106,11 @@ class HttpClientBase(object):
             raise exceptions.BeforeRequestError('Encode params or serialize catch %s' % e.__class__.__name__)
         try:
             resp, replybody = self._do_request(action, method, headers, body=body, timeout=timeout)
+        except ReadTimeout as e:
+            LOG.error('request timeout %s' % e.message)
+            if LOG.isEnabledFor(logging.DEBUG):
+                LOG.exception('timeout')
+            raise
         except Exception as e:
             LOG.warning('%s %s%s fail, %s' % (method, self.url, action, e.__class__.__name__))
             raise exceptions.ConnectionFailed('Send request catch error')
