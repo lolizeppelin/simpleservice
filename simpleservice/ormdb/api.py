@@ -1,5 +1,6 @@
 import time
 import six
+from eventlet import semaphore
 
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
@@ -170,6 +171,7 @@ class MysqlDriver(object):
         # self._session = None
         # self._rsession = None
         self.connection_kwargs = kwargs
+        self.lock = semaphore.Semaphore()
 
     @property
     def started(self):
@@ -177,21 +179,11 @@ class MysqlDriver(object):
 
     def start(self):
         if not self.started:
-            # use mysqlconnector as connect driver
-            self._writer_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.connection,
-                                                        logging_name=self.name,
-                                                        thread_checkin=True,
-                                                        idle_timeout=self.conf.idle_timeout,
-                                                        max_pool_size=self.conf.max_pool_size,
-                                                        max_overflow=self.conf.max_overflow,
-                                                        pool_timeout=self.conf.pool_timeout,
-                                                        mysql_sql_mode=self.conf.mysql_sql_mode,
-                                                        max_retries=self.conf.max_retries,
-                                                        retry_interval=self.conf.retry_interval,
-                                                        **self.connection_kwargs)
-            self._writer_maker = orm.get_maker(engine=self._writer_engine)
-            if self.conf.slave_connection:
-                self._reader_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.slave_connection,
+            with self.lock:
+                if self.started:
+                    return
+                # use mysqlconnector as connect driver
+                self._writer_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.connection,
                                                             logging_name=self.name,
                                                             thread_checkin=True,
                                                             idle_timeout=self.conf.idle_timeout,
@@ -202,19 +194,35 @@ class MysqlDriver(object):
                                                             max_retries=self.conf.max_retries,
                                                             retry_interval=self.conf.retry_interval,
                                                             **self.connection_kwargs)
-                self._reader_maker = orm.get_maker(engine=self._reader_engine)
-            else:
-                self._reader_engine = self._writer_engine
-                self._reader_maker = self._writer_maker
-            self._started = True
+                self._writer_maker = orm.get_maker(engine=self._writer_engine)
+                if self.conf.slave_connection:
+                    self._reader_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.slave_connection,
+                                                                logging_name=self.name,
+                                                                thread_checkin=True,
+                                                                idle_timeout=self.conf.idle_timeout,
+                                                                max_pool_size=self.conf.max_pool_size,
+                                                                max_overflow=self.conf.max_overflow,
+                                                                pool_timeout=self.conf.pool_timeout,
+                                                                mysql_sql_mode=self.conf.mysql_sql_mode,
+                                                                max_retries=self.conf.max_retries,
+                                                                retry_interval=self.conf.retry_interval,
+                                                                **self.connection_kwargs)
+                    self._reader_maker = orm.get_maker(engine=self._reader_engine)
+                else:
+                    self._reader_engine = self._writer_engine
+                    self._reader_maker = self._writer_maker
+                self._started = True
 
     def stop(self):
         if self.started:
-            self._writer_engine = None
-            self._reader_engine = None
-            self._writer_maker = None
-            self._reader_maker = None
-            self._started = False
+            with self.lock:
+                if not self.started:
+                    return
+                self._writer_engine = None
+                self._reader_engine = None
+                self._writer_maker = None
+                self._reader_maker = None
+                self._started = False
 
     def _get_sessionmaker(self, read=False):
         """Get the sessionmaker instance used to create a Session.
@@ -223,8 +231,6 @@ class MysqlDriver(object):
         be temporarily injected with some state such as a specific connection.
 
         """
-        if not self.started:
-            self.start()
         if read:
             return self._reader_maker
         else:
