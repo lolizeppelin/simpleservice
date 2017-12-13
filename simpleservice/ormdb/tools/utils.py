@@ -94,6 +94,7 @@ def init_database(db_info, metadata,
                   charcter_set=None,
                   collation_type=None,
                   init_data_func=None):
+    charcter_set = charcter_set or 'utf8'
     if isinstance(db_info, Engine):
         engine = db_info
     else:
