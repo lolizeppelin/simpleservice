@@ -53,7 +53,7 @@ AUTHSCHEMA = {
 def get_no_schema_engine(engine):
     url = copy.copy(make_url(engine.url))
     url.database = None
-    no_schema_engine = sa.create_engine(url, poolclass=NullPool)
+    no_schema_engine = sa.create_engine(url, poolclass=NullPool, thread_checkin=False)
     return no_schema_engine
 
 
@@ -67,6 +67,21 @@ def get_schema_info(engine):
     if schema_info:
         return schema_info[0]
     return None
+
+
+# drop privileges
+def drop_privileges(engine, auths):
+    jsonutils.schema_validate(auths, AUTHSCHEMA)
+    schema = engine.url.database
+    no_schema_engine = get_no_schema_engine(engine)
+    for auth in auths:
+        _auth = {'schema': schema,
+                 'user': auth.get('user'),
+                 'source': auth.get('source') or '%',
+                 'privileges': auth.get('privileges') or 'ALL PRIVILEGES'}
+        sql = "REVOKE %(privileges)s ON %(schema)s.* FROM '%(user)s'@'%(source)s'" % _auth
+        no_schema_engine.execute(sql)
+    no_schema_engine.execute('FLUSH PRIVILEGES')
 
 
 # create a schema
@@ -84,16 +99,7 @@ def create_schema(engine, auths=None, charcter_set=None, collation_type=None):
         sql += ' COLLATE %s' % collation_type
     no_schema_engine.execute(sql)
     if auths:
-        for auth in auths:
-            _auth = {'schema': engine.url.database,
-                     'user': auth.get('user'),
-                     'passwd': auth.get('passwd'),
-                     'source': auth.get('source') or '%',
-                     'privileges': auth.get('privileges') or 'ALL PRIVILEGES'}
-            sql = "GRANT %(privileges)s ON %(schema)s.* to '%(user)s'@'%(source)s' identified by '%(passwd)s'" % _auth
-            no_schema_engine.execute(sql)
-        no_schema_engine.execute('FLUSH PRIVILEGES')
-
+        drop_privileges(engine, auths)
 
 # drop a schema
 def drop_schema(engine, auths=None):
@@ -102,17 +108,11 @@ def drop_schema(engine, auths=None):
     if get_schema_info(engine):
         sql = "DROP DATABASE %s" % engine.url.database
         engine.execute(sql)
-        if auths:
-            schema = engine.url.database
-            for auth in auths:
-                _auth = {'schema': schema,
-                         'user': auth.get('user'),
-                         'source': auth.get('source') or '%'}
-                sql = "REVOKE ALL PRIVILEGES ON %(schema)s.* FROM '%(user)s'@'%(source)s'" % _auth
-                engine.execute(sql)
-            engine.execute('FLUSH PRIVILEGES')
+    if auths:
+        drop_privileges(engine, auths)
 
 
+# drop and create schema
 def re_create_schema(engine):
     schema_info = get_schema_info(engine)
     if not schema_info:

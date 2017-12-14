@@ -185,7 +185,7 @@ class MysqlDriver(object):
                 # use mysqlconnector as connect driver
                 self._writer_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.connection,
                                                             logging_name=self.name,
-                                                            thread_checkin=True,
+                                                            thread_checkin=False,
                                                             idle_timeout=self.conf.idle_timeout,
                                                             max_pool_size=self.conf.max_pool_size,
                                                             max_overflow=self.conf.max_overflow,
@@ -198,7 +198,7 @@ class MysqlDriver(object):
                 if self.conf.slave_connection:
                     self._reader_engine = engines.create_engine('mysql+mysqlconnector://' + self.conf.slave_connection,
                                                                 logging_name=self.name,
-                                                                thread_checkin=True,
+                                                                thread_checkin=False,
                                                                 idle_timeout=self.conf.idle_timeout,
                                                                 max_pool_size=self.conf.max_pool_size,
                                                                 max_overflow=self.conf.max_overflow,

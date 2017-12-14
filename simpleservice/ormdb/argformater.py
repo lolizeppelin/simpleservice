@@ -309,6 +309,7 @@ def _init_events(engine, sqlite_synchronous=True, sqlite_fk=False, **kw):
 
 
 connformater = 'mysql+mysqlconnector://%(user)s:%(passwd)s@%(host)s:%(port)s/%(schema)s'
+noschemaconn = 'mysql+mysqlconnector://%(user)s:%(passwd)s@%(host)s:%(port)s'
 
 
 template = cfg.ConfigOpts()
