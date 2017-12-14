@@ -16,11 +16,10 @@ from simpleservice.ormdb.tools.utils import init_database
 MAX_COPY_ROW = 100000
 
 
-def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
+def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None):
     """copy database from src to dst
     tables_need_copy include table that need copy data
     exec_sqls include list of sql should be run after copy"""
-    init_data = None
     metadata = MetaData()
     src_connection = connformater % src
     dst_connection = connformater % dst
@@ -36,37 +35,40 @@ def copydb(src, dst, tables_need_copy=None, exec_sqls=None):
     except OperationalError as e:
         raise AcceptableError('Get source database info or Reflect source database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
-    if tables_need_copy or exec_sqls:
 
-        def init_data(*args, **kwargs):
-            dst_session = orm.get_maker(dst_engine)()
-            src_session = orm.get_maker(src_engine)()
-            if tables_need_copy:
-                count = 0
-                for table in tables_need_copy:
-                    if table not in metadata.tables:
-                        raise AcceptableError('Table %s not in source database' % table)
-                for table_name in tables_need_copy:
-                    table = metadata.tables[table_name]
-                    # get row count from table
-                    count += src_session.query(func.count("*")).select_from(table).scalar()
-                    if count >= MAX_COPY_ROW:
-                        raise exceptions.CopyRowOverSize('Copy from table %s fail, too many rows copyed' %
-                                                         table_name)
-                    # build a query in src database
-                    query = src_session.query(table)
-                    with dst_session.begin():
-                        for row in query:
-                            # execute insert sql on dst databases
-                            dst_session.execute(table.insert(row))
-            if exec_sqls:
+
+    def init_data(*args, **kwargs):
+        if not tables_need_copy and not exec_sqls:
+            return
+        dst_session = orm.get_maker(dst_engine)()
+        src_session = orm.get_maker(src_engine)()
+        if tables_need_copy:
+            count = 0
+            for table in tables_need_copy:
+                if table not in metadata.tables:
+                    raise AcceptableError('Table %s not in source database' % table)
+            for table_name in tables_need_copy:
+                table = metadata.tables[table_name]
+                # get row count from table
+                count += src_session.query(func.count("*")).select_from(table).scalar()
+                if count >= MAX_COPY_ROW:
+                    raise exceptions.CopyRowOverSize('Copy from table %s fail, too many rows copyed' %
+                                                     table_name)
+                # build a query in src database
+                query = src_session.query(table)
                 with dst_session.begin():
-                    for sql in exec_sqls:
-                        dst_session.execute(sql)
-            src_session.close()
-            dst_session.close()
+                    for row in query:
+                        # execute insert sql on dst databases
+                        dst_session.execute(table.insert(row))
+        if exec_sqls:
+            with dst_session.begin():
+                for sql in exec_sqls:
+                    dst_session.execute(sql)
+        src_session.close()
+        dst_session.close()
+
     try:
-        init_database(dst_engine, metadata,
+        init_database(dst_engine, metadata, auths,
                       charcter_set=schema_info[1],
                       collation_type=schema_info[2],
                       init_data_func=init_data)

@@ -1,6 +1,7 @@
 import copy
 
 from simpleutil.config import cfg
+from simpleutil.utils import jsonutils
 
 import sqlalchemy as sa
 from sqlalchemy.pool import NullPool
@@ -36,6 +37,19 @@ database_init_opts = [
 ]
 
 
+AUTHSCHEMA = {
+    'type': 'array',
+    'items': {
+        'type': 'object',
+        'required': ['user', 'passwd'],
+        'properties': {'user': {'type': 'string'},
+                       'passwd': {'type': 'string'},
+                       'privileges': {'type': 'string'},
+                       'source': {'type': 'string'}}
+    }
+}
+
+
 def get_no_schema_engine(engine):
     url = copy.copy(make_url(engine.url))
     url.database = None
@@ -56,8 +70,9 @@ def get_schema_info(engine):
 
 
 # create a schema
-def create_schema(engine, charcter_set=None, collation_type=None):
-
+def create_schema(engine, auths=None, charcter_set=None, collation_type=None):
+    if auths:
+        jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
     if get_schema_info(engine):
@@ -68,13 +83,34 @@ def create_schema(engine, charcter_set=None, collation_type=None):
     if collation_type:
         sql += ' COLLATE %s' % collation_type
     no_schema_engine.execute(sql)
+    if auths:
+        for auth in auths:
+            _auth = {'schema': engine.url.database,
+                     'user': auth.get('user'),
+                     'passwd': auth.get('passwd'),
+                     'source': auth.get('source') or '%',
+                     'privileges': auth.get('privileges') or 'ALL PRIVILEGES'}
+            sql = "GRANT %(privileges)s ON %(schema)s.* to '%(user)s'@'%(source)s' identified by '%(passwd)s'" % _auth
+            no_schema_engine.execute(sql)
+        no_schema_engine.execute('FLUSH PRIVILEGES')
 
 
 # drop a schema
-def drop_schema(engine):
+def drop_schema(engine, auths=None):
+    if auths:
+        jsonutils.schema_validate(auths, AUTHSCHEMA)
     if get_schema_info(engine):
         sql = "DROP DATABASE %s" % engine.url.database
         engine.execute(sql)
+        if auths:
+            schema = engine.url.database
+            for auth in auths:
+                _auth = {'schema': schema,
+                         'user': auth.get('user'),
+                         'source': auth.get('source') or '%'}
+                sql = "REVOKE ALL PRIVILEGES ON %(schema)s.* FROM '%(user)s'@'%(source)s'" % _auth
+                engine.execute(sql)
+            engine.execute('FLUSH PRIVILEGES')
 
 
 def re_create_schema(engine):
@@ -82,7 +118,7 @@ def re_create_schema(engine):
     if not schema_info:
         raise exceptions.DBNotExist(engine.url.database)
     drop_schema(engine)
-    create_schema(engine, schema_info[1], schema_info[2])
+    create_schema(engine, charcter_set=schema_info[1], collation_type=schema_info[2])
 
 
 create_databse = create_schema
@@ -91,6 +127,7 @@ re_create_database = re_create_schema
 
 
 def init_database(db_info, metadata,
+                  auths=None,
                   charcter_set=None,
                   collation_type=None,
                   init_data_func=None):
@@ -104,7 +141,7 @@ def init_database(db_info, metadata,
         engine = create_engine(database_connection, thread_checkin=False,
                                poolclass=NullPool)
     try:
-        create_schema(engine, charcter_set, collation_type)
+        create_schema(engine, auths, charcter_set, collation_type)
     except OperationalError as e:
         raise AcceptableError('Create distribution database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
