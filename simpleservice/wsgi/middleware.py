@@ -122,7 +122,10 @@ def controller_return_response(controller, faults=None, action_status=None):
             raise e
         except (SQLAlchemyError, DBError):
             # Database error details will not send
-            LOG.exception('%s failed', action)
+            if LOG.isEnabledFor(logging.DEBUG):
+                LOG.exception('%s failed', action)
+            else:
+                LOG.error('%s failed, database exception', action)
             # Do not expose details of 500 error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'reading or writing database'

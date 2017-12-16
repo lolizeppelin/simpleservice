@@ -55,7 +55,7 @@ AUTHSCHEMA = {
 def get_no_schema_engine(engine):
     url = copy.copy(make_url(engine.url))
     url.database = None
-    no_schema_engine = sa.create_engine(url, poolclass=NullPool, thread_checkin=False)
+    no_schema_engine = sa.create_engine(url, poolclass=NullPool)
     return no_schema_engine
 
 
@@ -244,12 +244,8 @@ def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None):
         src_session.close()
         dst_session.close()
 
-    try:
-        init_database(dst_engine, metadata, auths,
-                      charcter_set=schema_info[1],
-                      collation_type=schema_info[2],
-                      init_data_func=init_data)
-        return schema_info
-    finally:
-        del src_engine
-        del dst_engine
+    init_database(dst_engine, metadata, auths,
+                  charcter_set=schema_info[1],
+                  collation_type=schema_info[2],
+                  init_data_func=init_data)
+    return schema_info
