@@ -207,40 +207,40 @@ class HttpClientBase(object):
             return data
         return jsonutils.loads_as_bytes(data)
 
-    def delete(self, action, body=None, headers=None, params=None):
+    def delete(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("DELETE", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def get(self, action, body=None, headers=None, params=None):
+    def get(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("GET", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def post(self, action, body=None, headers=None, params=None):
+    def post(self, action, body=None, headers=None, params=None, timeout=None):
         # Do not retry POST requests to avoid the orphan objects problem.
         return self.do_request("POST", action, body=body,
-                               headers=headers, params=params)
+                               headers=headers, params=params, timeout=timeout)
 
-    def retryable_post(self, action, body=None, headers=None, params=None):
+    def retryable_post(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("POST", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def put(self, action, body=None, headers=None, params=None):
+    def put(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("PUT", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def head(self, action, body=None, headers=None, params=None):
+    def head(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("HEAD", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def patch(self, action, body=None, headers=None, params=None):
+    def patch(self, action, body=None, headers=None, params=None, timeout=None):
         # Do not retry PATCH requests to avoid the orphan objects problem.
         return self.do_request("PATCH", action, body=body,
-                               headers=headers, params=params)
+                               headers=headers, params=params, timeout=timeout)
 
-    def retryable_patch(self, action, body=None, headers=None, params=None):
+    def retryable_patch(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("PATCH", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
 
-    def options(self, action, body=None, headers=None, params=None):
+    def options(self, action, body=None, headers=None, params=None, timeout=None):
         return self.retry_request("OPTIONS", action, body=body,
-                                  headers=headers, params=params)
+                                  headers=headers, params=params, timeout=timeout)
