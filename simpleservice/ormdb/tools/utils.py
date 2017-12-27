@@ -105,12 +105,15 @@ def privileges(engine, auths):
     if not auths:
         yield
     else:
+        create_privileges(engine, auths)
         try:
-            create_privileges(engine, auths)
             yield
-        except Exception:
-            drop_privileges(engine, auths)
-            raise
+        except Exception as e:
+            try:
+                drop_privileges(engine, auths)
+            except:
+                pass
+            raise e
 
 
 # create a schema
