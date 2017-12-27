@@ -78,9 +78,10 @@ def create_privileges(engine, auths):
     for auth in auths:
         _auth = {'schema': schema,
                  'user': auth.get('user'),
+                 'passwd': auth.get('passwd'),
                  'source': auth.get('source') or '%',
                  'privileges': auth.get('privileges') or 'ALL'}
-        sql = "GRANT %(privileges)s ON %(schema)s.* TO '%(user)s'@'%(source)s'" % _auth
+        sql = "GRANT %(privileges)s ON %(schema)s.* TO '%(user)s'@'%(source)s' IDENTIFIED by '%(passwd)s'" % _auth
         no_schema_engine.execute(sql)
     no_schema_engine.execute('FLUSH PRIVILEGES')
 
