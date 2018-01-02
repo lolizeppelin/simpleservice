@@ -75,6 +75,7 @@ def create_privileges(engine, auths):
     jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
+    sqls = []
     for auth in auths:
         _auth = {'schema': schema,
                  'user': auth.get('user'),
@@ -82,24 +83,36 @@ def create_privileges(engine, auths):
                  'source': auth.get('source') or '%',
                  'privileges': auth.get('privileges') or 'ALL'}
         sql = "GRANT %(privileges)s ON %(schema)s.* TO '%(user)s'@'%(source)s' IDENTIFIED by '%(passwd)s'" % _auth
-        no_schema_engine.execute(sql)
-    no_schema_engine.execute('FLUSH PRIVILEGES')
-
+        sqls.append(sql)
+    sqls.append('FLUSH PRIVILEGES')
+    with no_schema_engine.connect() as conn:
+        for sql in sqls:
+            r = conn.execute(sql)
+            r.close()
 
 # drop privileges
 def drop_privileges(engine, auths):
     jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
+    sqls = []
     for auth in auths:
         _auth = {'schema': schema,
                  'user': auth.get('user'),
                  'source': auth.get('source') or '%',
                  'privileges': auth.get('privileges') or 'ALL'}
         sql = "REVOKE %(privileges)s ON %(schema)s.* FROM '%(user)s'@'%(source)s'" % _auth
-        no_schema_engine.execute(sql)
-    no_schema_engine.execute('FLUSH PRIVILEGES')
-
+        sqls.append(sql)
+        _auth.pop('privileges')
+        _auth.pop('schema')
+        sql = "drop user '%(user)s'@'%(source)s'" % _auth
+        sqls.append(sql)
+    sql = 'FLUSH PRIVILEGES'
+    sqls.append(sql)
+    with no_schema_engine.connect() as conn:
+        for sql in sqls:
+            r = conn.execute(sql)
+            r.close()
 
 @contextlib.contextmanager
 def privileges(engine, auths):
