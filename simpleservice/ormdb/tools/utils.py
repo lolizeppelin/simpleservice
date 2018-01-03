@@ -131,16 +131,16 @@ def privileges(engine, auths):
 
 
 # create a schema
-def create_schema(engine, auths=None, charcter_set=None, collation_type=None):
+def create_schema(engine, auths=None, character_set=None, collation_type=None):
     if auths:
         jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
     if get_schema_info(engine):
         raise exceptions.DBExist(schema)
-    if not charcter_set:
-        charcter_set = 'utf8'
-    sql = "CREATE DATABASE %s DEFAULT CHARACTER SET %s" % (schema, charcter_set)
+    if not character_set:
+        character_set = 'utf8'
+    sql = "CREATE DATABASE %s DEFAULT CHARACTER SET %s" % (schema, character_set)
     if collation_type:
         sql += ' COLLATE %s' % collation_type
     with privileges(engine, auths):
@@ -164,7 +164,7 @@ def re_create_schema(engine):
     if not schema_info:
         raise exceptions.DBNotExist(engine.url.database)
     drop_schema(engine)
-    create_schema(engine, charcter_set=schema_info[1], collation_type=schema_info[2])
+    create_schema(engine, character_set=schema_info[1], collation_type=schema_info[2])
 
 
 create_databse = create_schema
@@ -174,10 +174,10 @@ re_create_database = re_create_schema
 
 def init_database(db_info, metadata,
                   auths=None,
-                  charcter_set=None,
+                  character_set=None,
                   collation_type=None,
                   init_data_func=None):
-    charcter_set = charcter_set or 'utf8'
+    character_set = character_set or 'utf8'
     if isinstance(db_info, Engine):
         engine = db_info
     else:
@@ -187,7 +187,7 @@ def init_database(db_info, metadata,
         engine = create_engine(database_connection, thread_checkin=False,
                                poolclass=NullPool)
     try:
-        create_schema(engine, auths, charcter_set, collation_type)
+        create_schema(engine, auths, character_set, collation_type)
     except OperationalError as e:
         raise AcceptableError('Create distribution database error:%d, %s' %
                               (e.orig[0], e.orig[1].replace("'", '')))
@@ -262,7 +262,7 @@ def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None):
         dst_session.close()
 
     init_database(dst_engine, metadata, auths,
-                  charcter_set=schema_info[1],
+                  character_set=schema_info[1],
                   collation_type=schema_info[2],
                   init_data_func=init_data)
     return schema_info
