@@ -52,15 +52,15 @@ AUTHSCHEMA = {
 }
 
 
-def get_no_schema_engine(engine):
+def get_no_schema_engine(engine, **kwargs):
     url = copy.copy(make_url(engine.url))
     url.database = None
-    no_schema_engine = sa.create_engine(url, poolclass=NullPool)
+    no_schema_engine = sa.create_engine(url, poolclass=NullPool, connect_args=kwargs)
     return no_schema_engine
 
 
 # get schema info
-def get_schema_info(engine):
+def get_schema_info(engine, **kwargs):
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
     sql = "SELECT SCHEMA_NAME,DEFAULT_CHARACTER_SET_NAME,DEFAULT_COLLATION_NAME " \
@@ -131,11 +131,11 @@ def privileges(engine, auths):
 
 
 # create a schema
-def create_schema(engine, auths=None, character_set=None, collation_type=None):
+def create_schema(engine, auths=None, character_set=None, collation_type=None, **kwargs):
     if auths:
         jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
-    no_schema_engine = get_no_schema_engine(engine)
+    no_schema_engine = get_no_schema_engine(engine, **kwargs)
     if get_schema_info(engine):
         raise exceptions.DBExist(schema)
     if not character_set:
@@ -176,7 +176,7 @@ def init_database(db_info, metadata,
                   auths=None,
                   character_set=None,
                   collation_type=None,
-                  init_data_func=None):
+                  init_data_func=None, **kwargs):
     character_set = character_set or 'utf8'
     if isinstance(db_info, Engine):
         engine = db_info
@@ -185,7 +185,7 @@ def init_database(db_info, metadata,
         if isinstance(db_info, dict):
             database_connection = connformater % db_info
         engine = create_engine(database_connection, thread_checkin=False,
-                               poolclass=NullPool)
+                               poolclass=NullPool, **kwargs)
     try:
         create_schema(engine, auths, character_set, collation_type)
     except OperationalError as e:
@@ -211,7 +211,7 @@ def init_database(db_info, metadata,
 MAX_COPY_ROW = 100000
 
 
-def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None):
+def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None, **kwargs):
     """copy database from src to dst
     tables_need_copy include table that need copy data
     exec_sqls include list of sql should be run after copy"""
@@ -219,9 +219,9 @@ def copydb(src, dst, auths=None, tables_need_copy=None, exec_sqls=None):
     src_connection = connformater % src
     dst_connection = connformater % dst
     src_engine = create_engine(src_connection, thread_checkin=False,
-                               poolclass=NullPool)
+                               poolclass=NullPool, **kwargs)
     dst_engine = create_engine(dst_connection, thread_checkin=False,
-                               poolclass=NullPool)
+                               poolclass=NullPool, **kwargs)
     try:
         schema_info = get_schema_info(src_engine)
         if not schema_info:
