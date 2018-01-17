@@ -246,7 +246,7 @@ def filter_query(query, model, filter=None):
     if filter is not None:
         if isinstance(filter, (BooleanClauseList, BinaryExpression)):
             query = query.filter(filter)
-        elif isinstance(filter, (list, tuple)):
+        elif isinstance(filter, (list, tuple, set)):
             query = query.filter(*filter)
         elif isinstance(filter, dict):
             if isinstance(model, (list, tuple, set)):
