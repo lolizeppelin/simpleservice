@@ -174,6 +174,9 @@ class HttpClientBase(object):
             resone = json_data.get('msg') if json_data.get('msg') else response_body
         except ValueError:
             resone = response_body
+        except Exception:
+            LOG.exception('Resopne error')
+            raise
         if 400 <= status_code < 500:
             LOG.warning('Http request get client error: %s' % str(resone))
             raise exceptions.ClientRequestError(code=status_code, resone=resone)
