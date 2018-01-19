@@ -169,7 +169,6 @@ class HttpClientBase(object):
 
     def _handle_fault_response(self, status_code, response_body, resp):
         # Create exception with HTTP status code and message
-        LOG.debug("Error message: %s", response_body)
         try:
             json_data = jsonutils.loads_as_bytes(response_body)
             resone = json_data.get('msg') if json_data.get('msg') else response_body
