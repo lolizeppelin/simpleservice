@@ -10,5 +10,6 @@ RESULT_ERROR = -1
 RESULT_SUCCESS = 0
 # result over 0 is customer error
 
-
 MAX_URI_LEN = 8192
+
+TOKENNAME = 'Auth-Token'

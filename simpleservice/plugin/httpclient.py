@@ -94,7 +94,7 @@ class HttpClientBase(object):
         headers.setdefault('Content-Type', self.CONTENT_TYPE)
         headers.setdefault('Accept', self.CONTENT_TYPE)
         if self.token:
-            headers.setdefault('Token', self.token)
+            headers.setdefault(common.TOKENNAME, self.token)
         action = self.action_prefix + action
         try:
             if isinstance(params, dict) and params:

@@ -1,6 +1,4 @@
 # -*- coding: UTF-8 -*-
-import abc
-
 import webob.dec
 import webob.exc
 
@@ -30,7 +28,6 @@ class FilterBase(object):
     def __init__(self, application):
         self.application = application
 
-    @abc.abstractmethod
     def process_request(self, req):
         """Called on each request.
         If this returns None, the next application down the stack will be
@@ -42,6 +39,7 @@ class FilterBase(object):
         webob将通过req.Response类生成Response实例再调用__call__方法
         返回值不是None表明过滤失败
         """
+        raise NotImplementedError
 
     def process_response(self, req, response):
         """Do whatever you'd like to the response, based on the request."""
