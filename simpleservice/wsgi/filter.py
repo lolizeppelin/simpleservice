@@ -22,10 +22,10 @@ class FilterBase(object):
         conf = global_conf.copy() if global_conf else {}
         conf.update(local_conf)
 
-        def middleware_filter(app):
+        def _factory(app):
             return cls(app)
 
-        return middleware_filter
+        return _factory
 
     def __init__(self, application):
         self.application = application
