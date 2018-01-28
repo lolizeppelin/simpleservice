@@ -178,10 +178,10 @@ class HttpClientBase(object):
             LOG.exception('Resopne error')
             raise
         if 400 <= status_code < 500:
-            LOG.warning('Http request get client error: %s' % str(resone))
+            LOG.debug('Http request get client error: %s' % str(resone))
             raise exceptions.ClientRequestError(code=status_code, resone=resone)
         elif 500 <= status_code < 600:
-            LOG.warning('Http request get server error: %s' % str(resone))
+            LOG.debug('Http request get server error: %s' % str(resone))
             if status_code == 501:
                 raise exceptions.ServerNotImplementedError(resone=resone)
             raise exceptions.ServerInternalError(code=status_code, resone=resone)
