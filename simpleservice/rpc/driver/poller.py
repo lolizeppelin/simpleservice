@@ -89,7 +89,7 @@ class AMQPListener(object):
                 return self.incoming.pop(0)
             try:
                 self.conn.consume(timeout=timeout)
-            except (exceptions.Timeout, exceptions.MessageDeliveryFailure):
+            except exceptions.Timeout:
                 return None
 
     def stop(self):

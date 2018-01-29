@@ -2,6 +2,7 @@ import eventlet
 
 from simpleutil.utils import importutils
 from simpleutil.utils import threadgroup
+from simpleutil.utils import excutils
 
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
@@ -50,7 +51,7 @@ class MessageHandlingService(ServiceBase):
         self.listener.stop()
         self._started = False
 
-    # @excutils.forever_retry_uncaught_exceptions
+    @excutils.forever_retry_uncaught_exceptions
     def _runner(self):
         while self._started:
             incoming = self.listener.poll()
