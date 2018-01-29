@@ -1,5 +1,4 @@
-# import threading
-
+import eventlet
 from simpleutil.log import log as logging
 from simpleutil.utils import cachetools
 from simpleservice.rpc.driver import common as rpc_common
@@ -90,7 +89,7 @@ class AMQPListener(object):
                 return self.incoming.pop(0)
             try:
                 self.conn.consume(timeout=timeout)
-            except exceptions.Timeout:
+            except (exceptions.Timeout, exceptions.MessageDeliveryFailure):
                 return None
 
     def stop(self):
