@@ -120,6 +120,17 @@ def controller_return_response(controller, faults=None, action_status=None):
             e.body = default_serializer({'msg': msg})
             e.content_type = DEFAULT_CONTENT_TYPE
             raise e
+        except jsonutils.ValidationError as e:
+            # Database error details will not send
+            if LOG.isEnabledFor(logging.DEBUG):
+                LOG.exception('%s failed', action)
+            else:
+                LOG.error('%s failed, database exception', action)
+            # Do not expose details of 500 error to clients.
+            msg = 'Request Failed: json not match, %s' % e.message.replace('"', ' ')
+            body = default_serializer({'msg': msg})
+            kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
+            raise webob.exc.HTTPClientError(**kwargs)
         except (SQLAlchemyError, DBError):
             # Database error details will not send
             if LOG.isEnabledFor(logging.DEBUG):
