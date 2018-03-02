@@ -121,13 +121,15 @@ def controller_return_response(controller, faults=None, action_status=None):
             e.content_type = DEFAULT_CONTENT_TYPE
             raise e
         except jsonutils.ValidationError as e:
-            # Database error details will not send
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
+                LOG.error(e)
             else:
-                LOG.error('%s failed, database exception', action)
-            # Do not expose details of 500 error to clients.
-            msg = 'Request Failed: json not match, %s' % e.message.replace('"', ' ')
+                LOG.error('%s failed, json validate fail', action)
+            msg = e.message.replace('"', ' ')
+            if e.path:
+                msg = '%s value %s' % ('.'.join(e.path), msg)
+            msg = 'Request Failed: json not match, %s' % msg
             body = default_serializer({'msg': msg})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise webob.exc.HTTPClientError(**kwargs)
@@ -137,7 +139,7 @@ def controller_return_response(controller, faults=None, action_status=None):
                 LOG.exception('%s failed', action)
             else:
                 LOG.error('%s failed, database exception', action)
-            # Do not expose details of 500 error to clients.
+            # Do not expose details of database error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'reading or writing database'
             body = default_serializer({'msg': msg})
