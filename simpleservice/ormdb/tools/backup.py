@@ -20,10 +20,10 @@ else:
     wait = systemutils.subwait
 
 
-def mysqldump(dumpfile,
-              host, port, user, passwd, schema,
-              character_set=None,
-              logfile=None, callable=None, timeout=None):
+def _mysqldump_to_gz(dumpfile,
+                     host, port, user, passwd, schema,
+                     character_set=None,
+                     logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
@@ -43,13 +43,14 @@ def mysqldump(dumpfile,
                 dup_proc = fork()
                 if dup_proc == 0:
                     os.dup2(w, sys.stdout.fileno())
+                    os.close(w)
                     os.dup2(log.fileno(), sys.stderr.fileno())
-                    os.close(sys.stdout.fileno())
                     os.execv(MYSQLDUMP, dump_args)
                 os.close(w)
                 gz_proc = fork()
                 if gz_proc == 0:
                     os.dup2(r, sys.stdin.fileno())
+                    os.close(r)
                     os.dup2(f.fileno(), sys.stdout.fileno())
                     os.dup2(log.fileno(), sys.stderr.fileno())
                     os.execv(GZIP, gz_args)
@@ -59,11 +60,13 @@ def mysqldump(dumpfile,
                                             stdout=w,
                                             stderr=log.fileno(),
                                             preexec_fn=callable)
+                os.close(w)
                 gz_proc = subprocess.Popen(executable=GZIP, args=gz_args,
                                            stdin=r,
                                            stdout=f.fileno(),
                                            stderr=log.fileno(),
                                            preexec_fn=callable)
+                os.close(r)
             try:
                 wait(dup_proc, timeout)
             except OSError:
@@ -73,9 +76,52 @@ def mysqldump(dumpfile,
             wait(gz_proc, timeout)
 
 
-def mysqlload(loadfile, host, port, user, passwd, schema,
+def _mysqldump(dumpfile,
+               host, port, user, passwd, schema,
+               character_set=None,
+               logfile=None, callable=None, timeout=None):
+    character_set = character_set or 'utf8'
+    logfile = logfile or os.devnull
+    timeout = timeout or 3600
+
+    dump_args = [MYSQLDUMP,
+                 '--default-character-set=%s' % character_set,
+                 '-u%s' % user, '-p%s' % passwd,
+                 '-h%s' % host, '-P%d' % port, schema]
+    LOG.debug(' '.join(dump_args))
+
+    with open(logfile, 'wb') as log:
+        with open(dumpfile, 'wb') as f:
+            if systemutils.LINUX:
+                fork = callable or os.fork
+                dup_proc = fork()
+                if dup_proc == 0:
+                    os.dup2(f.fileno(), sys.stdout.fileno())
+                    os.dup2(log.fileno(), sys.stderr.fileno())
+                    os.execv(MYSQLDUMP, dump_args)
+            else:
+                dup_proc = subprocess.Popen(executable=MYSQLDUMP, args=dump_args,
+                                            stdout=f.fileno(),
+                                            stderr=log.fileno(),
+                                            preexec_fn=callable)
+            wait(dup_proc, timeout)
+
+
+def mysqldump(dumpfile,
+              host, port, user, passwd, schema,
               character_set=None,
               logfile=None, callable=None, timeout=None):
+    if dumpfile.endswith('.gz'):
+        _mysqldump_to_gz(dumpfile, host, port, user, passwd, schema,
+                         character_set, logfile, callable, timeout)
+    else:
+        _mysqldump(dumpfile, host, port, user, passwd, schema,
+                   character_set, logfile, callable, timeout)
+
+
+def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
+                       character_set=None,
+                       logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
@@ -95,15 +141,16 @@ def mysqlload(loadfile, host, port, user, passwd, schema,
             ungz_proc = fork()
             if ungz_proc == 0:
                 os.dup2(w, sys.stdout.fileno())
-                os.close(sys.stdout.fileno())
+                os.close(w)
                 os.dup2(log.fileno(), sys.stderr.fileno())
                 os.execv(UNGZIP, ungz_args)
             os.close(w)
             load_proc = fork()
             if load_proc == 0:
                 os.dup2(r, sys.stdin.fileno())
-                os.close(sys.stdin.fileno())
+                os.close(r)
                 os.dup2(log.fileno(), sys.stderr.fileno())
+                os.close(log.fileno())
                 os.execv(MYSQL, load_args)
             os.close(r)
         else:
@@ -111,11 +158,13 @@ def mysqlload(loadfile, host, port, user, passwd, schema,
                                          stdout=w,
                                          stderr=log.fileno(),
                                          preexec_fn=callable)
+            os.close(w)
             load_proc = subprocess.Popen(executable=MYSQL, args=load_args,
                                          stdin=r,
                                          stdout=log.fileno(),
                                          stderr=log.fileno(),
                                          preexec_fn=callable)
+            os.close(r)
         try:
             wait(ungz_proc, timeout)
         except OSError:
@@ -123,3 +172,47 @@ def mysqlload(loadfile, host, port, user, passwd, schema,
         except (systemutils.UnExceptExit, systemutils.ExitBySIG):
             LOG.error('gunzip exit code error or killed')
         wait(load_proc, timeout)
+
+
+def _mysqlload(loadfile, host, port, user, passwd, schema,
+               character_set=None,
+               logfile=None, callable=None, timeout=None):
+    character_set = character_set or 'utf8'
+    logfile = logfile or os.devnull
+    timeout = timeout or 3600
+
+    load_args = [MYSQL,
+                 '--default-character-set=%s' % character_set,
+                 '-u%s' % user, '-p%s' % passwd,
+                 '-h%s' % host, '-P%d' % port,
+                 schema]
+    LOG.debug(' '.join(load_args))
+
+    with open(logfile, 'wb') as log:
+        with open(loadfile, 'rb') as f:
+            if systemutils.LINUX:
+                fork = callable or os.fork
+                load_proc = fork()
+                if load_proc == 0:
+                    os.dup2(f.fileno(), sys.stdin.fileno())
+                    os.dup2(log.fileno(), sys.stderr.fileno())
+                    os.close(log.fileno())
+                    os.execv(MYSQL, load_args)
+            else:
+                load_proc = subprocess.Popen(executable=MYSQL, args=load_args,
+                                             stdin=f.fileno(),
+                                             stdout=log.fileno(),
+                                             stderr=log.fileno(),
+                                             preexec_fn=callable)
+            wait(load_proc, timeout)
+
+
+def mysqlload(loadfile, host, port, user, passwd, schema,
+              character_set=None,
+              logfile=None, callable=None, timeout=None):
+    if loadfile.endswith('.gz'):
+        _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
+                           character_set, logfile, callable, timeout)
+    else:
+        _mysqlload(loadfile, host, port, user, passwd, schema,
+                   character_set, logfile, callable, timeout)
