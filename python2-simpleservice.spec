@@ -20,6 +20,8 @@ BuildRequires:  python-setuptools >= 11.0
 
 Requires:       python >= 2.6.6
 Requires:       python < 3.0
+Requires:       gzip >= 1.3
+Requires:       mysql >= 5.1
 Requires:       python-six >= 1.9.0
 Requires:       python-requests >= 2.11.1
 Requires:       python-simpleutil >= 1.0
