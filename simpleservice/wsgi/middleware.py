@@ -123,7 +123,6 @@ def controller_return_response(controller, faults=None, action_status=None):
         except jsonutils.ValidationError as e:
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
-                LOG.error(e)
             else:
                 LOG.error('%s failed, json validate fail', action)
             msg = e.message.replace('"', ' ')
