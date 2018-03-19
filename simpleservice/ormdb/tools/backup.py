@@ -7,10 +7,14 @@ from simpleutil.utils import systemutils
 
 LOG = logging.getLogger(__name__)
 
-MYSQLDUMP = systemutils.find_executable('mysqldump')
-MYSQL = systemutils.find_executable('mysql')
-GZIP = systemutils.find_executable('gzip')
-UNGZIP = systemutils.find_executable('gunzip')
+try:
+    MYSQLDUMP = systemutils.find_executable('mysqldump')
+    MYSQL = systemutils.find_executable('mysql')
+    GZIP = systemutils.find_executable('gzip')
+    UNGZIP = systemutils.find_executable('gunzip')
+except NotImplementedError:
+    if not systemutils.WINDOWS:
+        raise
 
 if systemutils.LINUX:
     from simpleutil.utils.systemutils import posix

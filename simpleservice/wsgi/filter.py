@@ -39,7 +39,7 @@ class FilterBase(object):
         webob将通过req.Response类生成Response实例再调用__call__方法
         返回值不是None表明过滤失败
         """
-        raise NotImplementedError
+        return None
 
     def process_response(self, req, response):
         """Do whatever you'd like to the response, based on the request."""
