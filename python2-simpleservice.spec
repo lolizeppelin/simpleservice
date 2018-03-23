@@ -26,6 +26,7 @@ Requires:       python-six >= 1.9.0
 Requires:       python-requests >= 2.11.1
 Requires:       python-simpleutil >= 1.0
 Requires:       python-simpleutil < 1.1
+Requires:       python-backports-ssl_match_hostname >= 3.4.0
 
 %description
 simpleservice copy from openstack
