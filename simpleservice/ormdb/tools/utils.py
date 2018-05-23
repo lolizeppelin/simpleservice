@@ -125,7 +125,7 @@ def privileges(engine, auths):
         except Exception as e:
             try:
                 drop_privileges(engine, auths)
-            except:
+            except Exception:
                 pass
             raise e
 
