@@ -60,6 +60,19 @@ def load_paste_app(name, paste_config):
     return app
 
 
+class FixedHttpProtocol(eventlet.wsgi.HttpProtocol):
+    """Fix bug for python2.6"""
+
+    def __init__(self, request, client_address, server):
+        self.request = request
+        self.client_address = client_address
+        self.server = server
+        self.setup()
+        try:
+            self.handle()
+        finally:
+            self.finish()
+
 class LauncheWsgiServiceBase(LauncheServiceBase):
     """Server class to manage a WSGI server, serving a WSGI application."""
     # def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
@@ -87,7 +100,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         self.conf = CONF[name]
         self._server = None
         eventlet.wsgi.MAX_HEADER_LINE = self.conf.max_header_line
-        self._protocol = eventlet.wsgi.HttpProtocol
+        self._protocol = eventlet.wsgi.HttpProtocol if systemutils.PY27 else FixedHttpProtocol
         self.pool_size = self.conf.wsgi_default_pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
         # self._logger = logging.getLogger('goperation.service.WsgiServiceBase')
