@@ -54,7 +54,7 @@ wsgi_server_options = [
                         "is configured to use PKI tokens with big service "
                         "catalogs)."),
         cfg.BoolOpt('wsgi_keep_alive',
-                    default=False,
+                    default=True,
                     help="If False, closes the client socket connection "
                          "explicitly."),
         cfg.IntOpt('client_socket_timeout', default=60,
