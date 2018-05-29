@@ -146,7 +146,8 @@ def create_engine(sql_connection,
         "pool_recycle": idle_timeout,
         'convert_unicode': True,
         'connect_args': kwargs,
-        'logging_name': logging_name
+        'logging_name': logging_name,
+        'echo': LOG.isEnabledFor(logging.DEBUG),
     }
     if poolclass:
         engine_args.update({'poolclass': poolclass})
