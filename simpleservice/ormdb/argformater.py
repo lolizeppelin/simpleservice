@@ -5,8 +5,6 @@ import re
 import sqlalchemy
 import sqlalchemy.event
 
-import eventlet
-from eventlet import hubs
 
 from sqlalchemy import pool
 from sqlalchemy import exc
@@ -223,40 +221,33 @@ def init_events(engine, mysql_sql_mode=None, **kw):
 
 @init_events.dispatch_for("mysql+mysqlconnector")
 def init_events(engine, **kw):
-    """python mysql driver can use eventlet to cancel on executeing"""
+    """max_statement_time and the associated functionality was introduced in MariaDB 10.1.1 or mysql 5.6"""
     @sqlalchemy.event.listens_for(engine, "before_cursor_execute")
     def execute_timeout_task(conn, cursor, statement,
                              parameters, context, executemany):
         if cursor is None:
             return
-        timer = None
         timeout = context.execution_options.get('timeout', None)
         if timeout and timeout > 0.0:
-            hub = hubs.get_hub()
-            timer = hub.schedule_call_global(timeout, cancel_execute, eventlet.getcurrent())
-        setattr(cursor, 'timeout_task', timer)
-
+            cursor.execute('SET SESSION max_statement_time = %1.3f' % float(timeout))
 
     @sqlalchemy.event.listens_for(engine, "after_cursor_execute")
     def execute_nottimeout(conn, cursor, statement,
                              parameters, context, executemany):
         if cursor is None:
             return
-        timer = getattr(cursor, 'timeout_task', None)
-        if timer:
-            timer.cancel()
-            delattr(cursor, 'timeout_task')
-
+        timeout = context.execution_options.get('timeout', None)
+        if timeout and timeout > 0.0:
+            cursor.execute('SET SESSION max_statement_time = 0')
 
     @sqlalchemy.event.listens_for(engine, "dbapi_error")
     def execute_error(conn, cursor, statement,
                       parameters, context, executemany):
         if cursor is None:
             return
-        timer = getattr(cursor, 'timeout_task', None)
-        if timer:
-            timer.cancel()
-            delattr(cursor, 'timeout_task')
+        timeout = context.execution_options.get('timeout', None)
+        if timeout and timeout > 0.0:
+            cursor.execute('SET SESSION max_statement_time = 0')
 
 
 @init_events.dispatch_for("sqlite")
