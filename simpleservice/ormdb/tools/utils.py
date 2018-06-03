@@ -1,8 +1,7 @@
 import copy
 import contextlib
 
-from simpleutil.config import cfg
-from simpleutil.utils import jsonutils
+from mysql.connector.errors import ProgrammingError
 
 import sqlalchemy as sa
 from sqlalchemy.pool import NullPool
@@ -12,6 +11,9 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
 
+from simpleutil.utils import jsonutils
+from simpleutil.log import log as logging
+
 from simpleservice.ormdb import orm
 from simpleservice.ormdb.engines import create_engine
 from simpleservice.ormdb.argformater import connformater
@@ -19,24 +21,7 @@ from simpleservice.ormdb.exceptions import AcceptableError
 from simpleservice.ormdb.exceptions import DBError
 from simpleservice.ormdb.tools import exceptions
 
-
-database_init_opts = [
-    cfg.StrOpt('user',
-               default='root',
-               help='mysql database root user name'),
-    cfg.StrOpt('passwd',
-               default='',
-               help='mysql database root password'),
-    cfg.StrOpt('host',
-               default='127.0.0.1',
-               help='mysql host or ipaddress'),
-    cfg.PortOpt('port',
-                default=3306,
-                help='mysql server post'),
-    cfg.StrOpt('schema',
-               required=True,
-               help='target mysql database schema')
-]
+LOG = logging.getLogger(__name__)
 
 
 AUTHSCHEMA = {
@@ -91,7 +76,7 @@ def create_privileges(engine, auths):
             r.close()
 
 # drop privileges
-def drop_privileges(engine, auths):
+def drop_privileges(engine, auths, raise_error=False):
     jsonutils.schema_validate(auths, AUTHSCHEMA)
     schema = engine.url.database
     no_schema_engine = get_no_schema_engine(engine)
@@ -111,8 +96,16 @@ def drop_privileges(engine, auths):
     sqls.append(sql)
     with no_schema_engine.connect() as conn:
         for sql in sqls:
-            r = conn.execute(sql)
-            r.close()
+            try:
+                r = conn.execute(sql)
+                r.close()
+            except ProgrammingError as e:
+                LOG.warning('Drop privileges sql [%s] catch programing error' % sql)
+                if LOG.isEnabledFor(logging.DEBUG):
+                    LOG.exception('Message %s, errno %d' % (e.msg, e.errno))
+                if raise_error:
+                    raise e
+                continue
 
 @contextlib.contextmanager
 def privileges(engine, auths):
@@ -124,9 +117,9 @@ def privileges(engine, auths):
             yield
         except Exception as e:
             try:
-                drop_privileges(engine, auths)
+                drop_privileges(engine, auths, raise_error=True)
             except Exception:
-                pass
+                LOG.error('Exception after create privilege, drop privilege fail')
             raise e
 
 
@@ -155,7 +148,7 @@ def drop_schema(engine, auths=None):
         sql = "DROP DATABASE %s" % engine.url.database
         engine.execute(sql)
     if auths:
-        drop_privileges(engine, auths)
+        drop_privileges(engine, auths, raise_error=False)
 
 
 # drop and create schema
