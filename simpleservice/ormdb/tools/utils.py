@@ -1,8 +1,6 @@
 import copy
 import contextlib
 
-from mysql.connector.errors import ProgrammingError
-
 import sqlalchemy as sa
 from sqlalchemy.pool import NullPool
 from sqlalchemy.engine.url import make_url
@@ -10,6 +8,7 @@ from sqlalchemy.engine.base import Engine
 
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DatabaseError
 
 from simpleutil.utils import jsonutils
 from simpleutil.log import log as logging
@@ -99,7 +98,7 @@ def drop_privileges(engine, auths, raise_error=False):
             try:
                 r = conn.execute(sql)
                 r.close()
-            except ProgrammingError as e:
+            except DatabaseError as e:
                 LOG.warning('Drop privileges sql [%s] catch programing error' % sql)
                 if LOG.isEnabledFor(logging.DEBUG):
                     LOG.exception('Message %s, errno %d' % (e.msg, e.errno))
