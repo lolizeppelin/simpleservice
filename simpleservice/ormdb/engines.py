@@ -112,6 +112,7 @@ def _test_connection(engine, max_retries, retry_interval):
 
 def create_engine(sql_connection,
                   logging_name=None,
+                  debug=False,
                   thread_checkin=True,
                   idle_timeout=None,
                   max_pool_size=None,
@@ -147,7 +148,7 @@ def create_engine(sql_connection,
         'convert_unicode': True,
         'connect_args': kwargs,
         'logging_name': logging_name,
-        'echo': LOG.isEnabledFor(logging.DEBUG),
+        'echo': debug,
     }
     if poolclass:
         engine_args.update({'poolclass': poolclass})
