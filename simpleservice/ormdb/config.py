@@ -24,7 +24,7 @@ database_opts = [
                     ' slave database.'),
     cfg.BoolOpt('debug',
                 default=False,
-                help='The SQLAlchemy log sql line'),
+                help='Record raw sql to log(set echo of SQLAlchemy to true)'),
     cfg.StrOpt('mysql_sql_mode',
                default='TRADITIONAL',
                help='The SQL mode to be used for MySQL sessions. '
