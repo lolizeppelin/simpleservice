@@ -92,14 +92,14 @@ def controller_return_response(controller, faults=None, action_status=None):
                 LOG.info('%(action)s failed (client error): %(exc)s',
                          {'action': action, 'exc': e})
             else:
-                LOG.error('%s failed' % action)
+                LOG.error('%s:%s failed' % (ctrl_name, action))
             body = default_serializer({'msg': '%s: %s' % (e.__class__.__name__, e.message)})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise mapped_exc(**kwargs)
         except NotImplementedError as e:
             body = default_serializer({'msg': 'Request Failed: NotImplementedError %s' % e.message})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
-            LOG.error('%s failed %s' % (action, e.message))
+            LOG.error('%s:%s failed %s' % (ctrl_name, action, e.message))
             raise webob.exc.HTTPNotImplemented(**kwargs)
         except webob.exc.HTTPException as e:
             # type_, value, tb = sys.exc_info()
@@ -114,7 +114,7 @@ def controller_return_response(controller, faults=None, action_status=None):
                 msg = '%(action)s failed (client error): %(exc)s' % {'action': action, 'exc': e}
                 LOG.info(msg)
             else:
-                msg = '%s failed' % action
+                msg = '%s:%s failed' % (ctrl_name, action)
                 LOG.error(msg)
             msg = 'Request Failed: HTTPException on %s' % msg
             e.body = default_serializer({'msg': msg})
@@ -124,7 +124,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
             else:
-                LOG.error('%s failed, json validate fail', action)
+                LOG.error('%s:%s failed, json validate fail', (ctrl_name, action))
             msg = e.message.replace('"', ' ')
             if e.path:
                 msg = '%s value %s' % ('.'.join(e.path), msg)
@@ -137,7 +137,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
             else:
-                LOG.error('%s failed, database exception', action)
+                LOG.error('%s:%s failed, database exception', (ctrl_name, action))
             # Do not expose details of database error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'reading or writing database'
@@ -149,7 +149,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('MiddlewareContorller unexpect exception on %s' % action)
             else:
-                LOG.error('%s failed, unkonwn exception', action)
+                LOG.error('%s:%s failed, unkonwn exception', (ctrl_name, action))
             # Do not expose details of 500 error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'processing your request. %(class)s, %(message)s' % \
