@@ -149,7 +149,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('MiddlewareContorller unexpect exception on %s' % action)
             else:
-                LOG.error('%s:%s failed, unkonwn exception', (ctrl_name, action))
+                LOG.error('%s:%s failed, unkonwn exception' % (ctrl_name, action))
             # Do not expose details of 500 error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'processing your request. %(class)s, %(message)s' % \
