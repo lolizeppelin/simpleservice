@@ -71,13 +71,13 @@ def _mysqldump_to_gz(dumpfile,
                                            stderr=log.fileno(),
                                            preexec_fn=callable)
                 os.close(r)
-            try:
-                wait(dup_proc, timeout)
-            except OSError:
-                LOG.error('wait mysql dump sub process catch error')
-            except (systemutils.UnExceptExit, systemutils.ExitBySIG):
-                LOG.error('mysql dump exit code error or killed')
-            wait(gz_proc, timeout)
+    try:
+        wait(dup_proc, timeout)
+    except OSError:
+        LOG.error('wait mysql dump sub process catch error')
+    except (systemutils.UnExceptExit, systemutils.ExitBySIG):
+        LOG.error('mysql dump exit code error or killed')
+    wait(gz_proc, timeout)
 
 
 def _mysqldump(dumpfile,
@@ -108,7 +108,7 @@ def _mysqldump(dumpfile,
                                             stdout=f.fileno(),
                                             stderr=log.fileno(),
                                             preexec_fn=callable)
-            wait(dup_proc, timeout)
+    wait(dup_proc, timeout)
 
 
 def mysqldump(dumpfile,
