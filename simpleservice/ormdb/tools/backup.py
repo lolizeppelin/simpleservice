@@ -26,16 +26,18 @@ else:
 
 def _mysqldump_to_gz(dumpfile,
                      host, port, user, passwd, schema,
-                     character_set=None,
+                     character_set=None, extargs=None,
                      logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
 
     dump_args = [MYSQLDUMP,
-                 '--default-character-set=%s' % character_set,
-                 '-u%s' % user, '-p%s' % passwd,
-                 '-h%s' % host, '-P%d' % port, schema]
+                 '--default-character-set=%s' % character_set, ]
+    if extargs:
+        dump_args.extend(extargs)
+    dump_args.extend(['-u%s' % user, '-p%s' % passwd,
+                      '-h%s' % host, '-P%d' % port, schema])
     gz_args = [GZIP, '-c', '-q']
     LOG.debug(' '.join(dump_args))
 
@@ -82,16 +84,18 @@ def _mysqldump_to_gz(dumpfile,
 
 def _mysqldump(dumpfile,
                host, port, user, passwd, schema,
-               character_set=None,
+               character_set=None, extargs=None,
                logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
 
     dump_args = [MYSQLDUMP,
-                 '--default-character-set=%s' % character_set,
-                 '-u%s' % user, '-p%s' % passwd,
-                 '-h%s' % host, '-P%d' % port, schema]
+                 '--default-character-set=%s' % character_set, ]
+    if extargs:
+        dump_args.extend(extargs)
+    dump_args.extend(['-u%s' % user, '-p%s' % passwd,
+                      '-h%s' % host, '-P%d' % port, schema])
     LOG.debug(' '.join(dump_args))
 
     with open(logfile, 'wb') as log:
@@ -111,30 +115,19 @@ def _mysqldump(dumpfile,
     wait(dup_proc, timeout)
 
 
-def mysqldump(dumpfile,
-              host, port, user, passwd, schema,
-              character_set=None,
-              logfile=None, callable=None, timeout=None):
-    if dumpfile.endswith('.gz'):
-        _mysqldump_to_gz(dumpfile, host, port, user, passwd, schema,
-                         character_set, logfile, callable, timeout)
-    else:
-        _mysqldump(dumpfile, host, port, user, passwd, schema,
-                   character_set, logfile, callable, timeout)
-
-
 def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
-                       character_set=None,
+                       character_set=None, extargs=None,
                        logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
 
-    load_args = [MYSQL,
-                 '--default-character-set=%s' % character_set,
-                 '-u%s' % user, '-p%s' % passwd,
-                 '-h%s' % host, '-P%d' % port,
-                 schema]
+    load_args = [MYSQL, '--default-character-set=%s' % character_set]
+    if extargs:
+        load_args.extend(extargs)
+    load_args.extend(['-u%s' % user, '-p%s' % passwd,
+                      '-h%s' % host, '-P%d' % port,
+                      schema])
     ungz_args = [UNGZIP, '-c', '-q', loadfile]
     LOG.debug(' '.join(load_args))
 
@@ -179,17 +172,18 @@ def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
 
 
 def _mysqlload(loadfile, host, port, user, passwd, schema,
-               character_set=None,
+               character_set=None, extargs=None,
                logfile=None, callable=None, timeout=None):
     character_set = character_set or 'utf8'
     logfile = logfile or os.devnull
     timeout = timeout or 3600
 
-    load_args = [MYSQL,
-                 '--default-character-set=%s' % character_set,
-                 '-u%s' % user, '-p%s' % passwd,
-                 '-h%s' % host, '-P%d' % port,
-                 schema]
+    load_args = [MYSQL, '--default-character-set=%s' % character_set]
+    if extargs:
+        load_args.extend(extargs)
+    load_args.extend(['-u%s' % user, '-p%s' % passwd,
+                      '-h%s' % host, '-P%d' % port,
+                      schema])
     LOG.debug(' '.join(load_args))
 
     with open(logfile, 'wb') as log:
@@ -212,11 +206,27 @@ def _mysqlload(loadfile, host, port, user, passwd, schema,
 
 
 def mysqlload(loadfile, host, port, user, passwd, schema,
-              character_set=None,
+              character_set=None, extargs=None,
               logfile=None, callable=None, timeout=None):
     if loadfile.endswith('.gz'):
         _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
-                           character_set, logfile, callable, timeout)
+                           character_set, extargs,
+                           logfile, callable, timeout)
     else:
         _mysqlload(loadfile, host, port, user, passwd, schema,
-                   character_set, logfile, callable, timeout)
+                   character_set, extargs,
+                   logfile, callable, timeout)
+
+
+def mysqldump(dumpfile,
+              host, port, user, passwd, schema,
+              character_set=None, extargs=None,
+              logfile=None, callable=None, timeout=None):
+    if dumpfile.endswith('.gz'):
+        _mysqldump_to_gz(dumpfile, host, port, user, passwd, schema,
+                         character_set, extargs,
+                         logfile, callable, timeout)
+    else:
+        _mysqldump(dumpfile, host, port, user, passwd, schema,
+                   character_set, extargs,
+                   logfile, callable, timeout)
