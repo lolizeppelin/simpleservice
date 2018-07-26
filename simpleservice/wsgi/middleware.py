@@ -124,7 +124,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
             else:
-                LOG.error('%s:%s failed, json validate fail', (ctrl_name, action))
+                LOG.error('%s:%s failed, json validate fail' % (ctrl_name, action))
             msg = e.message.replace('"', ' ')
             if e.path:
                 msg = '%s value %s' % ('.'.join(e.path), msg)
@@ -137,7 +137,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             if LOG.isEnabledFor(logging.DEBUG):
                 LOG.exception('%s failed', action)
             else:
-                LOG.error('%s:%s failed, database exception', (ctrl_name, action))
+                LOG.error('%s:%s failed, database exception' % (ctrl_name, action))
             # Do not expose details of database error to clients.
             msg = 'Request Failed: internal server error while ' \
                   'reading or writing database'
