@@ -162,13 +162,13 @@ def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
                                          stderr=log.fileno(),
                                          preexec_fn=callable)
             os.close(r)
-        try:
-            wait(ungz_proc, timeout)
-        except OSError:
-            LOG.error('wait gunzip sub process catch error')
-        except (systemutils.UnExceptExit, systemutils.ExitBySIG):
-            LOG.error('gunzip exit code error or killed')
-        wait(load_proc, timeout)
+    try:
+        wait(ungz_proc, timeout)
+    except OSError:
+        LOG.error('wait gunzip sub process catch error')
+    except (systemutils.UnExceptExit, systemutils.ExitBySIG):
+        LOG.error('gunzip exit code error or killed')
+    wait(load_proc, timeout)
 
 
 def _mysqlload(loadfile, host, port, user, passwd, schema,
