@@ -202,7 +202,7 @@ def _mysqlload(loadfile, host, port, user, passwd, schema,
                                              stdout=log.fileno(),
                                              stderr=log.fileno(),
                                              preexec_fn=callable)
-            wait(load_proc, timeout)
+    wait(load_proc, timeout)
 
 
 def mysqlload(loadfile, host, port, user, passwd, schema,
