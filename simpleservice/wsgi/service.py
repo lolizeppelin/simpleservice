@@ -235,8 +235,6 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         self._server = None
 
     def close_exec(self):
-        if systemutils.POSIX:
-            from simpleutil.utils.systemutils.posix import set_cloexec_flag
-            if self.dup_socket:
-                set_cloexec_flag(self.dup_socket.fileno())
-            set_cloexec_flag(self.socket.fileno())
+        if self.dup_socket:
+            systemutils.set_cloexec_flag(self.dup_socket.fileno())
+        systemutils.set_cloexec_flag(self.socket.fileno())

@@ -542,8 +542,7 @@ class ProcessLauncher(object):
         pid = os.fork()
         if pid == 0:
             # set cloexec to readpipe
-            if systemutils.LINUX:
-                posix.set_cloexec_flag(self.readpipe.fileno())
+            systemutils.set_cloexec_flag(self.readpipe.fileno())
             uuidutils.Gkey.update_pid(SnowflakeId)
             self.launcher = self._child_process(wrap.service)
             # while True:
