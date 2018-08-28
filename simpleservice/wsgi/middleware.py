@@ -8,6 +8,7 @@ from simpleutil.log import log as logging
 from simpleutil.utils import jsonutils
 from simpleutil.utils import systemutils
 
+from simpleservice import common
 from simpleservice.ormdb.exceptions import DBError
 from simpleservice.wsgi.exceptions import NoFaultsKonwnExcpetion
 
@@ -32,6 +33,8 @@ default_serializer = serializers[DEFAULT_CONTENT_TYPE]
 
 class MiddlewareContorller(object):
 
+    ADMINAPI = True
+
     @property
     def absname(self):
         # 类具体位置和名称,用于记录错误模块
@@ -52,11 +55,16 @@ def controller_return_response(controller, faults=None, action_status=None):
     # 已知错误
     konwn_exceptions = tuple(faults.keys() if faults else NoFaultsKonwnExcpetion) if faults else tuple()
 
+    # wsgi.Router的_dispatch通过match找到contorler
+    # 在调用contorler(req)
+    # resource闭包就是被调用的那个contorler
     @webob.dec.wsgify()
     def resource(req):
-        # wsgi.Router的_dispatch通过match找到contorler
-        # 在调用contorler(req)
-        # 这里就是被调用的那个contorler
+        # 校验ADMIN API
+        if controller.ADMINAPI and not req.environ.get(common.ADMINHEAD, True):
+            kwargs = {'body':  default_serializer({'msg': 'API just for admin'}),
+                      'content_type': DEFAULT_CONTENT_TYPE}
+            return webob.exc.HTTPUnauthorized(**kwargs)
         match = req.environ['wsgiorg.routing_args'][1]
         args = match.copy()
         # 弹出的controller
