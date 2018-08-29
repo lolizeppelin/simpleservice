@@ -76,10 +76,7 @@ class FixedHttpProtocol(eventlet.wsgi.HttpProtocol):
 class LauncheWsgiServiceBase(LauncheServiceBase):
     """Server class to manage a WSGI server, serving a WSGI application."""
     # def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
-    def __init__(self, name, app,
-                 backlog=128, max_url_len=None,
-                 socket_family=None, socket_file=None, socket_mode=None,
-                 **kwargs):
+    def __init__(self, name, app, backlog=128, max_url_len=None, **kwargs):
         """Initialize, but do not start, a WSGI server.
         :param name: Pretty name for logging.
         :param app: The WSGI application to serve.
@@ -98,6 +95,15 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         self.name = name
         self.app = app
         self.conf = CONF[name]
+
+        socket_file = self.conf.unix_socket_file
+        if systemutils.LINUX and socket_file and hasattr(socket, "AF_UNIX") :
+            socket_family = socket.AF_UNIX
+            socket_mode = 0o666
+        else:
+            socket_family = socket.AF_INET
+            socket_mode= None
+
         self._server = None
         eventlet.wsgi.MAX_HEADER_LINE = self.conf.max_header_line
         self._protocol = eventlet.wsgi.HttpProtocol if systemutils.PY27 else FixedHttpProtocol
@@ -111,14 +117,12 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         if backlog < 1:
             raise InvalidInput('The backlog must be more than 0')
 
-        if not socket_family or socket_family in [socket.AF_INET,
-                                                  socket.AF_INET6]:
+        if socket_family in [socket.AF_INET, socket.AF_INET6]:
             self.socket = self._get_socket(self.conf.bind_ip or '0.0.0.0',
                                            self.conf.bind_port or 7999,
                                            backlog)
-        elif hasattr(socket, "AF_UNIX") and socket_family == socket.AF_UNIX:
-            self.socket = self._get_unix_socket(socket_file, socket_mode,
-                                                backlog)
+        elif socket_family == socket.AF_UNIX:
+            self.socket = self._get_unix_socket(socket_file, socket_mode, backlog)
         else:
             raise ValueError("Unsupported socket family: %s", socket_family)
         self.dup_socket = None

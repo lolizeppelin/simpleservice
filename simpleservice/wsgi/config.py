@@ -27,6 +27,8 @@ wsgi_server_options = [
                     default=7999,
                     help='The port number which the wsgi application listens '
                          'on.'),
+        cfg.StrOpt('unix_socket_file',
+                    help='Listen on unix socket file'),
         cfg.StrOpt('paste_config',
                    default='simpleservice-paste.ini',
                    help='Name of the paste configuration file that defines '
