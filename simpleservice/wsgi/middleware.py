@@ -61,7 +61,7 @@ def controller_return_response(controller, faults=None, action_status=None):
     @webob.dec.wsgify()
     def resource(req):
         # 校验ADMIN API
-        if controller.ADMINAPI and not req.environ.get(common.ADMINHEAD, True):
+        if controller.ADMINAPI and not req.environ.get(common.ADMINAPI, True):
             kwargs = {'body':  default_serializer({'msg': 'API just for admin'}),
                       'content_type': DEFAULT_CONTENT_TYPE}
             return webob.exc.HTTPUnauthorized(**kwargs)

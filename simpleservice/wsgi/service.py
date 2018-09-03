@@ -80,13 +80,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         """Initialize, but do not start, a WSGI server.
         :param name: Pretty name for logging.
         :param app: The WSGI application to serve.
-        :param host: IP address to serve the application.
-        :param port: Port number to server the application.
         :param backlog: Maximum number of queued connections.
         :param max_url_len: Maximum length of permitted URLs.
-        :param socket_family: Socket family.
-        :param socket_file: location of UNIX socket.
-        :param socket_mode: UNIX socket mode.
         :param plugin_threadpool: external thread pool need to stop
         :returns: None
         :raises: InvalidInput

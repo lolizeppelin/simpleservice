@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import six
 import abc
 
 import webob.dec
@@ -64,6 +65,7 @@ class Router(object):
         return app
 
 
+@six.add_metaclass(abc.ABCMeta)
 class ComposableRouter(Router):
     """Router that supports use by ComposingRouter.
     组件路由,mapper.connect具体调用
@@ -101,6 +103,7 @@ class ComposingRouter(Router):
         super(ComposingRouter, self).__init__(mapper)
 
 
+@six.add_metaclass(abc.ABCMeta)
 class RoutersBase(object):
     """Base class for Routers."""
 
