@@ -65,30 +65,6 @@ class Router(object):
         return app
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ComposableRouter(Router):
-    """Router that supports use by ComposingRouter.
-    组件路由,mapper.connect具体调用
-    这个类要继承重写
-    """
-
-    def __init__(self, mapper=None):
-        if mapper is None:
-            mapper = routes.Mapper()
-        self.add_routes(mapper)
-        super(ComposableRouter, self).__init__(mapper)
-
-    @abc.abstractmethod
-    def add_routes(self, mapper):
-        """Add routes to given mapper.
-        这里写具体mapper.connect调用,例如
-        mapper.connect('action_name', # some action join self.resource_name with "_"
-                       path='/%s/{id}/action' % self.collection_name,
-                       controller=controller_intance, action='action_function_name',
-                       conditions=dict(method=['HEAD']))
-        """
-
-
 class ComposingRouter(Router):
     """路由组装器/组装工厂, 将ComposableRouter类实例"组装"起来
     组装过程就是调用ComposableRouter类实例的add_routes方法
@@ -171,3 +147,27 @@ class RoutersBase(object):
             mapper.connect(get_post_action + '_' + self.resource_name,
                            path, controller=controller, action=get_post_action,
                            conditions=dict(method=['GET', 'POST']))
+
+
+@six.add_metaclass(abc.ABCMeta)
+class ComposableRouter(Router):
+    """Router that supports use by ComposingRouter.
+    组件路由,mapper.connect具体调用
+    这个类要继承重写
+    """
+
+    def __init__(self, mapper=None):
+        if mapper is None:
+            mapper = routes.Mapper()
+        self.add_routes(mapper)
+        super(ComposableRouter, self).__init__(mapper)
+
+    @abc.abstractmethod
+    def add_routes(self, mapper):
+        """Add routes to given mapper.
+        这里写具体mapper.connect调用,例如
+        mapper.connect('action_name', # some action join self.resource_name with "_"
+                       path='/%s/{id}/action' % self.collection_name,
+                       controller=controller_intance, action='action_function_name',
+                       conditions=dict(method=['HEAD']))
+        """
