@@ -1,7 +1,4 @@
 # -*- coding: UTF-8 -*-
-import six
-import abc
-
 import webob.dec
 import webob.exc
 
@@ -75,11 +72,10 @@ class ComposingRouter(Router):
         if routers is None:
             routers = []
         for router in routers:
-            router.add_routes(mapper)
+            router.add_sub_routes(mapper)
         super(ComposingRouter, self).__init__(mapper)
 
 
-@six.add_metaclass(abc.ABCMeta)
 class RoutersBase(object):
     """Base class for Routers."""
 
@@ -88,7 +84,6 @@ class RoutersBase(object):
     def __init__(self):
         self.resources = []
 
-    @abc.abstractmethod
     def append_routers(self, mapper, routers=None):
         """Append routers.
         Subclasses should override this method to map its routes.
@@ -149,21 +144,29 @@ class RoutersBase(object):
                            conditions=dict(method=['GET', 'POST']))
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ComposableRouter(Router):
+class ComposableRouter(object):
     """Router that supports use by ComposingRouter.
-    组件路由,mapper.connect具体调用
-    这个类要继承重写
+    这个路由的功能在于RoutersBase里定义类资源名字
+    当用RoutersBase不表示一个资源的时候,
+    可以不在RoutersBase写任何路由
+    直接创建一个ComposableRouter
+    或者通过append_routers传入的routers列表将ComposableRouter插入(后加载)
     """
 
-    def __init__(self, mapper=None):
-        if mapper is None:
-            mapper = routes.Mapper()
+    def __init__(self, mapper):
         self.add_routes(mapper)
-        super(ComposableRouter, self).__init__(mapper)
+        # super(ComposableRouter, self).__init__(mapper)
 
-    @abc.abstractmethod
     def add_routes(self, mapper):
+        """Add routes to given mapper.
+        这里写具体mapper.connect调用,例如
+        mapper.connect('action_name', # some action join self.resource_name with "_"
+                       path='/%s/{id}/action' % self.collection_name,
+                       controller=controller_intance, action='action_function_name',
+                       conditions=dict(method=['HEAD']))
+        """
+
+    def add_sub_routes(self, mapper):
         """Add routes to given mapper.
         这里写具体mapper.connect调用,例如
         mapper.connect('action_name', # some action join self.resource_name with "_"
