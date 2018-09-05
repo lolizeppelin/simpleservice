@@ -69,12 +69,11 @@ class HttpClientBase(object):
         _type = kwargs.pop('type', 'private')
         _type = HttpClientBase.TYPES[_type]
         self.session = kwargs.pop('session', None)
-        self.version = kwargs.pop('version', '1.0')
+        self.version = kwargs.pop('version', 'v1.0')
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
-        self.action_prefix = "/%s%s" % (_type, self.version if self.version else "")
         self.retry_interval = 1
 
     def _do_request(self, action, method, headers, body, timeout):
@@ -90,7 +89,8 @@ class HttpClientBase(object):
         return resp, resp.content
 
     def do_request(self, method, action,
-                   body=None, headers=None, params=None, timeout=None):
+                   body=None, headers=None, params=None,
+                   timeout=None, version=None):
         # action += ".%s" % self.FORMAT
         timeout = timeout if timeout else self.timeout
         headers = headers or {}
@@ -99,7 +99,7 @@ class HttpClientBase(object):
         headers.setdefault('Accept', self.CONTENT_TYPE)
         if self.token:
             headers.setdefault(common.TOKENNAME, self.token)
-        action = self.action_prefix + action
+        action = '/%s%s' % (version or self.version, action)
         try:
             if isinstance(params, dict) and params:
                 params = encodeutils.safe_encode_dict(params)
@@ -140,7 +140,8 @@ class HttpClientBase(object):
             self._handle_fault_response(status_code, replybody, resp)
 
     def retry_request(self, method, action,
-                      body=None, headers=None, params=None, timeout=None):
+                      body=None, headers=None, params=None,
+                      timeout=None, version=None):
         """Call do_request with the default retry configuration.
 
         Only idempotent requests should retry failed connection attempts.
@@ -151,7 +152,7 @@ class HttpClientBase(object):
         for i in range(max_attempts):
             try:
                 return self.do_request(method, action, body=body,
-                                       headers=headers, params=params, timeout=timeout)
+                                       headers=headers, params=params, timeout=timeout, version=version)
             except (exceptions.BeforeRequestError,
                     exceptions.ServerNotImplementedError,
                     exceptions.ClientRequestError):
@@ -213,40 +214,58 @@ class HttpClientBase(object):
             return data
         return jsonutils.loads_as_bytes(data)
 
-    def delete(self, action, body=None, headers=None, params=None, timeout=None):
+    def delete(self, action, body=None, headers=None, params=None,
+               timeout=None, version=None):
         return self.retry_request("DELETE", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def get(self, action, body=None, headers=None, params=None, timeout=None):
+    def get(self, action, body=None, headers=None, params=None,
+            timeout=None, version=None):
         return self.retry_request("GET", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def post(self, action, body=None, headers=None, params=None, timeout=None):
+    def post(self, action, body=None, headers=None, params=None,
+             timeout=None, version=None):
         # Do not retry POST requests to avoid the orphan objects problem.
         return self.do_request("POST", action, body=body,
-                               headers=headers, params=params, timeout=timeout)
+                               headers=headers, params=params,
+                               timeout=timeout, version=version)
 
-    def retryable_post(self, action, body=None, headers=None, params=None, timeout=None):
+    def retryable_post(self, action, body=None, headers=None, params=None,
+                       timeout=None, version=None):
         return self.retry_request("POST", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def put(self, action, body=None, headers=None, params=None, timeout=None):
+    def put(self, action, body=None, headers=None, params=None,
+            timeout=None, version=None):
         return self.retry_request("PUT", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def head(self, action, body=None, headers=None, params=None, timeout=None):
+    def head(self, action, body=None, headers=None, params=None,
+             timeout=None, version=None):
         return self.retry_request("HEAD", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def patch(self, action, body=None, headers=None, params=None, timeout=None):
+    def patch(self, action, body=None, headers=None, params=None,
+              timeout=None, version=None):
         # Do not retry PATCH requests to avoid the orphan objects problem.
         return self.do_request("PATCH", action, body=body,
-                               headers=headers, params=params, timeout=timeout)
+                               headers=headers, params=params,
+                               timeout=timeout, version=version)
 
-    def retryable_patch(self, action, body=None, headers=None, params=None, timeout=None):
+    def retryable_patch(self, action, body=None, headers=None, params=None,
+                        timeout=None, version=None):
         return self.retry_request("PATCH", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
 
-    def options(self, action, body=None, headers=None, params=None, timeout=None):
+    def options(self, action, body=None, headers=None, params=None,
+                timeout=None, version=None):
         return self.retry_request("OPTIONS", action, body=body,
-                                  headers=headers, params=params, timeout=timeout)
+                                  headers=headers, params=params,
+                                  timeout=timeout, version=version)
