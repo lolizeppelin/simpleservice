@@ -52,6 +52,8 @@ class HttpClientBase(object):
     CONTENT_TYPE = 'application/json'
     FORMAT = 'json'
 
+    TYPES = {'public': 'v', 'private': 'n'}
+
     def __init__(self, url, port=80, **kwargs):
         """Initialize a new client for the http request."""
         super(HttpClientBase, self).__init__()
@@ -64,13 +66,15 @@ class HttpClientBase(object):
             self.url += ':%d' % port
         if self.url.endswith('/'):
             self.url = self.url[:-1]
+        _type = kwargs.pop('type', 'private')
+        _type = HttpClientBase.TYPES[_type]
         self.session = kwargs.pop('session', None)
         self.version = kwargs.pop('version', '1.0')
         self.retries = kwargs.pop('retries', 1)
         self.timeout = kwargs.pop('timeout', 5.0)
         self.token = kwargs.pop('token', None)
         self.raise_errors = kwargs.pop('raise_errors', True)
-        self.action_prefix = "/v%s" % self.version if self.version else ""
+        self.action_prefix = "/%s%s" % (_type, self.version if self.version else "")
         self.retry_interval = 1
 
     def _do_request(self, action, method, headers, body, timeout):
