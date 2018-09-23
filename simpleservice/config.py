@@ -1,10 +1,8 @@
 import socket
 from simpleutil.config import cfg
-from simpleutil.log import log
+from simpleutil.log import log as logging
 
 CONF = cfg.CONF
-
-log.register_options(CONF)
 
 default_opts = [
     cfg.HostnameOpt('host',
@@ -12,19 +10,19 @@ default_opts = [
                     help="Hostname to be used by the server, agents and "
                          "services running on this machine. All the agents and "
                          "services running on this machine must use the same "
-                         "host value.")
-]
-
-
-service_opts = [
+                         "host value."),
     cfg.BoolOpt('log_options',
                 default=True,
                 help='Enables or disables logging values of all registered '
                      'options when starting a service (at DEBUG level).'),
+]
+
+
+service_opts = [
     cfg.IntOpt('graceful_shutdown_timeout',
                default=60,
                help='Specify a timeout after which a gracefully shutdown '
-                    'server will exit. Zero value means endless wait.'),
+                    'server will exit. Zero value means endless wait.')
 ]
 
 
@@ -58,16 +56,20 @@ server_cli_opts = [
                     "This directory must be writable by the agent. ")
 ]
 
-CONF.register_cli_opts(server_cli_opts)
 
-def set_default_for_default_log_levels(extra_log_level_defaults):
-    log.set_defaults(default_log_levels=log.get_default_log_levels() + extra_log_level_defaults)
+def cliopts():
+    logging.register_options(CONF)
+    CONF.register_cli_opts(server_cli_opts)
 
 
 def configure(conf=None):
     if conf is None:
         conf = CONF
     conf.register_opts(default_opts)
+
+
+def set_default_for_default_log_levels(extra_log_level_defaults):
+    logging.set_defaults(default_log_levels=logging.get_default_log_levels() + extra_log_level_defaults)
 
 
 def list_opts():
