@@ -3,7 +3,7 @@
 
 import os
 
-import logging as defalut_logging
+import logging as default_logging
 from simpleutil.config import cfg
 from simpleutil.log import log as logging
 
@@ -30,7 +30,7 @@ def configure(version=None, config_files=None):
          default_config_files=config_files)
     CONF.register_group(center_group)
     logging.setup(CONF, center_group.name)
-    defalut_logging.captureWarnings(True)
+    default_logging.captureWarnings(True)
     CONF.register_opts(wsgi_options, group=center_group)
     # 确认paste_deploy配置文件
     if not CONF[center_group.name].paste_config:
