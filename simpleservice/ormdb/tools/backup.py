@@ -51,7 +51,10 @@ def _mysqldump_to_gz(dumpfile,
                     os.dup2(w, sys.stdout.fileno())
                     os.close(w)
                     os.dup2(log.fileno(), sys.stderr.fileno())
-                    os.execv(MYSQLDUMP, dump_args)
+                    try:
+                        os.execv(MYSQLDUMP, dump_args)
+                    except OSError:
+                        os._exit(1)
                 os.close(w)
                 gz_proc = fork()
                 if gz_proc == 0:
@@ -59,7 +62,10 @@ def _mysqldump_to_gz(dumpfile,
                     os.close(r)
                     os.dup2(f.fileno(), sys.stdout.fileno())
                     os.dup2(log.fileno(), sys.stderr.fileno())
-                    os.execv(GZIP, gz_args)
+                    try:
+                        os.execv(GZIP, gz_args)
+                    except OSError:
+                        os._exit(1)
                 os.close(r)
             else:
                 dup_proc = subprocess.Popen(executable=MYSQLDUMP, args=dump_args,
@@ -106,7 +112,10 @@ def _mysqldump(dumpfile,
                 if dup_proc == 0:
                     os.dup2(f.fileno(), sys.stdout.fileno())
                     os.dup2(log.fileno(), sys.stderr.fileno())
-                    os.execv(MYSQLDUMP, dump_args)
+                    try:
+                        os.execv(MYSQLDUMP, dump_args)
+                    except OSError:
+                        os._exit(1)
             else:
                 dup_proc = subprocess.Popen(executable=MYSQLDUMP, args=dump_args,
                                             stdout=f.fileno(),
@@ -140,7 +149,10 @@ def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
                 os.dup2(w, sys.stdout.fileno())
                 os.close(w)
                 os.dup2(log.fileno(), sys.stderr.fileno())
-                os.execv(UNGZIP, ungz_args)
+                try:
+                    os.execv(UNGZIP, ungz_args)
+                except OSError:
+                    os._exit(1)
             os.close(w)
             load_proc = fork()
             if load_proc == 0:
@@ -148,7 +160,10 @@ def _mysqlload_from_gz(loadfile, host, port, user, passwd, schema,
                 os.close(r)
                 os.dup2(log.fileno(), sys.stderr.fileno())
                 os.close(log.fileno())
-                os.execv(MYSQL, load_args)
+                try:
+                    os.execv(MYSQL, load_args)
+                except OSError:
+                    os._exit(1)
             os.close(r)
         else:
             ungz_proc = subprocess.Popen(executable=UNGZIP, args=ungz_args,
@@ -195,7 +210,10 @@ def _mysqlload(loadfile, host, port, user, passwd, schema,
                     os.dup2(f.fileno(), sys.stdin.fileno())
                     os.dup2(log.fileno(), sys.stderr.fileno())
                     os.close(log.fileno())
-                    os.execv(MYSQL, load_args)
+                    try:
+                        os.execv(MYSQL, load_args)
+                    except OSError:
+                        os._exit(1)
             else:
                 load_proc = subprocess.Popen(executable=MYSQL, args=load_args,
                                              stdin=f.fileno(),
