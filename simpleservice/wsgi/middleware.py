@@ -133,10 +133,9 @@ def controller_return_response(controller, faults=None, action_status=None):
                 LOG.exception('%s failed', action)
             else:
                 LOG.error('%s:%s failed, json validate fail' % (ctrl_name, action))
-            msg = e.message.replace('"', ' ')
+            msg = 'Request Failed: json not match'
             if e.path:
-                msg = '%s value %s' % ('.'.join(e.path), msg)
-            msg = 'Request Failed: json not match, %s' % msg
+                msg += " error schema: '%s'" % '.'.join(e.path)
             body = default_serializer({'msg': msg})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise webob.exc.HTTPClientError(**kwargs)
