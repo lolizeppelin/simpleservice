@@ -83,7 +83,9 @@ def controller_return_response(controller, faults=None, action_status=None):
         if req.body:
             try:
                 args['body'] = deserializer(req.body)
-            except TypeError:
+            except (TypeError, ValueError):
+                if LOG.isEnabledFor(logging.DEBUG):
+                    LOG.error(req.body)
                 body = default_serializer({'msg': 'HTTPClientError, body cannot be deserializer'})
                 kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
                 raise webob.exc.HTTPClientError(**kwargs)
