@@ -77,6 +77,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             deserializer = deserializers[content_type]
             serializer = serializers[content_type]
         except KeyError:
+            LOG.debug("content type '%s' can not find deserializer" % req.content_type)
             body = default_serializer({'msg': 'can not find %s deserializer' % req.content_type})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise webob.exc.HTTPNotImplemented(**kwargs)
@@ -84,8 +85,7 @@ def controller_return_response(controller, faults=None, action_status=None):
             try:
                 args['body'] = deserializer(req.body)
             except (TypeError, ValueError):
-                if LOG.isEnabledFor(logging.DEBUG):
-                    LOG.error(req.body)
+                LOG.debug(req.body)
                 body = default_serializer({'msg': 'HTTPClientError, body cannot be deserializer'})
                 kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
                 raise webob.exc.HTTPClientError(**kwargs)
