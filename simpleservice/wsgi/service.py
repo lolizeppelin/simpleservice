@@ -177,7 +177,7 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             'protocol': self._protocol,
             'custom_pool': self._pool,
             # 'log': self._logger,
-            'log': LOG,
+            'log': logging.getLogger('eventlet.wsgi'),
             'log_format': self.conf.wsgi_log_format,
             'debug': False,
             'keepalive': self.conf.wsgi_keep_alive,
