@@ -17,15 +17,21 @@ LOG = logging.getLogger(__name__)
 
 DEFAULT_CONTENT_TYPE = 'application/json'
 STREAM_CONTENT_TYPE = 'application/octet-stream'
+HTML_CONTENT_TYPE = 'text/html'
+
+def raw(b):
+    return b
 
 deserializers = {
     DEFAULT_CONTENT_TYPE: jsonutils.loads_as_bytes,
-    STREAM_CONTENT_TYPE: lambda x: x
+    STREAM_CONTENT_TYPE: raw,
+    HTML_CONTENT_TYPE: raw
 }
 
 serializers = {
     DEFAULT_CONTENT_TYPE: jsonutils.dumps_as_bytes,
-    STREAM_CONTENT_TYPE: lambda x: x
+    STREAM_CONTENT_TYPE: raw,
+    HTML_CONTENT_TYPE: raw
 }
 
 default_serializer = serializers[DEFAULT_CONTENT_TYPE]
@@ -73,14 +79,12 @@ def controller_return_response(controller, faults=None, action_status=None):
         action = args.pop('action', '__call__')
         content_type = req.content_type
         try:
-            # content_type = DEFAULT_CONTENT_TYPE
             deserializer = deserializers[content_type]
             serializer = serializers[content_type]
         except KeyError:
             LOG.debug("content type '%s' can not find deserializer" % req.content_type)
-            body = default_serializer({'msg': 'can not find %s deserializer' % req.content_type})
-            kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
-            raise webob.exc.HTTPNotImplemented(**kwargs)
+            deserializer = raw
+            serializer = raw
         if req.body:
             try:
                 args['body'] = deserializer(req.body)
