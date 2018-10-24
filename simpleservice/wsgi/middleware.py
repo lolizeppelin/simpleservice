@@ -40,6 +40,7 @@ default_serializer = serializers[DEFAULT_CONTENT_TYPE]
 class MiddlewareContorller(object):
 
     ADMINAPI = True
+    JSON = True
 
     @property
     def absname(self):
@@ -77,7 +78,11 @@ def controller_return_response(controller, faults=None, action_status=None):
         args.pop('controller', None)
         args.pop('format', None)
         action = args.pop('action', '__call__')
-        content_type = req.content_type
+        content_type = req.content_type or DEFAULT_CONTENT_TYPE
+        if controller.JSON and content_type != DEFAULT_CONTENT_TYPE:
+            body = default_serializer({'msg': 'HTTPClientError, content type is not application/json'})
+            kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
+            raise webob.exc.HTTPClientError(**kwargs)
         try:
             deserializer = deserializers[content_type]
             serializer = serializers[content_type]
