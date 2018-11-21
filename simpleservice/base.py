@@ -23,6 +23,7 @@ from simpleutil.utils import uuidutils
 from simpleutil.utils import systemutils
 from simpleutil.utils import systemdutils
 from simpleservice.config import service_opts
+from simpleservice.plugin import exceptions
 if systemutils.LINUX:
     from simpleutil.utils.systemutils import posix
     from simpleutil.utils.systemutils.posix import linux
@@ -175,9 +176,10 @@ class Services(object):
         """
         try:
             service.start()
-            # call close_exec to set
-            service.close_exec()
-        except Exception:
+        except Exception as e:
+            if isinstance(e, exceptions.AfterRequestError):
+                LOG.error('Http request error: %s' % e.message)
+                LOG.error('Http status code %d, error msg %s' % (e.code, e.resone))
             LOG.exception('Error starting thread.')
             raise SystemExit(1)
         else:
@@ -216,7 +218,7 @@ class ServiceWrapper(object):
         except KeyError:
             LOG.warning('pid %d not in snowflake id map list', pid)
 
-# 单例装饰器
+
 @singleton.singleton
 class SignalHandler(object):
 
