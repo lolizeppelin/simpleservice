@@ -180,7 +180,7 @@ class Services(object):
             if isinstance(e, exceptions.AfterRequestError):
                 LOG.error('Http request error: %s' % e.message)
                 LOG.error('Http status code %d, error msg %s' % (e.code, e.resone))
-            LOG.exception('Error starting thread.')
+            LOG.exception('Error starting a service.')
             raise SystemExit(1)
         else:
             done.wait()
