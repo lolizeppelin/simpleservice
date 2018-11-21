@@ -169,6 +169,8 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
         # to keep file descriptor usable.
 
         self.dup_socket = self.socket.dup()
+        # set close exec to  dup_socket and socket
+        self.close_exec()
 
         wsgi_kwargs = {
             'func': eventlet.wsgi.server,
@@ -188,7 +190,6 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
             wsgi_kwargs['url_length_limit'] = self._max_url_len
 
         self._server = eventlet.spawn(**wsgi_kwargs)
-        self.close_exec()
 
     def _set_socket_opts(self, _socket):
         _socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
