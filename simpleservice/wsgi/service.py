@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import os
 import socket
 
@@ -11,6 +12,7 @@ from simpleutil.config import cfg
 from simpleutil.log import log as logging
 from simpleutil.common.exceptions import InvalidInput
 
+from simpleservice import common
 from simpleservice.base import LauncheServiceBase
 from simpleservice.wsgi.exceptions import ConfigNotFound
 from simpleservice.wsgi.exceptions import PasteAppNotFound
@@ -61,21 +63,36 @@ def load_paste_app(name, paste_config):
 
 
 class FixedHttpProtocol(eventlet.wsgi.HttpProtocol):
-    """Fix bug for python2.6"""
 
-    def __init__(self, request, client_address, server):
-        self.request = request
-        self.client_address = client_address
-        self.server = server
-        self.setup()
-        try:
-            self.handle()
-        finally:
-            self.finish()
+    XREALIP = False
+
+    if not systemutils.PY27:
+        def __init__(self, request, client_address, server):
+            """Fix bug for python2.6"""
+            self.request = request
+            self.client_address = client_address
+            self.server = server
+            self.setup()
+            try:
+                self.handle()
+            finally:
+                self.finish()
+
+    def get_environ(self):
+        """
+        使用X-Real-IP头判断来源IP, 一般在使用Nginx做前端代理的情况下用
+        """
+        env = super(FixedHttpProtocol, self).get_environ()
+        env[common.ADMINAPI] = False
+        if self.XREALIP and self.headers.get('x-real-ip'):
+            env[common.GOPCLIENTIP] = self.headers.get('x-real-ip')
+        else:
+            env[common.GOPCLIENTIP] = self.client_address[0]
+        return env
+
 
 class LauncheWsgiServiceBase(LauncheServiceBase):
     """Server class to manage a WSGI server, serving a WSGI application."""
-    # def __init__(self, name, app, host='0.0.0.0', port=0,  # nosec
     def __init__(self, name, app, backlog=128, max_url_len=None, **kwargs):
         """Initialize, but do not start, a WSGI server.
         :param name: Pretty name for logging.
@@ -101,7 +118,9 @@ class LauncheWsgiServiceBase(LauncheServiceBase):
 
         self._server = None
         eventlet.wsgi.MAX_HEADER_LINE = self.conf.max_header_line
-        self._protocol = eventlet.wsgi.HttpProtocol if systemutils.PY27 else FixedHttpProtocol
+        if self.conf.x_real_ip:
+            FixedHttpProtocol.XREALIP = True
+        self._protocol = FixedHttpProtocol
         self.pool_size = self.conf.wsgi_default_pool_size
         self._pool = eventlet.GreenPool(self.pool_size)
         # self._logger = logging.getLogger('goperation.service.WsgiServiceBase')

@@ -64,6 +64,9 @@ wsgi_server_options = [
                         "If an incoming connection is idle for this number of "
                         "seconds it will be closed. A value of '0' means "
                         "wait forever."),
+        cfg.BoolOpt('x_real_ip',
+                default=False,
+                help='Get clent address from head of X-Real-IP'),
 ]
 
 
