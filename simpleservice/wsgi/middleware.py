@@ -175,6 +175,8 @@ def controller_return_response(controller, faults=None, action_status=None):
             body = default_serializer({'msg': msg})
             kwargs = {'body': body, 'content_type': DEFAULT_CONTENT_TYPE}
             raise webob.exc.HTTPInternalServerError(**kwargs)
+        if isinstance(result, webob.Response):
+            return result
         status = action_status.get(action, 200)
         body = serializer(result)
         # NOTE(jkoelker) Comply with RFC2616 section 9.7
