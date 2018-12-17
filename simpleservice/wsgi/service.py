@@ -82,7 +82,7 @@ class FixedHttpProtocol(eventlet.wsgi.HttpProtocol):
         """
         使用X-Real-IP头判断来源IP, 一般在使用Nginx做前端代理的情况下用
         """
-        env = super(FixedHttpProtocol, self).get_environ()
+        env = eventlet.wsgi.HttpProtocol.get_environ(self)
         env[common.ADMINAPI] = False
         if self.XREALIP and self.headers.get('x-real-ip'):
             env[common.GOPCLIENTIP] = self.headers.get('x-real-ip')
